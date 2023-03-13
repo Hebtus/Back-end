@@ -5,6 +5,8 @@ const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
 // const bcrypt = require('bcryptjs');
 
+//TODO: Encrypt Passwords!
+
 const userSchema = new mongoose.Schema({
   name: nameSchema,
   email: {

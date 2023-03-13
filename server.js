@@ -3,19 +3,24 @@ const mongoose = require('mongoose');
 const app = require('./app');
 
 dotenv.config({ path: './config.env' });
-const User = require('./models/userModel');
+// const User = require('./models/userModel');
 
 //Database connection
 console.log('MYDB env is ', process.env.DATABASE_LOCAL);
+
+const DBstring =
+  process.env.NODE_ENV === 'development'
+    ? process.env.DATABASE_LOCAL
+    : process.env.DATABASE;
+
 mongoose
-  .connect(process.env.DATABASE_LOCAL, {
+  .connect(DBstring, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => {
     console.log('DB is connected successfuly!');
   });
-
 // const testUser = new User({
 //   name: {
 //     firstName: 'loler',

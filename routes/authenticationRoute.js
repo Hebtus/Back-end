@@ -17,5 +17,5 @@ router.post('/forgotpassword', authController.forgotPassword);
 router.get('/facebook', authController.facebookLogin);
 router.get('/google', authController.googleLogin);
 router.patch('/resetPassword/:token', authController.resetPassword);
-
+router.patch('/updatepassword/:token', authController.updatePassword);
 module.exports = router;

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = require('./app');
 
 dotenv.config({ path: './config.env' });
-// const User = require('./models/userModel');
+const User = require('./models/userModel');
 
 //Database connection
 console.log('MYDB env is ', process.env.DATABASE_LOCAL);
@@ -27,7 +27,7 @@ mongoose
 //     lastName: 'Ameer',
 //   },
 //   email: 'lol@lol.com',
-//   location: { coordinates: [-91, -45] },
+//   location: { type: 'lol', coordinates: [-91.32, 1.32] },
 //   password: 'lolerrrr',
 // });
 
@@ -40,6 +40,7 @@ mongoose
 //   .catch((err) => {
 //     console.log(err);
 //   });
+
 //Hosting the server
 app.listen(process.env.PORT, () => {
   console.log(`App is running on port ${process.env.PORT}`);

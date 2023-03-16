@@ -68,5 +68,11 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     min: [0, 'Tickets Sold can not be lower than zero.'],
   },
+  creatorID: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
-module.exports = eventSchema;
+const Event = mongoose.model('Event', eventSchema);
+module.exports = Event;

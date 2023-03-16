@@ -1,6 +1,7 @@
 // const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
+//const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
 // const bcrypt = require('bcryptjs');
@@ -52,6 +53,11 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isDate, 'Must be right date format.'],
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
+  },
+  eventID: {
+    //check this with Joseph
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
   },
 });
 

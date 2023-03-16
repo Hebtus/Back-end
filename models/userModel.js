@@ -49,6 +49,9 @@ const userSchema = new mongoose.Schema({
   //used for JWT auth
   passwordChangedAt: {
     type: Date,
+    validate: [validator.isDate, 'Must be right date format.'],
+    required: [true, 'Last Changed at is required'],
+    default: Date.now(),
   },
 });
 

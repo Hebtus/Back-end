@@ -1,6 +1,6 @@
 // const crypto = require('crypto');
 const mongoose = require('mongoose');
-//const validator = require('validator');
+const validator = require('validator');
 const locationSchema = require('./shared/locationModel');
 // const bcrypt = require('bcryptjs');
 
@@ -16,19 +16,17 @@ const eventSchema = new mongoose.Schema({
   startDate: {
     type: Date,
     required: [true, 'An event must have a start date.'],
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   endtDate: {
     type: Date,
     required: [true, 'An event must have an end date.'],
-  },
-  eventID: {
-    type: String,
-    required: [true, 'Event must have an ID'],
-    unique: true,
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   img_url: {
     type: String,
     default: '',
+    validate: [validator.isURL, 'The URL must be valid.'],
   },
   location: {
     type: locationSchema,
@@ -36,11 +34,13 @@ const eventSchema = new mongoose.Schema({
   locationName: {
     type: String,
     required: true,
+    maxlength: [60, 'An event must have less or more than 40 characters'],
   },
   description: {
     type: String,
     trim: true,
     required: true,
+    maxlength: 400,
   },
   tags: [String],
   category: {
@@ -54,6 +54,7 @@ const eventSchema = new mongoose.Schema({
   },
   goPublicDate: {
     type: Date,
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   password: {
     type: String,
@@ -65,6 +66,7 @@ const eventSchema = new mongoose.Schema({
   },
   ticketsSold: {
     type: Number,
+    min: [0, 'Tickets Sold can not be lower than zero.'],
   },
 });
 module.exports = eventSchema;

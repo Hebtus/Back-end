@@ -62,6 +62,7 @@ const bookingsSchema = new mongoose.Schema({
     //Date of the Booking
     type: Date,
     default: Date.now(),
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   deleted: {
     // Boolen attribute just in case attendee cancell his booking

@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [8, 'Minimum length for password is 8'],
-    select: false,
+    select: false, //prevents passwords from being selected while querrying users
   },
   FacebookID: {
     type: String,

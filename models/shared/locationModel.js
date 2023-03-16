@@ -7,8 +7,9 @@ function arraySize(val) {
   return val.length === 2;
 }
 
-// find a way to prevent user from playing with the type..
-// perhaps a pre middleware?
+//the type validates the longitude and latitude numbers
+//Format is [longitude, latitude]
+
 const locationSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -17,7 +18,7 @@ const locationSchema = new mongoose.Schema({
   coordinates: {
     type: [Number],
     index: '2dsphere',
-    default: [30.0594885, 31.2584644], //[longitude,latitude] //are there any required validations here?
+    default: [30.0594885, 31.2584644], //[longitude,latitude] // defaults to Cairo
     validate: [arraySize, 'Coordinates must be exactly 2'],
   },
 });

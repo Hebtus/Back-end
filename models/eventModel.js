@@ -1,65 +1,70 @@
-// // const crypto = require('crypto');
-// const mongoose = require('mongoose');
-// const validator = require('validator');
-// // const bcrypt = require('bcryptjs');
+// const crypto = require('crypto');
+const mongoose = require('mongoose');
+//const validator = require('validator');
+const locationSchema = require('./shared/locationModel');
+// const bcrypt = require('bcryptjs');
 
-// // const locationSchema = new mongoose.Schema({
-// //   longitude: {
-// //     type: String,
-// //     required: [true, 'Please tell us your name!'],
-// //     minlength: [1, 'First Name can not be less than 1 character.'],
-// //     maxlength: [30, 'First Name can not be more than 30 characters long.'],
-// //   },
-// //   latitude: {
-// //     type: String,
-// //     required: [true, 'Please tell us your name!'],
-// //     minlength: [1, 'First Name can not be less than 1 character.'],
-// //     maxlength: [30, 'First Name can not be more than 30 characters long.'],
-// //   },
-// // });
-
-// const eventSchema = new mongoose.Schema({
-//   name: { String, require: [true, 'An event must have a name.'] },
-//   startDate: {
-//     type: Date,
-//   },
-//   endtDate: {
-//     type: Date,
-//   },
-//   img_url: {
-//     type: String,
-//     default: '',
-//   },
-//   location: {
-//     type: 'Point',
-//     required: [
-//       'Latitude is required to define location.',
-//       'Longitude is required to define location.',
-//     ],
-//   },
-//   password: {
-//     type: String,
-//     required: [true, 'Please provide a password'],
-//     minlength: 8,
-//     select: false,
-//   },
-//   FacebookID: {
-//     type: String,
-//   },
-//   GoogleID: {
-//     type: String,
-//   },
-
-//   // is the account verified through email or not
-//   accountConfirmation: {
-//     type: Boolean,
-//     default: false,
-//   },
-//   activeStatus: {
-//     type: Boolean,
-//     default: false,
-//   },
-//   passwordChangedAt: {
-//     type: Date,
-//   },
-// });
+const eventSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'An event must have a name.'],
+    unique: true,
+    trim: true,
+    maxlength: [40, 'An event must have less or more than 40 characters'],
+    minlength: [10, 'An event must have less or equal than 10 characters'],
+  },
+  startDate: {
+    type: Date,
+    required: [true, 'An event must have a start date.'],
+  },
+  endtDate: {
+    type: Date,
+    required: [true, 'An event must have an end date.'],
+  },
+  eventID: {
+    type: String,
+    required: [true, 'Event must have an ID'],
+    unique: true,
+  },
+  img_url: {
+    type: String,
+    default: '',
+  },
+  location: {
+    type: locationSchema,
+  },
+  locationName: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  tags: [String],
+  category: {
+    type: String,
+  },
+  online: {
+    type: Boolean,
+  },
+  draft: {
+    type: Boolean,
+  },
+  goPublicDate: {
+    type: Date,
+  },
+  password: {
+    type: String,
+    minlength: 8,
+  },
+  privacy: {
+    type: Boolean,
+    required: true,
+  },
+  ticketsSold: {
+    type: Number,
+  },
+});
+module.exports = eventSchema;

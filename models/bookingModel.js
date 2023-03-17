@@ -14,7 +14,7 @@ const bookingsSchema = new mongoose.Schema({
     enum: {
       // Prefix values that user can choose from
       values: ['Mr', 'Ms', 'Miss', 'Mrs'],
-      message: '{VALUE} is not supported',
+      message: '{VALUE} is not supported as a prefix',
     },
   },
   //Gender Type
@@ -25,7 +25,7 @@ const bookingsSchema = new mongoose.Schema({
     enum: {
       // Gender values that user can choose from
       values: ['Male', 'Female'],
-      message: '{VALUE} is not supported',
+      message: '{VALUE} is not supported as a gender ',
     },
   },
   phoneNumber: {
@@ -56,6 +56,7 @@ const bookingsSchema = new mongoose.Schema({
     // The event ticket price
     type: Number,
     required: [true, 'Ticket must have a price'],
+    min: 0,
   },
 
   purchasedOn: {
@@ -64,16 +65,11 @@ const bookingsSchema = new mongoose.Schema({
     default: Date.now(),
     validate: [validator.isDate, 'Must be right date format.'],
   },
-  deleted: {
-    // Boolen attribute just in case attendee cancell his booking
-    type: Boolean,
-    default: false,
-  },
-  user: {
+  userID: {
     // Refrence ID that refers to the attendee
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: [true, 'The booked ticket  must belong to a user'],
+    // the booking might not belong to a user regisetered in the system.
   },
   ticketID: {
     // Refrence ID that refers to the ticket type which it belongs to

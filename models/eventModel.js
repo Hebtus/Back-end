@@ -45,6 +45,11 @@ const eventSchema = new mongoose.Schema({
   tags: [String],
   category: {
     type: String,
+    enum: {
+      // Gender values that user can choose from
+      values: ['Music', 'Food & Drink', 'Charity & Causes'],
+      message: '{VALUE} is not supported in event categories',
+    },
   },
   online: {
     type: Boolean,

@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 //const eventSchema = require('./eventModel');
 // const locationSchema = require('./shared/locationModel');
 // const nameSchema = require('./shared/nameModel');
-
-//TODO: Encrypt Passwords!
 
 const promoCodeSchema = new mongoose.Schema({
   codeName: {

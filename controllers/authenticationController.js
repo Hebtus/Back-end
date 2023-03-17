@@ -165,3 +165,17 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 4) Log user in, send JWT
   createSendToken(user, 200, res);
 });
+
+exports.deactivateAccount = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (user.activeStatus === true) user.activeStatus = false;
+  else user.activeStatus = true;
+
+  try {
+    await user.save();
+    return res.status(200).json({ status: 'Success', success: true });
+  } catch (err) {
+    throw new AppError(`Something went wrong`, 500);
+  }
+});

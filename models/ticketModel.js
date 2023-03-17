@@ -11,7 +11,7 @@ const ticketSchema = new mongoose.Schema({
     required: [true, 'Please specify the ticket type'],
     enum: {
       //ticket types on the site itself are not in vip or not no
-      values: ['Paid', 'Free', 'Donation'],
+      values: ['VIP', 'Regular'],
       message: '{VALUE} is not supported',
     },
   },

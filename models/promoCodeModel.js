@@ -43,6 +43,7 @@ const promoCodeSchema = new mongoose.Schema({
   },
 });
 
+//pre(Save) runs before save and create
 //makes sure that either percentage or discount amount are given
 promoCodeSchema.pre('save', function (next) {
   if (!this.percentage && !this.discountAmount)
@@ -70,6 +71,6 @@ promoCodeSchema.pre(/^find/, function (next) {
   next();
 });
 
-const User = mongoose.model('PromoCode', promoCodeSchema);
+const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
 
-module.exports = User;
+module.exports = PromoCode;

@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 // const validator = require('validator');
 
 const emailConfirmSchema = new mongoose.Schema({
+  userID: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   confirmationToken: String,
   confirmationTokenExpiry: Date,
 });
@@ -14,6 +19,6 @@ emailConfirmSchema.pre(/^find/, function (next) {
   next();
 });
 
-const User = mongoose.model('User', emailConfirmSchema);
+const EmailConfirm = mongoose.model('EmailConfirmation', emailConfirmSchema);
 
-module.exports = User;
+module.exports = EmailConfirm;

@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 // const validator = require('validator');
 
 const passwordResetModel = new mongoose.Schema({
+  userID: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   confirmationToken: String,
   confirmationTokenExpiry: Date,
 });
@@ -14,6 +19,6 @@ passwordResetModel.pre(/^find/, function (next) {
   next();
 });
 
-const User = mongoose.model('User', passwordResetModel);
+const PasswordReset = mongoose.model('PasswordReset', passwordResetModel);
 
-module.exports = User;
+module.exports = PasswordReset;

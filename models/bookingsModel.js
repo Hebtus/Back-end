@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const nameSchema = require('./shared/nameModel');
+const Ticket = require('./ticketModel');
 
 const bookingsSchema = new mongoose.Schema({
   // Attendee Name
@@ -74,12 +75,25 @@ const bookingsSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'The booked ticket  must belong to a user'],
   },
-  event: {
-    // Refrence ID that refers to the event
+  ticketID: {
+    // Refrence ID that refers to the ticket type which it belongs to
     type: mongoose.Schema.ObjectId,
-    ref: 'Event',
+    ref: 'Ticket',
     required: [true, 'The booked ticket  must belong to an event'],
   },
+  // eventID: {
+  //   // Refrence ID that refers to the event
+  //   type: mongoose.Schema.ObjectId,
+  //   ref: 'Event',
+  //   required: [true, 'The booked ticket  must belong to an event'],
+  // },
+});
+
+//automatically adds 1 to currentReservations in its respective ticket
+bookingsSchema.post('save', async function () {
+  await Ticket.findByIdAndUpdate(this.ticketID, {
+    $inc: { currentReservations: 1 },
+  });
 });
 
 //All find querries
@@ -91,4 +105,4 @@ bookingsSchema.pre(/^find/, function (next) {
   next();
 });
 
-const Event = mongoose.model('Bookings', bookingsSchema);
+const Booking = mongoose.model('Booking', bookingsSchema);

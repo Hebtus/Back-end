@@ -19,7 +19,7 @@ router.get('/logout', authController.logout);
 router.get('/facebook', authController.facebookLogin);
 router.get('/google', authController.googleLogin);
 router.patch('/deactivate', authController.deactivateAccount);
-router.patch('/resetPassword/:token', authController.resetPassword);
+router.patch('/resetpassword/:token', authController.resetPassword);
 router.patch('/updatepassword/:token', authController.updatePassword);
 //from here down add whatever requests that are avialble to creators only
 router.use('/restrict', authController.restrictTo('admin'));

@@ -62,6 +62,14 @@ promoCodeSchema.pre('update', function (next) {
   next();
 });
 
+//All find querries
+promoCodeSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+  });
+  next();
+});
+
 const User = mongoose.model('PromoCode', promoCodeSchema);
 
 module.exports = User;

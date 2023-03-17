@@ -74,5 +74,16 @@ const eventSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+//All find querries
+eventSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+    'location.type': 0,
+    'location._id': 0,
+  });
+  next();
+});
+
 const Event = mongoose.model('Event', eventSchema);
 module.exports = Event;

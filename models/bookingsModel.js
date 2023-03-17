@@ -5,8 +5,7 @@ const nameSchema = require('./shared/nameModel');
 
 const bookingsSchema = new mongoose.Schema({
   // Attendee Name
-  firstName: nameSchema.firstName, // Attendee Name
-  lastName: nameSchema.lastName,
+  name: nameSchema,
   // Name Prefix
   prefix: {
     type: String,
@@ -81,6 +80,15 @@ const bookingsSchema = new mongoose.Schema({
     ref: 'Event',
     required: [true, 'The booked ticket  must belong to an event'],
   },
+});
+
+//All find querries
+bookingsSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+    'name._id': 0,
+  });
+  next();
 });
 
 const Event = mongoose.model('Bookings', bookingsSchema);

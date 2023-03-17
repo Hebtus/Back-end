@@ -44,6 +44,14 @@ const ticketSchema = new mongoose.Schema({
   },
 });
 
+//All find querries
+ticketSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+  });
+  next();
+});
+
 const User = mongoose.model('Ticket', ticketSchema);
 
 module.exports = User;

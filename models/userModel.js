@@ -61,6 +61,17 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+//All find querries
+userSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+    'location.type': 0,
+    'location._id': 0,
+    'name._id': 0,
+  });
+  next();
+});
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

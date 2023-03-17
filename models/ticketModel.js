@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-//const validator = require('validator');
+const validator = require('validator');
 
 const ticketSchema = new mongoose.Schema({
   name: {
@@ -9,6 +9,11 @@ const ticketSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Please specify the ticket type'],
+    enum: {
+      //ticket types on the site itself are not in vip or not no
+      values: ['Paid', 'Free', 'Donation'],
+      message: '{VALUE} is not supported',
+    },
   },
   price: {
     type: Number,
@@ -20,9 +25,12 @@ const ticketSchema = new mongoose.Schema({
   },
   sellingStartTime: {
     type: Date,
+    default: Date.now(),
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   sellingEndTime: {
     type: Date,
+    validate: [validator.isDate, 'Must be right date format.'],
   },
   currentReservations: {
     type: Number,

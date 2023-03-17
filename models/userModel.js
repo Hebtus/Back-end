@@ -1,6 +1,7 @@
 // const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
+//const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
 // const bcrypt = require('bcryptjs');
@@ -27,7 +28,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [8, 'Minimum length for password is 8'],
-    select: false,
+    select: false, //prevents passwords from being selected while querrying users
   },
   FacebookID: {
     type: String,
@@ -49,6 +50,14 @@ const userSchema = new mongoose.Schema({
   //used for JWT auth
   passwordChangedAt: {
     type: Date,
+    validate: [validator.isDate, 'Must be right date format.'],
+    required: [true, 'Last Changed at is required'],
+    default: Date.now(),
+  },
+  eventID: {
+    //check this with Joseph
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
   },
 });
 

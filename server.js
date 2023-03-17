@@ -21,25 +21,26 @@ mongoose
   .then(() => {
     console.log('DB is connected successfuly!');
   });
-// const testUser = new User({
-//   name: {
-//     firstName: 'loler',
-//     lastName: 'Ameer',
-//   },
-//   email: 'lol@lol.com',
-//   location: { type: 'lol', coordinates: [-91.32, 1.32] },
-//   password: 'lolerrrr',
-// });
+const testUser = new User({
+  name: {
+    firstName: 'loler',
+    lastName: 'Ameer',
+  },
+  email: 'lol@lol.com',
+  location: { type: 'lol', coordinates: [-91.32, 1.32] },
+  password: 'lolerrrr',
+  //   passwordChangedAt: '1987-09-28 20:01:07',
+});
 
-// testUser
-//   .save()
-//   .then((doc) => {
-//     console.log(doc);
-//     console.log('Saved Successfully!!!!!!!');
-//   })
-//   .catch((err) => {
-//     console.log(err);
-//   });
+testUser
+  .save()
+  .then((doc) => {
+    console.log(doc);
+    console.log('Saved Successfully!!!!!!!');
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 //Hosting the server
 app.listen(process.env.PORT, () => {

@@ -25,7 +25,7 @@ mongoose
     // console.log('DB is removed successfuly!');
   });
 
-testerfunc = async () => {
+const testerfunc = async () => {
   const testUser = new User({
     name: {
       firstName: 'loler',
@@ -47,7 +47,7 @@ testerfunc = async () => {
     .catch((err) => {
       console.log(err);
     });
-  testgetuser = await User.findOne();
+  const testgetuser = await User.findOne();
   console.log(testgetuser);
 };
 testerfunc();

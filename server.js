@@ -1,8 +1,16 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const passport = require('passport');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const session = require('express-session');
 const app = require('./app');
 
-dotenv.config({ path: './config.env' });
+//Load config
+dotenv.config({ path: './utils/config/config.env' });
+
+//Passport config
+require('./utils/config/passport')(passport);
+
 const User = require('./models/userModel');
 
 //Database connection
@@ -37,6 +45,19 @@ const testerfunc = async () => {
     passwordChangedAt: '1987-09-28 20:01:07',
   });
 
+  //Sessions
+  app.use(
+    session({
+      secret: 'keyboard cat',
+      resave: false,
+      saveUninitialized: false,
+    })
+  );
+
+  //Passport middleware
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   await User.collection.drop();
 
   await testUser
@@ -48,7 +69,7 @@ const testerfunc = async () => {
       console.log(err);
     });
   const testgetuser = await User.findOne();
-  console.log(testgetuser);
+  //console.log(testgetuser);
 };
 testerfunc();
 

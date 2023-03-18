@@ -4,14 +4,10 @@ const passport = require('passport');
 const authController = require('../controllers/authenticationController');
 
 const router = express.Router();
-
 router.post('/signup', authController.signup);
+router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
-router.get(
-  '/signup-confirm/:emailConfirmationToken',
-  authController.confirmEmail
-);
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
 router.use('/protect', authController.protect);
@@ -20,14 +16,7 @@ router.get('/logout', authController.logout);
 router.get('/login/facebook', authController.facebookLogin);
 router.get(
   '/login/google',
-  passport.authenticate('google', { scope: ['profile'] })
-);
-router.get(
-  '/login/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.redirect('/events');
-  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 router.patch('/deactivate', authController.deactivateAccount);
 router.patch('/resetpassword/:token', authController.resetPassword);

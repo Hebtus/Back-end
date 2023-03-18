@@ -1,11 +1,12 @@
-// const crypto = require('crypto');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
 //const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
-// const bcrypt = require('bcryptjs');
-
+const EmailConfirm = require('./emailConfirmModel');
+const PasswordReset = require('./passwordResetModel');
 //TODO: Encrypt Passwords!
 
 const userSchema = new mongoose.Schema({
@@ -19,6 +20,11 @@ const userSchema = new mongoose.Schema({
   },
   location: {
     type: locationSchema,
+    default: () => ({}), //calls default values of the locationSchema (without it there is no location by default)
+  },
+  locationName: {
+    type: String,
+    default: 'Faculty of Engineering, Cairo University',
   },
   img_url: {
     type: String,
@@ -54,6 +60,8 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
   },
+  // passwordResetToken: String,
+  // passwordResetExpires: Date,
   // eventID: {
   //   //check this with Joseph
   //   type: mongoose.Schema.ObjectId,
@@ -71,6 +79,103 @@ userSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
+userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified
+  // console.log('function is still called');
+  // if (!this.isModified('users.password')) {
+  if (!this.isModified('password')) {
+    console.log('tele3 not modified bsa7ee7');
+    return next();
+  }
+
+  // Hash the password with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+
+  // Delete passwordConfirm field
+  this.passwordConfirm = undefined;
+  next();
+});
+
+//for checking passwords against each other
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.createEmailConfirmToken = async function () {
+  const confirmToken = await crypto.randomBytes(32).toString('hex');
+
+  //save token in either email confirm or password tables
+  await EmailConfirm.create({
+    userID: this._id,
+    confirmationToken: crypto
+      .createHash('sha256')
+      .update(confirmToken)
+      .digest('hex'),
+    confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
+    // confirmationTokenExpiry: Date.now() + 2 * 1000, //1 hour
+  });
+
+  return confirmToken;
+};
+// //Hussein Approach
+// userSchema.methods.createPasswordResetToken = function () {
+//   const resetToken = crypto.randomBytes(32).toString('hex');
+
+//   this.passwordResetToken = crypto
+//     .createHash('sha256')
+//     .update(resetToken)
+//     .digest('hex');
+
+//   console.log({ resetToken }, this.passwordResetToken);
+
+//   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+//   return resetToken;
+// };
+
+//Joseph Aproach
+userSchema.methods.createResetPasswordToken = async function () {
+  const passwordResetToken = crypto.randomBytes(32).toString('hex');
+  const passwordReset = await PasswordReset.findOne({ userID: this._id });
+  if (!passwordReset) {
+    //save token in either email confirm or password tables
+    await PasswordReset.create({
+      userID: this._id,
+      passwordResetToken: crypto
+        .createHash('sha256')
+        .update(passwordResetToken)
+        .digest('hex'),
+      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, //14 days
+    });
+  } else {
+    passwordReset.passwordResetToken = crypto
+      .createHash('sha256')
+      .update(passwordResetToken)
+      .digest('hex');
+    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    await passwordReset.save();
+  }
+
+  return passwordResetToken;
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  // False means NOT changed
+  return false;
+};
 
 const User = mongoose.model('User', userSchema);
 

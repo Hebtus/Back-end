@@ -6,16 +6,28 @@ const passwordResetModel = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: true,
+    unique: true,
   },
-  confirmationToken: String,
-  confirmationTokenExpiry: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpiry: Date,
+});
+
+passwordResetModel.pre('save', async function (next) {
+  await this.constructor.deleteMany({
+    passwordResetTokenExpiry: { $lt: Date.now() },
+  });
+  next();
 });
 
 //All find querries
-passwordResetModel.pre(/^find/, function (next) {
+passwordResetModel.pre(/^find/, async function (next) {
   this.select({
     __v: 0,
   });
+  await this.model.deleteMany({
+    passwordResetTokenExpiry: { $lt: Date.now() },
+  });
+
   next();
 });
 

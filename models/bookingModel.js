@@ -76,6 +76,7 @@ const bookingsSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Ticket',
     required: [true, 'The booked ticket  must belong to an event'],
+    unique: true,
   },
   // eventID: {
   //   // Refrence ID that refers to the event

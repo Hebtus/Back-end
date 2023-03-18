@@ -12,17 +12,21 @@ const passwordResetModel = new mongoose.Schema({
   passwordResetTokenExpiry: Date,
 });
 
-passwordResetModel.pre('save', function (next) {
-  this.deleteMany({ passwordResetTokenExpiry: { $lt: Date.now() } });
+passwordResetModel.pre('save', async function (next) {
+  await this.constructor.deleteMany({
+    passwordResetTokenExpiry: { $lt: Date.now() },
+  });
   next();
 });
 
 //All find querries
-passwordResetModel.pre(/^find/, function (next) {
+passwordResetModel.pre(/^find/, async function (next) {
   this.select({
     __v: 0,
   });
-  this.deleteMany({ passwordResetTokenExpiry: { $lt: Date.now() } });
+  await this.model.deleteMany({
+    passwordResetTokenExpiry: { $lt: Date.now() },
+  });
 
   next();
 });

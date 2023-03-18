@@ -83,7 +83,7 @@ userSchema.pre('save', async function (next) {
   // console.log('function is still called');
   // if (!this.isModified('users.password')) {
   if (!this.isModified('password')) {
-    console.log('tele3 modified bsa7ee7');
+    console.log('tele3 not modified bsa7ee7');
     return next();
   }
 
@@ -114,6 +114,7 @@ userSchema.methods.createEmailConfirmToken = async function () {
       .update(confirmToken)
       .digest('hex'),
     confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
+    // confirmationTokenExpiry: Date.now() + 2 * 1000, //1 hour
   });
 
   return confirmToken;

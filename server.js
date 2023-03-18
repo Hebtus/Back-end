@@ -46,6 +46,19 @@ mongoose
 //     passwordChangedAt: '1987-09-28 20:01:07',
 //   });
 
+//Sessions
+app.use(
+  session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+//Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 //   await User.collection.drop();
 
 //   await testUser

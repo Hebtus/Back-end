@@ -94,16 +94,61 @@ exports.restrictTo =
 
     next();
   };
+const SendConfirmationEmail = async (user, req, res, next) => {
+  //generate confirm token first
+  const confirmToken = await user.createEmailConfirmToken();
+  const confirmURL = `${req.protocol}://${req.get(
+    'host'
+  )}/signup-confirm/${confirmToken}`;
 
+  const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Verify your Hebtus Account ',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Check your email for confirmation!',
+    });
+  } catch (err) {
+    //delete user and respective confirmation token
+    await EmailConfirm.findOneAndDelete({ userID: user._id });
+    await User.findByIdAndDelete(user._id);
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
+};
 exports.signup = catchAsync(async (req, res, next) => {
   //check if user exists:
   const existingUser = await User.findOne({
     email: req.body.email,
   });
-
   if (existingUser !== null) {
-    // console.log('There is an existing user');
-    exports.login(req, res, next);
+    const emailconfirm = await EmailConfirm.findOne({
+      userID: existingUser._id,
+    });
+
+    if (emailconfirm !== null) {
+      console.log('emailconfirm is', emailconfirm);
+      //already sent before
+      res.status(400).json({
+        status: 'fail',
+        message: 'Email confirmation already sent!',
+      });
+      //not found, then either he had already confirmed
+    } else if (existingUser.accountConfirmation) {
+      exports.login(req, res, next);
+    } else {
+      // or the token had expired and was removed from DB
+      SendConfirmationEmail(existingUser, req, res, next);
+    }
+
     return;
   }
 
@@ -134,35 +179,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordChangedAt: Date.now(), //Not sure of this please check ya yasmine
   });
-
-  //generate confirm token first
-  const confirmToken = await user.createEmailConfirmToken();
-  const confirmURL = `${req.protocol}://${req.get(
-    'host'
-  )}/signup-confirm/${confirmToken}`;
-
-  const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
-
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Verify your Hebtus Account ',
-      message,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Check your email for confirmation!',
-    });
-  } catch (err) {
-    //delete user and respective confirmation token
-    await EmailConfirm.findOneAndDelete({ userID: user._id });
-    await User.findByIdAndDelete(user._id);
-    return next(
-      new AppError('There was an error sending the email. Try again later!'),
-      500
-    );
-  }
+  SendConfirmationEmail(user, req, res, next);
 });
 
 exports.confirmEmail = catchAsync(async (req, res, next) => {
@@ -200,20 +217,35 @@ exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   // 1) Check if email and password exist
   if (!email || !password) {
-    return next(new AppError('Please provide email and password!', 400));
+    res.status(400).json({
+      status: 'fail',
+      message: 'Please provide email and password!',
+    });
   }
   // 2) Check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Incorrect email or password', 401));
+    res.status(401).json({
+      status: 'fail',
+      message: 'Incorrect email or password!',
+    });
   }
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
-  // 4) Activate user by default
+  if (!user.activeStatus) {
+    // return next(new AppError('User not confirmed', 401));
+    res.status(401).json({
+      status: 'fail',
+      message: 'User not confirmed, please confirm the user through email!',
+    });
+  }
+  // 3) Activate user by default
 
   user.activeStatus = 1;
+  // console.log('user is ', user);
+  // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
+  // 4) If everything ok, send token to client
+  createSendToken(user, 200, req, res);
 });
 
 exports.logout = catchAsync(async (req, res, next) => {

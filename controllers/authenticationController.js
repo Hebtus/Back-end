@@ -16,24 +16,21 @@ const signToken = (id) =>
 
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
-  const cookieOptions = {
+
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-  };
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
 
-  res.cookie('jwt', token, cookieOptions);
-
-  // Remove critical information from output
+  // Remove password from output
   user.password = undefined;
-  user.passwordChangedAt = undefined;
-  user.accountConfirmation = undefined;
-  user.activeStatus = undefined;
 
   res.status(statusCode).json({
     status: 'success',
+    token,
     data: {
       user,
     },
@@ -380,8 +377,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 // });
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
-  const user = await User.findById(req.user.id).select('+password');
 
+  const user = await User.findById(req.user.id).select('+password');
+  if (!user) throw new AppError('Invalid User', 400);
   //check if password != confirmpassword
   if (req.body.password !== req.body.confirmPassword) {
     return next(new AppError('confirm password doesnt match', 401));
@@ -397,7 +395,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.deactivateAccount = catchAsync(async (req, res, next) => {

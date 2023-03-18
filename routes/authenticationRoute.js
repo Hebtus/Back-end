@@ -16,14 +16,7 @@ router.get('/logout', authController.logout);
 router.get('/login/facebook', authController.facebookLogin);
 router.get(
   '/login/google',
-  passport.authenticate('google', { scope: ['profile'] })
-);
-router.get(
-  '/login/google/callback',
-  passport.authenticate('google', { failureRedirect: '/api/v1' }),
-  (req, res) => {
-    res.redirect('api/v1/events');
-  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 router.patch('/deactivate', authController.deactivateAccount);
 router.patch('/resetpassword/:token', authController.resetPassword);

@@ -133,6 +133,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     const emailconfirm = await EmailConfirm.findOne({
       userID: existingUser._id,
     });
+
     if (emailconfirm !== null) {
       console.log('emailconfirm is', emailconfirm);
       //already sent before
@@ -141,12 +142,13 @@ exports.signup = catchAsync(async (req, res, next) => {
         message: 'Email confirmation already sent!',
       });
       //not found, then either he had already confirmed
-    } else if (existingUser.confirmEmail) {
+    } else if (existingUser.accountConfirmation) {
       exports.login(req, res, next);
     } else {
       // or the token had expired and was removed from DB
       SendConfirmationEmail(existingUser, req, res, next);
     }
+
     return;
   }
 

@@ -1,11 +1,12 @@
-// const crypto = require('crypto');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 //const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
-// const bcrypt = require('bcryptjs');
-
+const bcrypt = require('bcryptjs');
+const EmailConfirm = require('./emailConfirmModel');
+const PasswordReset = require('./passwordResetModel');
 //TODO: Encrypt Passwords!
 
 const userSchema = new mongoose.Schema({
@@ -71,6 +72,46 @@ userSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
+//for checking passwords against each other
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.createEmailConfirmToken = async function () {
+  const confirmToken = crypto.randomBytes(32).toString('hex');
+
+  //save token in either email confirm or password tables
+  await PasswordReset.create({
+    userID: this._id,
+    confirmationToken: crypto
+      .createHash('sha256')
+      .update(confirmToken)
+      .digest('hex'),
+    confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
+  });
+
+  return confirmToken;
+};
+
+userSchema.methods.createResetPasswordToken = async function () {
+  const passwordResetToken = crypto.randomBytes(32).toString('hex');
+
+  //save token in either email confirm or password tables
+  await EmailConfirm.create({
+    userID: this._id,
+    passwordResetToken: crypto
+      .createHash('sha256')
+      .update(passwordResetToken)
+      .digest('hex'),
+    passwordResetTokenExpiry: Date.now() + 14 * 24 * 60 * 60 * 1000, //14 days
+  });
+
+  return passwordResetToken;
+};
 
 const User = mongoose.model('User', userSchema);
 

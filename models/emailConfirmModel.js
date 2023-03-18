@@ -6,6 +6,7 @@ const emailConfirmSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: true,
+    unique: true,
   },
   confirmationToken: String,
   confirmationTokenExpiry: Date,

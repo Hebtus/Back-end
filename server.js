@@ -25,32 +25,32 @@ mongoose
     // console.log('DB is removed successfuly!');
   });
 
-const testerfunc = async () => {
-  const testUser = new User({
-    name: {
-      firstName: 'loler',
-      lastName: 'Ameer',
-    },
-    email: 'lol@lol.com',
-    location: { coordinates: [-91.32, 1.32] },
-    password: 'lolerrrr',
-    passwordChangedAt: '1987-09-28 20:01:07',
-  });
+// const testerfunc = async () => {
+//   const testUser = new User({
+//     name: {
+//       firstName: 'loler',
+//       lastName: 'Ameer',
+//     },
+//     email: 'lol@lol.com',
+//     location: { coordinates: [-91.32, 1.32] },
+//     password: 'lolerrrr',
+//     passwordChangedAt: '1987-09-28 20:01:07',
+//   });
 
-  await User.collection.drop();
+//   await User.collection.drop();
 
-  await testUser
-    .save()
-    .then(() => {
-      console.log('Saved Successfully!!!!!!!');
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-  const testgetuser = await User.findOne();
-  console.log(testgetuser);
-};
-testerfunc();
+//   await testUser
+//     .save()
+//     .then(() => {
+//       console.log('Saved Successfully!!!!!!!');
+//     })
+//     .catch((err) => {
+//       console.log(err);
+//     });
+//   const testgetuser = await User.findOne();
+//   console.log(testgetuser);
+// };
+// testerfunc();
 
 //Hosting the server
 app.listen(process.env.PORT, () => {

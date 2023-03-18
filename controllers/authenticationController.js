@@ -217,10 +217,14 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
+  //overwrite cookie at client side and set it to expire after 2 seconds
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 2 * 1000),
+    httpOnly: true,
   });
+  res
+    .status(200)
+    .json({ status: 'success', message: 'Successfully logged out' });
 });
 
 exports.facebookLogin = catchAsync(async (req, res, next) => {

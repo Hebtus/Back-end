@@ -104,7 +104,7 @@ userSchema.methods.correctPassword = async function (
 };
 
 userSchema.methods.createEmailConfirmToken = async function () {
-  const confirmToken = crypto.randomBytes(32).toString('hex');
+  const confirmToken = await crypto.randomBytes(32).toString('hex');
 
   //save token in either email confirm or password tables
   await EmailConfirm.create({

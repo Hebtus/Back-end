@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
   },
   location: {
     type: locationSchema,
+    default: () => ({}), //calls default values of the locationSchema (without it there is no location by default)
+  },
+  locationName: {
+    type: String,
+    default: 'Faculty of Engineering, Cairo University',
   },
   img_url: {
     type: String,
@@ -73,6 +78,23 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
+userSchema.pre('save', async function (next) {
+  // Only run this function if password was actually modified
+  // console.log('function is still called');
+  // if (!this.isModified('users.password')) {
+  if (!this.isModified('password')) {
+    console.log('tele3 modified bsa7ee7');
+    return next();
+  }
+
+  // Hash the password with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+
+  // Delete passwordConfirm field
+  this.passwordConfirm = undefined;
+  next();
+});
+
 //for checking passwords against each other
 userSchema.methods.correctPassword = async function (
   candidatePassword,
@@ -85,7 +107,7 @@ userSchema.methods.createEmailConfirmToken = async function () {
   const confirmToken = crypto.randomBytes(32).toString('hex');
 
   //save token in either email confirm or password tables
-  await PasswordReset.create({
+  await EmailConfirm.create({
     userID: this._id,
     confirmationToken: crypto
       .createHash('sha256')
@@ -101,7 +123,7 @@ userSchema.methods.createResetPasswordToken = async function () {
   const passwordResetToken = crypto.randomBytes(32).toString('hex');
 
   //save token in either email confirm or password tables
-  await EmailConfirm.create({
+  await PasswordReset.create({
     userID: this._id,
     passwordResetToken: crypto
       .createHash('sha256')

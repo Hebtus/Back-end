@@ -28,6 +28,7 @@ mongoose
   })
   .then(() => {
     console.log('DB is connected successfuly!');
+
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

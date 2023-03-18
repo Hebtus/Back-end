@@ -1,4 +1,4 @@
-// const crypto = require('crypto');
+const crypto = require('crypto');
 //const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
@@ -7,13 +7,14 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 const EmailConfirm = require('../models/emailConfirmModel');
-const PasswordReset = require('../models/passwordResetModel');
+// const PasswordReset = require('../models/passwordResetModel');
+
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -25,12 +26,14 @@ const createSendToken = (user, statusCode, res) => {
 
   res.cookie('jwt', token, cookieOptions);
 
-  // Remove password from output
+  // Remove critical information from output
   user.password = undefined;
+  user.passwordChangedAt = undefined;
+  user.accountConfirmation = undefined;
+  user.activeStatus = undefined;
 
   res.status(statusCode).json({
     status: 'success',
-    token,
     data: {
       user,
     },
@@ -93,11 +96,43 @@ exports.restrictTo =
   };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  //check if user exists:
+  const existingUser = await User.findOne({
+    email: req.body.email,
+  });
+
+  if (existingUser !== null) {
+    // console.log('There is an existing user');
+    exports.login(req, res, next);
+    return;
+  }
+
+  //login already checks for password and email
+  // so we check here also
+  if (
+    !req.body.password ||
+    !req.body.email ||
+    !req.body.name.firstName ||
+    !req.body.name.firstName
+  ) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'Please Enter password and email and name!',
+    });
+  }
+  if (req.body.password !== req.body.confirmPassword) {
+    res.status(400).json({
+      status: 'fail',
+      message: 'Password and confirm Passwords do not match!',
+    });
+  }
+
   //create user
   const user = await User.create({
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
+    passwordChangedAt: Date.now(), //Not sure of this please check ya yasmine
   });
 
   //generate confirm token first
@@ -130,57 +165,64 @@ exports.signup = catchAsync(async (req, res, next) => {
   }
 });
 
-exports.signupConfirm = catchAsync(async (req, res, next) => {
+exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
-  // const hashedToken = crypto
-  //   .createHash('sha256')
-  //   .update(req.params.token)
-  //   .digest('hex');
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.confirmationToken)
+    .digest('hex');
 
-  // const user = await User.findOne({
-  //   passwordResetToken: hashedToken,
-  //   passwordResetExpires: { $gt: Date.now() }
-  // });
+  const emailConfirmationDoc = await EmailConfirm.findOne({
+    confirmationToken: hashedToken,
+    confirmationTokenExpiry: { $gt: Date.now() },
+  });
 
   // // 2) If token has not expired, and there is user, set the new password
-  // if (!user) {
-  //   return next(new AppError('Token is invalid or has expired', 400));
-  // }
-  // user.password = req.body.password;
-  // user.passwordConfirm = req.body.passwordConfirm;
-  // user.passwordResetToken = undefined;
-  // user.passwordResetExpires = undefined;
-  // await user.save();
+  if (!emailConfirmationDoc) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+  // 3) Get user and update relevant info
+  const user = await User.findOne({ _id: emailConfirmationDoc.userID });
 
-  // // 3) Update changedPasswordAt property for the user
+  user.accountConfirmation = true;
+  user.activeStatus = true;
+  await user.save();
+
   // // 4) Log the user in, send JWT
-  // createSendToken(user, 200, req, res);
+  createSendToken(user, 200, req, res);
 
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
-  });
+  //delete confirmation (if the code reaches here aslun??? )
+  // yessss it doesss
+  await EmailConfirm.deleteOne(emailConfirmationDoc);
 });
+
 exports.login = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
-  });
-  // createSendToken(user, 200, res);
-  //user shall be optained every time by the email or id provided then passed to the callback fucntion
+  const { email, password } = req.body;
+  // 1) Check if email and password exist
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password!', 400));
+  }
+  // 2) Check if user exists && password is correct
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+  // 3) If everything ok, send token to client
+  createSendToken(user, 200, req, res);
+  // 4) Activate user by default
+
+  user.activeStatus = 1;
+  await user.save(); //to handle password changed at
 });
+
 exports.logout = catchAsync(async (req, res, next) => {
   res.status('200').json({
     status: 'success',
     message: '3azama',
   });
 });
-exports.confirmEmail = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
-  });
-});
+
 exports.facebookLogin = catchAsync(async (req, res, next) => {
   res.status('200').json({
     status: 'success',

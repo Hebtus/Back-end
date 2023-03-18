@@ -4,14 +4,10 @@ const passport = require('passport');
 const authController = require('../controllers/authenticationController');
 
 const router = express.Router();
-
 router.post('/signup', authController.signup);
+router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
-router.get(
-  '/signup-confirm/:emailConfirmationToken',
-  authController.confirmEmail
-);
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
 router.use('/protect', authController.protect);

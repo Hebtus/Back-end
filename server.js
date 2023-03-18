@@ -1,8 +1,16 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const passport = require('passport');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const session = require('express-session');
 const app = require('./app');
 
-dotenv.config({ path: './config.env' });
+//Load config
+dotenv.config({ path: './utils/config/config.env' });
+
+//Passport config
+require('./utils/config/passport')(passport);
+
 const User = require('./models/userModel');
 
 //Database connection

@@ -1,5 +1,6 @@
 const express = require('express');
 // const userController = require('../controllers/userController');
+const passport = require('passport');
 const authController = require('../controllers/authenticationController');
 
 const router = express.Router();
@@ -16,8 +17,18 @@ router.get(
 router.use('/protect', authController.protect);
 
 router.get('/logout', authController.logout);
-router.get('/facebook', authController.facebookLogin);
-router.get('/google', authController.googleLogin);
+router.get('/login/facebook', authController.facebookLogin);
+router.get(
+  '/login/google',
+  passport.authenticate('google', { scope: ['profile'] })
+);
+router.get(
+  '/login/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('/events');
+  }
+);
 router.patch('/deactivate', authController.deactivateAccount);
 router.patch('/resetpassword/:token', authController.resetPassword);
 router.patch('/updatepassword/:token', authController.updatePassword);

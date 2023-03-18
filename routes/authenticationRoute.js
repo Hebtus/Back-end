@@ -20,9 +20,9 @@ router.get(
 );
 router.get(
   '/login/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', { failureRedirect: '/api/v1' }),
   (req, res) => {
-    res.redirect('/events');
+    res.redirect('api/v1/events');
   }
 );
 router.patch('/deactivate', authController.deactivateAccount);

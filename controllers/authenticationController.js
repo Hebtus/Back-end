@@ -174,6 +174,7 @@ exports.deactivateAccount = catchAsync(async (req, res, next) => {
 
   try {
     await user.save();
+    createSendToken(user, 200, res);
     return res.status(200).json({ status: 'Success', success: true });
   } catch (err) {
     throw new AppError(`Something went wrong`, 500);

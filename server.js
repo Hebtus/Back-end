@@ -1,8 +1,16 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const passport = require('passport');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const session = require('express-session');
 const app = require('./app');
 
-dotenv.config({ path: './config.env' });
+//Load config
+dotenv.config({ path: './utils/config/config.env' });
+
+//Passport config
+require('./utils/config/passport')(passport);
+
 const User = require('./models/userModel');
 
 //Database connection
@@ -20,27 +28,50 @@ mongoose
   })
   .then(() => {
     console.log('DB is connected successfuly!');
-  });
-const testUser = new User({
-  name: {
-    firstName: 'loler',
-    lastName: 'Ameer',
-  },
-  email: 'lol@lol.com',
-  location: { type: 'lol', coordinates: [-91.32, 1.32] },
-  password: 'lolerrrr',
-  //   passwordChangedAt: '1987-09-28 20:01:07',
-});
+    // mongoose.connection.db.dropDatabase();
 
-testUser
-  .save()
-  .then((doc) => {
-    console.log(doc);
-    console.log('Saved Successfully!!!!!!!');
-  })
-  .catch((err) => {
-    console.log(err);
+    // console.log('DB is removed successfuly!');
   });
+
+const testerfunc = async () => {
+  const testUser = new User({
+    name: {
+      firstName: 'loler',
+      lastName: 'Ameer',
+    },
+    email: 'lol@lol.com',
+    location: { coordinates: [-91.32, 1.32] },
+    password: 'lolerrrr',
+    passwordChangedAt: '1987-09-28 20:01:07',
+  });
+
+  //Sessions
+  app.use(
+    session({
+      secret: 'keyboard cat',
+      resave: false,
+      saveUninitialized: false,
+    })
+  );
+
+  //Passport middleware
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  await User.collection.drop();
+
+  await testUser
+    .save()
+    .then(() => {
+      console.log('Saved Successfully!!!!!!!');
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  const testgetuser = await User.findOne();
+  //console.log(testgetuser);
+};
+testerfunc();
 
 //Hosting the server
 app.listen(process.env.PORT, () => {

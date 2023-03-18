@@ -45,6 +45,11 @@ const eventSchema = new mongoose.Schema({
   tags: [String],
   category: {
     type: String,
+    enum: {
+      // Gender values that user can choose from
+      values: ['Music', 'Food & Drink', 'Charity & Causes'],
+      message: '{VALUE} is not supported in event categories',
+    },
   },
   online: {
     type: Boolean,
@@ -74,5 +79,16 @@ const eventSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+//All find querries
+eventSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+    'location.type': 0,
+    'location._id': 0,
+  });
+  next();
+});
+
 const Event = mongoose.model('Event', eventSchema);
 module.exports = Event;

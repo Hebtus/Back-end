@@ -2,11 +2,11 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const nameSchema = require('./shared/nameModel');
+const Ticket = require('./ticketModel');
 
 const bookingsSchema = new mongoose.Schema({
   // Attendee Name
-  firstName: nameSchema.firstName, // Attendee Name
-  lastName: nameSchema.lastName,
+  name: nameSchema,
   // Name Prefix
   prefix: {
     type: String,
@@ -14,7 +14,7 @@ const bookingsSchema = new mongoose.Schema({
     enum: {
       // Prefix values that user can choose from
       values: ['Mr', 'Ms', 'Miss', 'Mrs'],
-      message: '{VALUE} is not supported',
+      message: '{VALUE} is not supported as a prefix',
     },
   },
   //Gender Type
@@ -25,7 +25,7 @@ const bookingsSchema = new mongoose.Schema({
     enum: {
       // Gender values that user can choose from
       values: ['Male', 'Female'],
-      message: '{VALUE} is not supported',
+      message: '{VALUE} is not supported as a gender ',
     },
   },
   phoneNumber: {
@@ -56,6 +56,7 @@ const bookingsSchema = new mongoose.Schema({
     // The event ticket price
     type: Number,
     required: [true, 'Ticket must have a price'],
+    min: 0,
   },
 
   purchasedOn: {
@@ -64,23 +65,40 @@ const bookingsSchema = new mongoose.Schema({
     default: Date.now(),
     validate: [validator.isDate, 'Must be right date format.'],
   },
-  deleted: {
-    // Boolen attribute just in case attendee cancell his booking
-    type: Boolean,
-    default: false,
-  },
-  user: {
+  userID: {
     // Refrence ID that refers to the attendee
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: [true, 'The booked ticket  must belong to a user'],
+    // the booking might not belong to a user regisetered in the system.
   },
-  event: {
-    // Refrence ID that refers to the event
+  ticketID: {
+    // Refrence ID that refers to the ticket type which it belongs to
     type: mongoose.Schema.ObjectId,
-    ref: 'Event',
+    ref: 'Ticket',
     required: [true, 'The booked ticket  must belong to an event'],
   },
+  // eventID: {
+  //   // Refrence ID that refers to the event
+  //   type: mongoose.Schema.ObjectId,
+  //   ref: 'Event',
+  //   required: [true, 'The booked ticket  must belong to an event'],
+  // },
 });
 
-const Event = mongoose.model('Bookings', bookingsSchema);
+//automatically adds 1 to currentReservations in its respective ticket
+bookingsSchema.post('save', async function () {
+  await Ticket.findByIdAndUpdate(this.ticketID, {
+    $inc: { currentReservations: 1 },
+  });
+});
+
+//All find querries
+bookingsSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+    'name._id': 0,
+  });
+  next();
+});
+
+const Booking = mongoose.model('Booking', bookingsSchema);

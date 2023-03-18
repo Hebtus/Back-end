@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-
+// const Event = require('./eventModel');
 const ticketSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -42,8 +42,26 @@ const ticketSchema = new mongoose.Schema({
     default: 0,
     max: [10000000, 'Maximum Conceivable capacity reached'],
   },
+  eventID: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
+    required: [true, 'Ticket Type must belong to an event.'],
+  },
+});
+//automatically adds 1 to ticketsSold in its respective Event
+ticketSchema.post('findByIdAndUpdate', async function (next) {
+  await Event.findByIdAndUpdate(this.eventID, {
+    $inc: { ticketsSold: 1 },
+  });
+});
+//All find querries
+ticketSchema.pre(/^find/, function (next) {
+  this.select({
+    __v: 0,
+  });
+  next();
 });
 
-const User = mongoose.model('Ticket', ticketSchema);
+const Ticket = mongoose.model('Ticket', ticketSchema);
 
-module.exports = User;
+module.exports = Ticket;

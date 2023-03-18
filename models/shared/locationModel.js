@@ -14,20 +14,26 @@ const locationSchema = new mongoose.Schema({
   type: {
     type: String,
     default: 'Point',
+    enum: {
+      //must be point
+      values: ['Point'],
+      message: '{VALUE} is not supported for location type',
+    },
   },
   coordinates: {
     type: [Number],
-    index: '2dsphere',
+    index: {
+      type: String,
+      default: '2dsphere',
+      enum: {
+        //must be 2dsphere
+        values: ['2dsphere'],
+        message: '{VALUE} is not supported for coordinates index',
+      },
+    },
     default: [30.0594885, 31.2584644], //[longitude,latitude] // defaults to Cairo
     validate: [arraySize, 'Coordinates must be exactly 2'],
   },
-});
-
-//ensures that a user who can guess the use of GeoJSON doesn't change the types of either the location or its coordinates
-locationSchema.pre('save', function (next) {
-  this.type = 'Point';
-  this.coordinates.index = '2dsphere';
-  next();
 });
 
 module.exports = locationSchema;

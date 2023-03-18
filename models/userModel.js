@@ -1,10 +1,10 @@
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
 //const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
-const bcrypt = require('bcryptjs');
 const EmailConfirm = require('./emailConfirmModel');
 const PasswordReset = require('./passwordResetModel');
 //TODO: Encrypt Passwords!
@@ -60,6 +60,8 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
   },
+  // passwordResetToken: String,
+  // passwordResetExpires: Date,
   // eventID: {
   //   //check this with Joseph
   //   type: mongoose.Schema.ObjectId,
@@ -118,21 +120,60 @@ userSchema.methods.createEmailConfirmToken = async function () {
 
   return confirmToken;
 };
+// //Hussein Approach
+// userSchema.methods.createPasswordResetToken = function () {
+//   const resetToken = crypto.randomBytes(32).toString('hex');
 
+//   this.passwordResetToken = crypto
+//     .createHash('sha256')
+//     .update(resetToken)
+//     .digest('hex');
+
+//   console.log({ resetToken }, this.passwordResetToken);
+
+//   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+//   return resetToken;
+// };
+
+//Joseph Aproach
 userSchema.methods.createResetPasswordToken = async function () {
   const passwordResetToken = crypto.randomBytes(32).toString('hex');
-
-  //save token in either email confirm or password tables
-  await PasswordReset.create({
-    userID: this._id,
-    passwordResetToken: crypto
+  const passwordReset = await PasswordReset.findOne({ userID: this._id });
+  if (!passwordReset) {
+    //save token in either email confirm or password tables
+    await PasswordReset.create({
+      userID: this._id,
+      passwordResetToken: crypto
+        .createHash('sha256')
+        .update(passwordResetToken)
+        .digest('hex'),
+      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, //14 days
+    });
+  } else {
+    passwordReset.passwordResetToken = crypto
       .createHash('sha256')
       .update(passwordResetToken)
-      .digest('hex'),
-    passwordResetTokenExpiry: Date.now() + 14 * 24 * 60 * 60 * 1000, //14 days
-  });
+      .digest('hex');
+    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    await passwordReset.save();
+  }
 
   return passwordResetToken;
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    return JWTTimestamp < changedTimestamp;
+  }
+
+  // False means NOT changed
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

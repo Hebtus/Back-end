@@ -7,7 +7,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 const EmailConfirm = require('../models/emailConfirmModel');
-// const PasswordReset = require('../models/passwordResetModel');
+const PasswordReset = require('../models/passwordResetModel');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -240,18 +240,111 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
   });
 });
 
+// Hussein Approach
+// exports.forgotPassword = catchAsync(async (req, res, next) => {
+//   // 1) Get user based on posted email
+//   const user = await User.findOne({ email: req.body.email });
+//   if (!user)
+//     return next(new AppError('There is no user with this email address'), 404);
+//   // 2) Create random reset tocken
+//   const resetToken = user.createPasswordResetToken();
+//   //console.log(resetToken);
+//   await user.save({ validateBeforeSave: false });
+//   console.log(user);
+//   //3) send the reset token to the user email address
+
+//   // 3) Send it to user's email
+//   const resetURL = `${req.protocol}://${req.get(
+//     'host'
+//   )}/api/v1/users/resetPassword/${resetToken}`;
+
+//   const message = `Forgot your password lolens ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+
+//   await sendEmail({
+//     email: user.email,
+//     subject: 'Your password reset token (valid for 10 min)',
+//     message: message,
+//   });
+
+//   res.status(200).json({
+//     status: 'success',
+//     message: 'Token sent to email!',
+//   });
+
+//   next();
+// });
+// Joseph Approach
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
+  // 1) Get user based on posted email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user)
+    return next(new AppError('There is no user with this email address'), 404);
+  // 2) Create random reset tocken
+  const resetToken = await user.createResetPasswordToken();
+  //console.log(resetToken);
+  //await user.save({ validateBeforeSave: false });
+
+  //3) send the reset token to the user email address
+
+  // 3) Send it to user's email
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+  const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+
+  await sendEmail({
+    email: user.email,
+    subject: 'Your password reset token (valid for 10 min)',
+    message: message,
   });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Token sent to email!',
+  });
+
+  next();
 });
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
+  //1) Get usere based on token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  console.log(hashedToken);
+  const passwordResetDoc = await PasswordReset.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetTokenExpiry: { $gt: Date.now() },
   });
+  const user = await User.findById(passwordResetDoc.userID);
+  if (!user) return next(new AppError('Invalid token or has expired'), 400);
+  //2) If token not expired and user exists , set the new password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordChangedAt = Date.now();
+  passwordResetDoc.passwordResetTokenExpiry = undefined;
+  passwordResetDoc.passwordResetToken = undefined;
+  await user.save();
+
+  //3) Update passwordChangedAt
+  // user.passwordChangedAt = Date.now();
+  //4) Send JWT to let the user log in
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
+  await passwordResetDoc.save();
 });
+
+// exports.resetPassword = catchAsync(async (req, res, next) => {
+//   res.status('200').json({
+//     status: 'success',
+//     message: '3azama',
+//   });
+// });
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
   const user = await User.findById(req.user.id).select('+password');

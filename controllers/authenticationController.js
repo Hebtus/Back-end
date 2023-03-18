@@ -99,7 +99,7 @@ const SendConfirmationEmail = async (user, req, res, next) => {
   const confirmToken = await user.createEmailConfirmToken();
   const confirmURL = `${req.protocol}://${req.get(
     'host'
-  )}/signup-confirm/${confirmToken}`;
+  )}/api/v1/signup-confirm/${confirmToken}`;
 
   const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
 
@@ -184,6 +184,7 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
+  console.log('Entered Confirm email route');
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.confirmationToken)

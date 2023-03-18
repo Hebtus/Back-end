@@ -12,11 +12,18 @@ const emailConfirmSchema = new mongoose.Schema({
   confirmationTokenExpiry: Date,
 });
 
+emailConfirmSchema.pre('save', function (next) {
+  this.deleteMany({ confirmationTokenExpiry: { $lt: Date.now() } });
+  next();
+});
+
 //All find querries
 emailConfirmSchema.pre(/^find/, function (next) {
   this.select({
     __v: 0,
   });
+
+  this.deleteMany({ confirmationTokenExpiry: { $lt: Date.now() } });
   next();
 });
 

@@ -30,7 +30,6 @@ const createSendToken = (user, statusCode, req, res) => {
 
   res.status(statusCode).json({
     status: 'success',
-    token,
     data: {
       user,
     },
@@ -191,7 +190,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
     confirmationToken: hashedToken,
     confirmationTokenExpiry: { $gt: Date.now() },
   });
-
   // // 2) If token has not expired, and there is user, set the new password
   if (!emailConfirmationDoc) {
     return next(new AppError('Token is invalid or has expired', 400));

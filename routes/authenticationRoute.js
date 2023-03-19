@@ -10,7 +10,7 @@ router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
-router.use('/protect', authController.protect);
+router.use(authController.protect);
 
 router.get('/logout', authController.logout);
 router.get('/login/facebook', authController.facebookLogin);

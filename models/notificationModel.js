@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const nameSchema = require('./shared/nameModel');
 
-const userSchema = new mongoose.Schema({
+const notificationSchema = new mongoose.Schema({
   attendeeID: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
 });
 
 //All find querries
-userSchema.pre(/^find/, function (next) {
+notificationSchema.pre(/^find/, function (next) {
   this.select({
     __v: 0,
     attendeeID: 0,
@@ -30,6 +30,6 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
-const Notification = mongoose.model('Notification', userSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
 
 module.exports = Notification;

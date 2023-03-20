@@ -69,7 +69,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   //check if the user is deactivated
   if (currentUser.activeStatus === false) {
     return next(
-      new AppError('the account is deactivated , please login to activate', 401)
+      new AppError('The account is deactivated , please login to activate', 401)
     );
   }
 
@@ -87,7 +87,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 const SendConfirmationEmail = async (user, req, res, next) => {
   //generate confirm token first
-  const confirmToken = await user.createEmailConfirmToken();
+  const confirmToken = await EmailConfirm.createEmailConfirmToken(user._id);
   const confirmURL = `${req.protocol}://${req.get(
     'host'
   )}/api/v1/signup-confirm/${confirmToken}`;
@@ -197,7 +197,8 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   await user.save();
 
   // // 4) Log the user in, send JWT
-  createSendToken(user, 200, req, res);
+  // createSendToken(user, 200, req, res);
+  createSendToken(user, 200, res);
 
   //delete confirmation (if the code reaches here aslun??? )
   // yessss it doesss
@@ -222,7 +223,7 @@ exports.login = catchAsync(async (req, res, next) => {
       message: 'Incorrect email or password!',
     });
   }
-  if (!user.activeStatus) {
+  if (!user.accountConfirmation) {
     // return next(new AppError('User not confirmed', 401));
     res.status(401).json({
       status: 'fail',
@@ -263,7 +264,7 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
   });
 });
 
-// Hussein Approach
+//#region  Hussein Approach
 // exports.forgotPassword = catchAsync(async (req, res, next) => {
 //   // 1) Get user based on posted email
 //   const user = await User.findOne({ email: req.body.email });
@@ -296,6 +297,7 @@ exports.googleLogin = catchAsync(async (req, res, next) => {
 
 //   next();
 // });
+//#endregion
 // Joseph Approach
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on posted email
@@ -303,7 +305,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   if (!user)
     return next(new AppError('There is no user with this email address'), 404);
   // 2) Create random reset tocken
-  const resetToken = await user.createResetPasswordToken();
+  // const resetToken = await user.createResetPasswordToken();
+  const resetToken = await PasswordReset.createResetPasswordToken(user._id);
   //console.log(resetToken);
   //await user.save({ validateBeforeSave: false });
 
@@ -354,11 +357,21 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // user.passwordChangedAt = Date.now();
   //4) Send JWT to let the user log in
   const token = signToken(user._id);
-
   res.status(200).json({
     status: 'success',
     token,
   });
+
+  //4) Send JWT to let the user log in
+  //A Decision needs to be done here according to complications
+  //and discussions with Frontend. -Joseph
+  createSendToken(user, 200, res);
+
+  // const token = signToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   message: 'Password reset successfully.',
+  // });
   await passwordResetDoc.save();
 });
 
@@ -397,9 +410,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   });
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
-
-  // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
 });
 
 exports.deactivateAccount = catchAsync(async (req, res, next) => {
@@ -427,13 +437,17 @@ exports.deactivateAccount = catchAsync(async (req, res, next) => {
   if (user.activeStatus === true) user.activeStatus = false;
   else user.activeStatus = true;
 
-  res.status(200).json({
-    status: 'success',
-    message: 'account deactivated',
-  });
-  await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
+  await user.save();
 
-  // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  res
+    .cookie('jwt', 'loggedout', {
+      expires: new Date(Date.now() + 2 * 1000),
+      httpOnly: true,
+    })
+    .status(200)
+    .json({
+      status: 'success',
+      message: 'Account deactivated.',
+    });
 });

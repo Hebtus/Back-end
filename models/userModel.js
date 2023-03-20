@@ -5,7 +5,7 @@ const validator = require('validator');
 //const eventSchema = require('./eventModel');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
-const EmailConfirm = require('./emailConfirmModel');
+// const EmailConfirm = require('./emailConfirmModel');
 const PasswordReset = require('./passwordResetModel');
 //TODO: Encrypt Passwords!
 
@@ -105,22 +105,23 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.createEmailConfirmToken = async function () {
-  const confirmToken = await crypto.randomBytes(32).toString('hex');
+// userSchema.methods.createEmailConfirmToken = async function () {
+//   const confirmToken = await crypto.randomBytes(32).toString('hex');
 
-  //save token in either email confirm or password tables
-  await EmailConfirm.create({
-    userID: this._id,
-    confirmationToken: crypto
-      .createHash('sha256')
-      .update(confirmToken)
-      .digest('hex'),
-    confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
-    // confirmationTokenExpiry: Date.now() + 2 * 1000, //1 hour
-  });
+//   //save token in either email confirm or password tables
+//   await EmailConfirm.create({
+//     userID: this._id,
+//     confirmationToken: crypto
+//       .createHash('sha256')
+//       .update(confirmToken)
+//       .digest('hex'),
+//     confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
+//     // confirmationTokenExpiry: Date.now() + 2 * 1000, //2 seconds
+//   });
 
-  return confirmToken;
-};
+//   return confirmToken;
+// };
+
 // //Hussein Approach
 // userSchema.methods.createPasswordResetToken = function () {
 //   const resetToken = crypto.randomBytes(32).toString('hex');

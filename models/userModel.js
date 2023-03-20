@@ -1,3 +1,4 @@
+/** @module Models/userModel */
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
@@ -98,29 +99,21 @@ userSchema.pre('save', async function (next) {
 });
 
 //for checking passwords against each other
+/**
+ * A function that compares a given password with the password in in the Database.
+ * @function
+ * @memberof module:Models/userModel
+ * @inner
+ * @param {string} MongooseDocumentFunction - A function that is called upon a document
+ * @param {callback} middleware - Mongoose middleware.
+ * @returns {boolean}  -Comparison between passwords
+ */
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
-
-// userSchema.methods.createEmailConfirmToken = async function () {
-//   const confirmToken = await crypto.randomBytes(32).toString('hex');
-
-//   //save token in either email confirm or password tables
-//   await EmailConfirm.create({
-//     userID: this._id,
-//     confirmationToken: crypto
-//       .createHash('sha256')
-//       .update(confirmToken)
-//       .digest('hex'),
-//     confirmationTokenExpiry: Date.now() + 60 * 60 * 1000, //1 hour
-//     // confirmationTokenExpiry: Date.now() + 2 * 1000, //2 seconds
-//   });
-
-//   return confirmToken;
-// };
 
 // //Hussein Approach
 // userSchema.methods.createPasswordResetToken = function () {

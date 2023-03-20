@@ -66,6 +66,12 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
+  //check if the user is deactivated
+  if (currentUser.activeStatus === false) {
+    return next(
+      new AppError('the account is deactivated , please login to activate', 401)
+    );
+  }
 
   // 4) Check if user changed password after the token was issued
   /* if (currentUser.changedPasswordAfter(decoded.iat)) {

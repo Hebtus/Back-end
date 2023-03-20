@@ -11,7 +11,7 @@ router.use('/:eventID/tickets', ticketRouter);
 router.use('/:eventID/bookings', bookingRouter);
 
 router.route('/').get(eventController.getEvents).post(
-  authController.protect,
+  //authController.protect,
   //restrict to creators
   eventController.createEvent
 );

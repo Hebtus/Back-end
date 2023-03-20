@@ -55,6 +55,7 @@ router.get(
   passport.authenticate('facebook', {
     failureRedirect: '/login/facebook',
     scope: ['profile', 'email'],
+    session: false,
   }),
   (req, res) => {
     // Successful authentication, redirect home.

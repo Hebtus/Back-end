@@ -14,16 +14,17 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, req, res) => {
+const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
-
-  res.cookie('jwt', token, {
+  const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
-  });
+  };
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
@@ -78,18 +79,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.restrictTo =
-  (...roles) =>
-  (req, res, next) => {
-    // roles ['admin', 'lead-guide']. role='user'
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new AppError('You do not have permission to perform this action', 403)
-      );
-    }
-
-    next();
-  };
 const SendConfirmationEmail = async (user, req, res, next) => {
   //generate confirm token first
   const confirmToken = await user.createEmailConfirmToken();
@@ -241,7 +230,7 @@ exports.login = catchAsync(async (req, res, next) => {
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
   // 4) If everything ok, send token to client
-  createSendToken(user, 200, req, res);
+  createSendToken(user, 200, res);
 });
 
 exports.logout = catchAsync(async (req, res, next) => {
@@ -380,33 +369,65 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   if (!user) throw new AppError('Invalid User', 400);
   //check if password != confirmpassword
   if (req.body.password !== req.body.confirmPassword) {
+    res.status(401).json({
+      status: 'failed',
+      message: 'confirm password doesnt match',
+    });
     return next(new AppError('confirm password doesnt match', 401));
   }
   // 2) Check if posted current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    res.status(401).json({
+      status: 'failed',
+      message: 'Your current password is wrong.',
+    });
     return next(new AppError('Your current password is wrong.', 401));
   }
 
   user.password = req.body.password;
-
+  res.status(200).json({
+    status: 'success',
+    message: 'password updated successfully',
+  });
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  createSendToken(user, 200, req, res);
+  createSendToken(user, 200, res);
 });
 
 exports.deactivateAccount = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  // 1) Get user from collection
+
+  const user = await User.findById(req.user.id).select('+password');
+  if (!user) throw new AppError('Invalid User', 400);
+  //check if password != confirmpassword
+  if (req.body.password !== req.body.confirmPassword) {
+    res.status(401).json({
+      status: 'failed',
+      message: 'confirm password doesnt match',
+    });
+    return next(new AppError('confirm password doesnt match', 401));
+  }
+  // 2) Check if posted current password is correct
+  if (!(await user.correctPassword(req.body.password, user.password))) {
+    res.status(401).json({
+      status: 'failed',
+      message: 'Your current password is wrong.',
+    });
+    return next(new AppError('Your current password is wrong.', 401));
+  }
 
   if (user.activeStatus === true) user.activeStatus = false;
   else user.activeStatus = true;
 
-  try {
-    await user.save();
-    createSendToken(user, 200, res);
-    return res.status(200).json({ status: 'Success', success: true });
-  } catch (err) {
-    throw new AppError(`Something went wrong`, 500);
-  }
+  res.status(200).json({
+    status: 'success',
+    message: 'account deactivated',
+  });
+  await user.save();
+  // User.findByIdAndUpdate will NOT work as intended!
+
+  // 4) Log user in, send JWT
+  createSendToken(user, 200, res);
 });

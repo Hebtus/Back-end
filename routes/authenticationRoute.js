@@ -22,5 +22,5 @@ router.patch('/deactivate', authController.deactivateAccount);
 router.patch('/resetpassword/:token', authController.resetPassword);
 router.patch('/updatepassword', authController.updatePassword);
 //from here down add whatever requests that are avialble to creators only
-router.use('/restrict', authController.restrictTo('admin'));
+
 module.exports = router;

@@ -79,7 +79,7 @@ module.exports = function (passport) {
           email: 'hab@gmail.com',
         };
         try {
-          let user = await User.findOne({ GoogleID: profile.id });
+          let user = await User.findOne({ FacebookID: profile.id });
           if (user) {
             done(null, user);
           } else {

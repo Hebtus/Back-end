@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const passport = require('passport');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const session = require('express-session');
 const app = require('./app');
 
@@ -57,7 +56,7 @@ app.use(
 
 //Passport middleware
 app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.session());
 
 //   await User.collection.drop();
 

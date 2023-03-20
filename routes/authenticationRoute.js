@@ -53,6 +53,13 @@ router.get(
   '/login/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
+router.get(
+  '/login/google/callback',
+  passport.authenticate('google', { failureRedirect: '/api/v1/login' }),
+  (req, res) => {
+    res.redirect('/api/v1/events');
+  }
+);
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
 router.use(authController.protect);

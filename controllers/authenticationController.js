@@ -74,12 +74,12 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 4) Check if user changed password after the token was issued
-  /* if (currentUser.changedPasswordAfter(decoded.iat)) {
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
       new AppError('User recently changed password! Please log in again.', 401)
     );
   }
-*/ //we'll see if we add changed pass after or just use changed at and compare hashoof kda
+  //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
   next();
@@ -435,7 +435,6 @@ exports.deactivateAccount = catchAsync(async (req, res, next) => {
   }
 
   if (user.activeStatus === true) user.activeStatus = false;
-  else user.activeStatus = true;
 
   // User.findByIdAndUpdate will NOT work as intended!
   await user.save();

@@ -48,7 +48,19 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
  */
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
-router.get('/login/facebook', authController.facebookLogin);
+router.get('/login/facebook', passport.authenticate('facebook'));
+
+router.get(
+  '/login/facebook/callback',
+  passport.authenticate('facebook', {
+    failureRedirect: '/login/facebook',
+    scope: ['profile', 'email'],
+  }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect('/api/v1/events');
+  }
+);
 router.get(
   '/login/google',
   passport.authenticate('google', {

@@ -288,9 +288,13 @@ exports.logout = catchAsync(async (req, res, next) => {
 });
 
 exports.facebookLogin = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
+  const token = signToken(req.user._id);
+
+  res.status(200).json({
+    status: 'Success',
+    success: true,
+    expireDate: process.env.JWT_EXPIRE,
+    token,
   });
 });
 exports.googleLogin = catchAsync(async (req, res, next) => {

@@ -72,14 +72,16 @@ module.exports = function (passport) {
         const newUser = {
           FacebookID: profile.id,
           name: {
+            //'Habiba',
             firstName: profile.displayName.split(' ')[0],
+            //'Hassan',
             lastName: profile.displayName.split(' ')[1],
           },
           password: Math.random().toString().substr(2, 10),
           email: 'hab@gmail.com',
         };
         try {
-          let user = await User.findOne({ GoogleID: profile.id });
+          let user = await User.findOne({ FacebookID: profile.id });
           if (user) {
             done(null, user);
           } else {
@@ -100,7 +102,7 @@ module.exports = function (passport) {
         } catch (err) {
           console.error(err);
         }
-      }
-    )
-  );
+      }
+    )
+  );
 };

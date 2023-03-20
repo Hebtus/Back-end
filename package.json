@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js"
+    "start:prod": "NODE_ENV=production nodemon server.js",
+    "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose"
   },
   "author": "",
   "license": "ISC",
@@ -32,6 +33,7 @@
     "validator": "^13.9.0"
   },
   "devDependencies": {
+    "clean-jsdoc-theme": "^4.2.6",
     "eslint": "^8.35.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.7.0",

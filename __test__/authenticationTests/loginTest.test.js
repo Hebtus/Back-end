@@ -40,9 +40,8 @@ test('Check User Login with no password', async () => {
       email: 'user70@gmail.com',
       password: '',
     })
-    .expect(400);
-  // expect(res.statusmessage).toMatch('Incorrect email or password!');
-  // console.log(res);
+    .expect(401);
+  expect(res.body.message).toMatch('Please provide email and password!');
   // done();
 });
 
@@ -53,9 +52,8 @@ test('Check User Login with no Email', async () => {
       email: '',
       password: '12345678',
     })
-    .expect(400);
-  // expect(res.statusmessage).toMatch('Incorrect email or password!');
-  // console.log(res);
+    .expect(401);
+  expect(res.body.message).toMatch('Please provide email and password!');
   // done();
 });
 
@@ -67,6 +65,10 @@ test('Check User Login with no Confirmation', async () => {
       password: '12345678',
     })
     .expect(401);
+  expect(res.body.message).toMatch(
+    'User not confirmed, please confirm the user through email!'
+  );
+
   // expect(res.statusmessage).toMatch('Incorrect email or password!');
   // console.log(res);
   // done();
@@ -80,12 +82,13 @@ test('Check User Login with wrong password', async () => {
       password: '123457',
     })
     .expect(401);
-  // expect(res.statusmessage).toMatch('Incorrect email or password!');
+  expect(res.body.message).toMatch('Incorrect email or password!');
   // console.log(res);
   // done();
 });
 
 afterAll(async () => {
   // await mongoose.connection.collection('users').deleteMany({});
+  await User.deleteMany();
   mongoose.disconnect();
 });

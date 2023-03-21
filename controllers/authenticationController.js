@@ -150,10 +150,10 @@ exports.signup = catchAsync(async (req, res, next) => {
     });
 
     if (emailconfirm !== null) {
-      console.log('emailconfirm is', emailconfirm);
+      // console.log('emailconfirm is', emailconfirm);
       //already sent before
       res.status(400).json({
-        status: 'fail',
+        status: 'Fail',
         message: 'Email confirmation already sent!',
       });
       //not found, then either he had already confirmed
@@ -173,7 +173,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     !req.body.password ||
     !req.body.email ||
     !req.body.name.firstName ||
-    !req.body.name.firstName
+    !req.body.name.lastName
   ) {
     res.status(400).json({
       status: 'fail',
@@ -205,7 +205,7 @@ exports.signup = catchAsync(async (req, res, next) => {
  */
 exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
-  console.log('Entered Confirm email route');
+  // console.log('Entered Confirm email route');
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.confirmationToken)
@@ -242,7 +242,7 @@ exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   // 1) Check if email and password exist
   if (!email || !password) {
-    res.status(400).json({
+    res.status(401).json({
       status: 'fail',
       message: 'Please provide email and password!',
     });

@@ -47,7 +47,13 @@ const createSendToken = (user, statusCode, res) => {
     },
   });
 };
-
+/**
+ * @description - deactivates the email of the current logged in user but has to enter his password for security purposes
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @param {object} next -The next object for express middleware
+ */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   let token;
@@ -428,6 +434,14 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 //     message: '3azama',
 //   });
 // });
+
+/**
+ * @description - updates current user password 
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {Object} userObject
+ */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
 
@@ -459,7 +473,13 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 });
-
+/**
+ * @description - deactivates the email of the current logged in user but has to enter his password for security purposes
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {Object} userObject
+ */
 exports.deactivateAccount = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
 

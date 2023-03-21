@@ -41,7 +41,7 @@ mongoose
 //     },
 //     email: 'lol@lol.com',
 //     location: { coordinates: [-91.32, 1.32] },
-//     password: 'lolerrrr',
+//     password: '123456789',
 //     passwordChangedAt: '1987-09-28 20:01:07',
 //   });
 

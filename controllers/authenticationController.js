@@ -65,7 +65,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verification token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  let decoded;
+
+  try {
+    // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
+    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    next();
+  } catch (err) {
+    return next(new AppError('Token not verified.', 401));
+  }
 
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -226,13 +234,11 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   user.activeStatus = true;
   await user.save();
 
+  //delete confirmation (if the code reaches here aslun??? )
+  await EmailConfirm.deleteOne(emailConfirmationDoc);
   // // 4) Log the user in, send JWT
   // createSendToken(user, 200, req, res);
   createSendToken(user, 200, res);
-
-  //delete confirmation (if the code reaches here aslun??? )
-  // yessss it doesss
-  await EmailConfirm.deleteOne(emailConfirmationDoc);
 });
 
 /**
@@ -279,7 +285,8 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = catchAsync(async (req, res, next) => {
   //overwrite cookie at client side and set it to expire after 2 seconds
   res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 2 * 1000),
+    // expires: new Date(Date.now() + 500),
+    expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
     httpOnly: true,
   });
   res

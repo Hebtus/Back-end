@@ -80,7 +80,6 @@ router.get(
 router.use(authController.protect);
 
 router.get('/logout', authController.logout);
-
 router.patch('/deactivate', authController.deactivateAccount);
 router.patch('/resetpassword/:token', authController.resetPassword);
 router.patch('/updatepassword', authController.updatePassword);

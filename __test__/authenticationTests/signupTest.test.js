@@ -13,7 +13,8 @@ test('', () => {});
 // const { doesNotMatch } = require('assert');
 // // const app = require('../../utils/config/config.env');
 
-// dotenv.config({ path: './utils/config/config.env' });
+// // dotenv.config({ path: './utils/config/config.env' });
+// dotenv.config({ path: './config.env' });
 
 // const DBstring = process.env.TEST_DATABASE;
 

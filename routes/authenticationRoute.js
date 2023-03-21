@@ -2,10 +2,12 @@
  * @module Routers/authernticationRouter
  * @requires express
  */
-
+const dotenv = require('dotenv');
 const express = require('express');
-// const userController = require('../controllers/userController');
 const passport = require('passport');
+
+// const userController = require('../controllers/userController');
+dotenv.config({ path: './config.env' });
 const authController = require('../controllers/authenticationController');
 
 /**
@@ -51,6 +53,25 @@ router.post('/forgotpassword', authController.forgotPassword);
 router.get('/login/facebook', passport.authenticate('facebook'));
 
 router.get(
+  '/login/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+  })
+);
+
+router.get(
+  '/login/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    // res.redirect('/api/v1/events');
+    res.status(200).json({
+      status: 'success',
+      message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
+    });
+  }
+);
+
+router.get(
   '/login/facebook/callback',
   passport.authenticate('facebook', {
     failureRedirect: '/login/facebook',
@@ -62,19 +83,7 @@ router.get(
     res.redirect('/api/v1/events');
   }
 );
-router.get(
-  '/login/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-  })
-);
-// router.get(
-//   '/login/google/callback',
-//   passport.authenticate('google', { failureRedirect: '/api/v1/login' }),
-//   (req, res) => {
-//     res.redirect('/api/v1/events');
-//   }
-// );
+
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
 router.use(authController.protect);

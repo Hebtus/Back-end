@@ -7,8 +7,8 @@ const bookingRouter = require('./bookingRoute');
 const router = express.Router();
 
 //redirects URL's in form of /events/{event_id}/tickets/
-router.use('/:eventID/tickets', ticketRouter);
-router.use('/:eventID/bookings', bookingRouter);
+// router.use('/:eventID/tickets', ticketRouter);
+// router.use('/:eventID/bookings', bookingRouter);
 
 router.route('/').get(eventController.getEvents).post(
   //authController.protect,
@@ -16,19 +16,20 @@ router.route('/').get(eventController.getEvents).post(
   eventController.createEvent
 );
 
-router
-  .route('/:id')
-  .get(eventController.getEvent)
-  .patch(
-    authController.protect,
-    //restrict to creators
-    eventController.editEvent
-  )
-  .delete(
-    authController.protect,
-    //restrict to creators
-    eventController.deleteEvent
-  );
+// router
+//   .route('/:id')
+//   .get(eventController.getEvent)
+//   .patch(
+//     authController.protect,
+//     //restrict to creators
+//     eventController.editEvent
+//   )
+//   .delete(
+//     authController.protect,
+//     //restrict to creators
+//     eventController.deleteEvent
+//   );
+// //restrict to creators
+// router.route('/:id/sales').get(eventController.getEventSales);
 
-//restrict to creators
-router.route('/:id/sales').get(eventController.getEventSales);
+module.exports = router;

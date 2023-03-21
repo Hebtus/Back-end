@@ -5,10 +5,7 @@ const session = require('express-session');
 const app = require('./app');
 
 //Load config
-dotenv.config({ path: './utils/config/config.env' });
-
-//Passport config
-require('./utils/config/passport')(passport);
+dotenv.config({ path: '.config.env' });
 
 const User = require('./models/userModel');
 
@@ -44,19 +41,6 @@ mongoose
 //     password: '123456789',
 //     passwordChangedAt: '1987-09-28 20:01:07',
 //   });
-
-//Sessions
-app.use(
-  session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-//Passport middleware
-app.use(passport.initialize());
-//app.use(passport.session());
 
 //   await User.collection.drop();
 

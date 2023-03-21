@@ -1,17 +1,17 @@
-const express = require('express');
-const passport = require('passport');
+// const express = require('express');
+// const passport = require('passport');
 
-const router = express.Router();
+// const router = express.Router();
 
-router.get(
-  '/',
-  passport.authenticate('google', {
-    session: false,
-    failureRedirect: '/api/v1/login',
-  }),
-  (req, res) => {
-    res.redirect('/api/v1/events');
-  }
-);
+// router.get(
+//   '/',
+//   passport.authenticate('google', {
+//     session: false,
+//     failureRedirect: '/api/v1/login',
+//   }),
+//   (req, res) => {
+//     res.redirect('/api/v1/events');
+//   }
+// );
 
-module.exports = router;
+// module.exports = router;

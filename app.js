@@ -5,15 +5,18 @@ const express = require('express');
 const session = require('express-session');
 const authenticationRouter = require('./routes/authenticationRoute');
 const eventRouter = require('./routes/eventRoute');
-const googleCallback = require('./routes/googleCallback');
+// const googleCallback = require('./routes/googleCallback');
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });
 // Passport config
 // require('./config/passport')(passport);
-const passportAuth = require('./passport/passportAuth');
+const goolgePassportAuth = require('./passport/googlepassportAuth');
+const facebookPassportAuth = require('./passport/facebookpassportAuth');
 
-passportAuth.GoogleAuth(passport);
+goolgePassportAuth.googleAuth(passport);
+facebookPassportAuth.facebookAuth(passport);
+
 const app = express();
 
 app.use(express.json());

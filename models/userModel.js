@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema({
 });
 
 //All find querries
+/**
+ * @description - Pre middleware for find functions that removes unncessary field.
+ */
 userSchema.pre(/^find/, function (next) {
   this.select({
     __v: 0,
@@ -81,12 +84,15 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
+/**
+ * @description - Pre middleware for save function that hashes password if modified.
+ */
 userSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
   // console.log('function is still called');
   // if (!this.isModified('users.password')) {
   if (!this.isModified('password')) {
-    console.log('tele3 not modified bsa7ee7');
+    // console.log('tele3 not modified bsa7ee7');
     return next();
   }
 

@@ -145,7 +145,7 @@ const SendConfirmationEmail = async (user, req, res, next) => {
 //  * @exports authenticationController:signup
 
 /**
- * @description  Sign up the user .
+ * @description  Handles the Sign up request.
  */
 exports.signup = catchAsync(async (req, res, next) => {
   //check if user exists:
@@ -242,7 +242,7 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
 });
 
 /**
- * @description - Login logic .
+ * @description - Handles Login request.
  */
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -280,7 +280,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 /**
- * @description - Log out logic.
+ * @description - Handles the logout logic.
  */
 exports.logout = catchAsync(async (req, res, next) => {
   //overwrite cookie at client side and set it to expire after 2 seconds

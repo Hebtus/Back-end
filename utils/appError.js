@@ -1,3 +1,8 @@
+/**
+ * @class App Error
+ * @description Generates App Error //lmaza?
+ * @memberof module:Utils
+ */
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);

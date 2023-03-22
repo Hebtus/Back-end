@@ -7,7 +7,7 @@ exports.createTestUser = async () => {
       firstName: 'Mohammed',
       lastName: 'Hamada',
     },
-    email: 'lol@lol.com',
+    email: 'irushbullet@gmail.com',
     location: { coordinates: [-91.32, 1.32] },
     password: '123456789',
     passwordChangedAt: '1987-09-28 20:01:07',

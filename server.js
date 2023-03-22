@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const app = require('./app');
-
+const test = require('./__test__/testutils/createConfirmedUser');
 //Load config
 dotenv.config({ path: '.config.env' });
 
@@ -23,6 +23,7 @@ mongoose
   .then(() => {
     console.log('DB is connected successfuly!');
 
+    test.createTestUser();
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

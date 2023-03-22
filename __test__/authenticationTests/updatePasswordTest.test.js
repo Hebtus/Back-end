@@ -30,10 +30,18 @@ beforeAll(async () => {
     },
     email: 'user70@gmail.com',
     password: '12345678',
+    accountConfirmation: 1,
   });
 });
 
 test('Check User input inCorrect password', async () => {
+  const loginres = await request(app).post('/api/v1/updatepassword').send({
+    passwordCurrent: 'kambotchas',
+    password: 'kambotchase',
+    confirmPassword: 'kambotchase',
+  });
+  // .expect(401);
+
   const res = await request(app)
     .post('/api/v1/updatepassword')
     .send({

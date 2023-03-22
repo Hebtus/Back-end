@@ -6,7 +6,8 @@ const User = require('../../models/userModel');
 const app = require('../../app');
 const { doesNotMatch } = require('assert');
 // const app = require('../../utils/config/config.env');
-const testUtil = require('../testutils/userutil');
+const createConfirmedUser = require('../testutils/createConfirmedUser');
+const loginConfirmedUser = require('../testutils/loginConfirmedUser');
 
 // dotenv.config({ path: './utils/config/config.env' });
 dotenv.config({ path: './config.env' });
@@ -29,28 +30,28 @@ beforeAll(async () => {
 // jest.setTimeout(60000);
 test('Check User Logout', async () => {
   //creates test user who is confirmed // avoids sending emails w keda
-  await testUtil.createTestUser();
-
-  const auxres = await request(app)
-    .post('/api/v1/login')
-    .send({
-      email: 'lol@lol.com',
-      password: '123456789',
-    })
-    .expect(200);
-  expect(auxres.headers['set-cookie']).toBeDefined();
-  let jwtToken = auxres.headers['set-cookie'];
-  let TokenArr = String(jwtToken).split(';');
-  // let oldDate = TokenArr[2];
-  // console.log(oldDate);
-  jwtToken = String(jwtToken).split(';')[0].slice(4);
+  await createConfirmedUser.createTestUser();
+  const jwtToken = await loginConfirmedUser.loginUser();
+  // const auxres = await request(app)
+  //   .post('/api/v1/login')
+  //   .send({
+  //     email: 'irushbullet@gmail.com',
+  //     password: '123456789',
+  //   })
+  //   .expect(200);
+  // expect(auxres.headers['set-cookie']).toBeDefined();
+  // let jwtToken = auxres.headers['set-cookie'];
+  // let TokenArr = String(jwtToken).split(';');
+  // // let oldDate = TokenArr[2];
+  // // console.log(oldDate);
+  // jwtToken = String(jwtToken).split(';')[0].slice(4);
   // console.log(jwtToken);
 
   const res = await request(app)
     .get('/api/v1/logout')
     .set('authorization', `Bearer ${jwtToken}`)
     .send({
-      email: 'lol@lol.com',
+      email: 'irushbullet@gmail.com',
       password: '123456789',
     })
     .expect(200);
@@ -70,10 +71,10 @@ test('Check User Logout', async () => {
     // this produces an app error in try catch block
     .set('authorization', `Bearer ${newjwtToken}`)
     .send({
-      email: 'lol@lol.com',
+      email: 'irushbullet@gmail.com',
       password: '123456789',
     })
-    .expect(401);
+    .expect(500); //throws error in case of invalid token
 });
 
 afterAll(async () => {

@@ -436,7 +436,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 // });
 
 /**
- * @description - updates current user password 
+ * @description - updates current user password
  * @param {object} req  -The request object
  * @param {object} res  -The response object
  * @param {object} next -The next object for express middleware

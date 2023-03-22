@@ -1,42 +1,44 @@
 const dotenv = require('dotenv');
-const passport = require('passport');
+// const passport = require('passport');
 const express = require('express');
 
-const session = require('express-session');
+// const session = require('express-session');
 const authenticationRouter = require('./routes/authenticationRoute');
-const eventRouter = require('./routes/eventRoute');
+const passportRouter = require('./routes/passportRoute');
+// const eventRouter = require('./routes/eventRoute');
 // const googleCallback = require('./routes/googleCallback');
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });
 // Passport config
 // require('./config/passport')(passport);
-const goolgePassportAuth = require('./passport/googlepassportAuth');
-const facebookPassportAuth = require('./passport/facebookpassportAuth');
+// const goolgePassportAuth = require('./passport/googlepassportAuth');
+// const facebookPassportAuth = require('./passport/facebookpassportAuth');
 
-goolgePassportAuth.googleAuth(passport);
-facebookPassportAuth.facebookAuth(passport);
+// goolgePassportAuth.googleAuth(passport);
+// facebookPassportAuth.facebookAuth(passport);
 
 const app = express();
 
 app.use(express.json());
 
 // Sessions;
-app.use(
-  session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false,
-  })
-);
+// app.use(
+//   session({
+//     secret: 'keyboard cat',
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
 
 //Passport middleware
-app.use(passport.initialize());
+// app.use(passport.initialize());
 // app.use(passport.session());
 
 // app.use(cookieParser());
 
 app.use('/api/v1', authenticationRouter);
+// app.use('/api/v1/oauth', passportRouter);
 // app.use('/api/v1/events', eventRouter);
 // app.use('/login/google/callback', googleCallback);
 // app.use('/', viewRouter);

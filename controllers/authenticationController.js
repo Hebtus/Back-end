@@ -107,6 +107,10 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
+  console.log('protect req user', req.user);
+  // req.hebtus.user = currentUser;
+  // req.app.locals.user = currentUser;
+  // req.body.user = currentUser;
   next();
 });
 
@@ -300,23 +304,6 @@ exports.logout = catchAsync(async (req, res, next) => {
     .json({ status: 'success', message: 'Successfully logged out' });
 });
 
-exports.facebookLogin = catchAsync(async (req, res, next) => {
-  const token = signToken(req.user._id);
-
-  res.status(200).json({
-    status: 'Success',
-    success: true,
-    expireDate: process.env.JWT_EXPIRE,
-    token,
-  });
-});
-exports.googleLogin = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
-  });
-});
-
 //#region  Hussein Approach
 // exports.forgotPassword = catchAsync(async (req, res, next) => {
 //   // 1) Get user based on posted email
@@ -436,7 +423,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 // });
 
 /**
- * @description - updates current user password 
+ * @description - updates current user password
  * @param {object} req  -The request object
  * @param {object} res  -The response object
  * @param {object} next -The next object for express middleware
@@ -444,8 +431,17 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
  */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
+  // console.log(res.locals);
+  // console.log('app locals are', req.app.locals);
+  // console.log('app local user is', req.app.locals.user);
+  // const user = await User.findById(req.hebtus.user.id).select('+password');
+  // const user = await User.findById(req.user.id).select('+password');
+  // req.body.user = currentUser;
+  // console.log(req._passport);
+  // console.log(req);
+  console.log('fn req user', req.user);
 
-  const user = await User.findById(req.user.id).select('+password');
+  const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 
   //check if password != confirmpassword

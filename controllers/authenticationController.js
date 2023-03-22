@@ -94,12 +94,6 @@ exports.protect = catchAsync(async (req, res, next) => {
       )
     );
   }
-  //check if the user is deactivated
-  if (currentUser.activeStatus === false) {
-    return next(
-      new AppError('The account is deactivated , please login to activate', 401)
-    );
-  }
 
   // 4) Check if user changed password after the token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
@@ -240,7 +234,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ _id: emailConfirmationDoc.userID });
 
   user.accountConfirmation = true;
-  user.activeStatus = true;
   await user.save();
 
   //delete confirmation (if the code reaches here aslun??? )
@@ -278,9 +271,7 @@ exports.login = catchAsync(async (req, res, next) => {
       message: 'User not confirmed, please confirm the user through email!',
     });
   }
-  // 3) Activate user by default
 
-  user.activeStatus = 1;
   // console.log('user is ', user);
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at

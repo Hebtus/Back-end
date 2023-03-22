@@ -49,11 +49,6 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  // is the user activated or deactivated?
-  activeStatus: {
-    type: Boolean,
-    default: false,
-  },
   //used for JWT auth
   passwordChangedAt: {
     type: Date,

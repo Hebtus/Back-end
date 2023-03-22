@@ -11,7 +11,7 @@ exports.googleAuth = function (passport) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: '/api/v1/login/google/callback',
+        callbackURL: '/api/v1/oauth/login/google/callback',
         // callbackURL: '/lol',
         // passReqToCallback: true,
       },

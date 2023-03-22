@@ -71,16 +71,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verification token
-  let decoded;
 
-  try {
-    // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
-    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    next();
-  } catch (err) {
-    return next(new AppError('Token not verified.', 401));
-  }
+  // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
+  // let decoded;
+  // try {
+  //   // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
+  //   decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  //   next();
+  // } catch (err) {
+  //   return next(new AppError('Token not verified.', 401));
+  // }
 
+  //still needs to handle invalid token error tho I think
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
@@ -89,12 +92,6 @@ exports.protect = catchAsync(async (req, res, next) => {
         'The user belonging to this token does no longer exist.',
         401
       )
-    );
-  }
-  //check if the user is deactivated
-  if (currentUser.activeStatus === false) {
-    return next(
-      new AppError('The account is deactivated , please login to activate', 401)
     );
   }
 
@@ -237,7 +234,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   const user = await User.findOne({ _id: emailConfirmationDoc.userID });
 
   user.accountConfirmation = true;
-  user.activeStatus = true;
   await user.save();
 
   //delete confirmation (if the code reaches here aslun??? )
@@ -275,9 +271,7 @@ exports.login = catchAsync(async (req, res, next) => {
       message: 'User not confirmed, please confirm the user through email!',
     });
   }
-  // 3) Activate user by default
 
-  user.activeStatus = 1;
   // console.log('user is ', user);
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
@@ -298,23 +292,6 @@ exports.logout = catchAsync(async (req, res, next) => {
   res
     .status(200)
     .json({ status: 'success', message: 'Successfully logged out' });
-});
-
-exports.facebookLogin = catchAsync(async (req, res, next) => {
-  const token = signToken(req.user._id);
-
-  res.status(200).json({
-    status: 'Success',
-    success: true,
-    expireDate: process.env.JWT_EXPIRE,
-    token,
-  });
-});
-exports.googleLogin = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama',
-  });
 });
 
 //#region  Hussein Approach
@@ -444,8 +421,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
  */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
-
-  const user = await User.findById(req.user.id).select('+password');
+  const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 
   //check if password != confirmpassword
@@ -472,51 +448,4 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   });
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
-});
-/**
- * @description - deactivates the email of the current logged in user but has to enter his password for security purposes
- * @param {object} req  -The request object
- * @param {object} res  -The response object
- * @param {object} next -The next object for express middleware
- * @returns {Object} userObject
- */
-exports.deactivateAccount = catchAsync(async (req, res, next) => {
-  // 1) Get user from collection
-
-  const user = await User.findById(req.user.id).select('+password');
-  if (!user) throw new AppError('Invalid User', 400);
-  //check if password != confirmpassword
-  if (req.body.password !== req.body.confirmPassword) {
-    res.status(401).json({
-      status: 'failed',
-      message: 'confirm password doesnt match',
-    });
-    return next(new AppError('confirm password doesnt match', 401));
-  }
-  // 2) Check if posted current password is correct
-  if (!(await user.correctPassword(req.body.password, user.password))) {
-    res.status(401).json({
-      status: 'failed',
-      message: 'Your current password is wrong.',
-    });
-    return next(new AppError('Your current password is wrong.', 401));
-  }
-
-  // if (user.activeStatus === true) user.activeStatus = false;
-  // else user.activeStatus = true;
-
-  user.activeStatus = false;
-  // User.findByIdAndUpdate will NOT work as intended!
-  await user.save();
-
-  res
-    .cookie('jwt', 'loggedout', {
-      expires: new Date(Date.now() + 2 * 1000),
-      httpOnly: true,
-    })
-    .status(200)
-    .json({
-      status: 'success',
-      message: 'Account deactivated.',
-    });
 });

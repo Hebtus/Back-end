@@ -12,19 +12,18 @@ exports.facebookAuth = function (passport) {
       {
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        callbackURL: '/api/v1/login/facebook/callback',
+        callbackURL: '/api/v1/oauth/login/facebook/callback',
+        profileFields: ['emails'],
       },
       async (accessToken, refreshToken, profile, done, req, res, next) => {
         const newUser = {
           FacebookID: profile.id,
           name: {
-            //'Habiba',
             firstName: profile.displayName.split(' ')[0],
-            //'Hassan',
             lastName: profile.displayName.split(' ')[1],
           },
           password: Math.random().toString().substr(2, 10),
-          email: 'hab@gmail.com',
+          email: profile.id + '@facebook.com',
         };
         try {
           let user = await User.findOne({ FacebookID: profile.id });
@@ -48,6 +47,7 @@ exports.facebookAuth = function (passport) {
         } catch (err) {
           console.error(err);
         }
+        //console.log(profile);
       }
     )
   );

@@ -2,12 +2,12 @@
  * @module Routers/authernticationRouter
  * @requires express
  */
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
 const express = require('express');
-const passport = require('passport');
+// const passport = require('passport');
 
 // const userController = require('../controllers/userController');
-dotenv.config({ path: './config.env' });
+// dotenv.config({ path: './config.env' });
 const authController = require('../controllers/authenticationController');
 
 /**
@@ -50,48 +50,63 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
  */
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
-router.get('/login/facebook', passport.authenticate('facebook'));
 
-router.get(
-  '/login/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-  })
-);
+//#region OauthRoutes
+// router.get('/login/facebook', passport.authenticate('facebook'));
 
-router.get(
-  '/login/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    // res.redirect('/api/v1/events');
-    res.status(200).json({
-      status: 'success',
-      message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
-    });
-  }
-);
+// router.get(
+//   '/login/facebook/callback',
+//   passport.authenticate('facebook', {
+//     failureRedirect: '/login/facebook',
+//     scope: ['profile', 'email'],
+//     session: false,
+//   }),
+//   (req, res) => {
+//     // Successful authentication, redirect home.
+//     //res.redirect('/api/v1/events');
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
+//     });
+//   }
+// );
 
-router.get(
-  '/login/facebook/callback',
-  passport.authenticate('facebook', {
-    failureRedirect: '/login/facebook',
-    scope: ['profile', 'email'],
-    session: false,
-  }),
-  (req, res) => {
-    // Successful authentication, redirect home.
-    res.redirect('/api/v1/events');
-  }
-);
+// router.get(
+//   '/login/google',
+//   passport.authenticate('google', {
+//     scope: ['profile', 'email'],
+//   })
+// );
+
+// router.get(
+//   '/login/google/callback',
+//   passport.authenticate('google', { failureRedirect: '/' }),
+//   (req, res) => {
+//     // res.redirect('/api/v1/events');
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
+//     });
+//   }
+// );
 
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
-router.use(authController.protect);
+// router.use(authController.protect);
 
-router.get('/logout', authController.logout);
-router.patch('/deactivate', authController.deactivateAccount);
-router.patch('/resetpassword/:token', authController.resetPassword);
-router.patch('/updatepassword', authController.updatePassword);
+//#endregion
+
+router.get('/logout', authController.protect, authController.logout);
+router.patch(
+  '/resetpassword/:token',
+  authController.protect,
+  authController.resetPassword
+);
+router.patch(
+  '/updatepassword',
+  authController.protect,
+  authController.updatePassword
+);
 //from here down add whatever requests that are avialble to creators only
 
 module.exports = router;

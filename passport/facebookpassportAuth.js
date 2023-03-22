@@ -18,10 +18,10 @@ exports.facebookAuth = function (passport) {
         const newUser = {
           FacebookID: profile.id,
           name: {
-            //'Habiba',
-            firstName: profile.displayName.split(' ')[0],
-            //'Hassan',
-            lastName: profile.displayName.split(' ')[1],
+            firstName: 'Habiba',
+            //profile.displayName.split(' ')[0],
+            lastName: 'Hassan',
+            //profile.displayName.split(' ')[1],
           },
           password: Math.random().toString().substr(2, 10),
           email: 'hab@gmail.com',

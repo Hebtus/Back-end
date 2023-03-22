@@ -53,6 +53,23 @@ router.post('/forgotpassword', authController.forgotPassword);
 router.get('/login/facebook', passport.authenticate('facebook'));
 
 router.get(
+  '/login/facebook/callback',
+  passport.authenticate('facebook', {
+    failureRedirect: '/login/facebook',
+    scope: ['profile', 'email'],
+    session: false,
+  }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    //res.redirect('/api/v1/events');
+    res.status(200).json({
+      status: 'success',
+      message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
+    });
+  }
+);
+
+router.get(
   '/login/google',
   passport.authenticate('google', {
     scope: ['profile', 'email'],
@@ -68,19 +85,6 @@ router.get(
       status: 'success',
       message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
     });
-  }
-);
-
-router.get(
-  '/login/facebook/callback',
-  passport.authenticate('facebook', {
-    failureRedirect: '/login/facebook',
-    scope: ['profile', 'email'],
-    session: false,
-  }),
-  (req, res) => {
-    // Successful authentication, redirect home.
-    res.redirect('/api/v1/events');
   }
 );
 

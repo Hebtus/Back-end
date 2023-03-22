@@ -71,16 +71,19 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verification token
-  let decoded;
 
-  try {
-    // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
-    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    next();
-  } catch (err) {
-    return next(new AppError('Token not verified.', 401));
-  }
+  // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
+  // let decoded;
+  // try {
+  //   // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
+  //   decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  //   next();
+  // } catch (err) {
+  //   return next(new AppError('Token not verified.', 401));
+  // }
 
+  //still needs to handle invalid token error tho I think
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
@@ -107,10 +110,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
-  console.log('protect req user', req.user);
-  // req.hebtus.user = currentUser;
-  // req.app.locals.user = currentUser;
-  // req.body.user = currentUser;
   next();
 });
 
@@ -431,16 +430,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
  */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
-  // console.log(res.locals);
-  // console.log('app locals are', req.app.locals);
-  // console.log('app local user is', req.app.locals.user);
-  // const user = await User.findById(req.hebtus.user.id).select('+password');
-  // const user = await User.findById(req.user.id).select('+password');
-  // req.body.user = currentUser;
-  // console.log(req._passport);
-  // console.log(req);
-  console.log('fn req user', req.user);
-
   const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 
@@ -468,51 +457,4 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   });
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
-});
-/**
- * @description - deactivates the email of the current logged in user but has to enter his password for security purposes
- * @param {object} req  -The request object
- * @param {object} res  -The response object
- * @param {object} next -The next object for express middleware
- * @returns {Object} userObject
- */
-exports.deactivateAccount = catchAsync(async (req, res, next) => {
-  // 1) Get user from collection
-
-  const user = await User.findById(req.user.id).select('+password');
-  if (!user) throw new AppError('Invalid User', 400);
-  //check if password != confirmpassword
-  if (req.body.password !== req.body.confirmPassword) {
-    res.status(401).json({
-      status: 'failed',
-      message: 'confirm password doesnt match',
-    });
-    return next(new AppError('confirm password doesnt match', 401));
-  }
-  // 2) Check if posted current password is correct
-  if (!(await user.correctPassword(req.body.password, user.password))) {
-    res.status(401).json({
-      status: 'failed',
-      message: 'Your current password is wrong.',
-    });
-    return next(new AppError('Your current password is wrong.', 401));
-  }
-
-  // if (user.activeStatus === true) user.activeStatus = false;
-  // else user.activeStatus = true;
-
-  user.activeStatus = false;
-  // User.findByIdAndUpdate will NOT work as intended!
-  await user.save();
-
-  res
-    .cookie('jwt', 'loggedout', {
-      expires: new Date(Date.now() + 2 * 1000),
-      httpOnly: true,
-    })
-    .status(200)
-    .json({
-      status: 'success',
-      message: 'Account deactivated.',
-    });
 });

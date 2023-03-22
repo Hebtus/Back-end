@@ -98,11 +98,6 @@ router.post('/forgotpassword', authController.forgotPassword);
 
 router.get('/logout', authController.protect, authController.logout);
 router.patch(
-  '/deactivate',
-  authController.protect,
-  authController.deactivateAccount
-);
-router.patch(
   '/resetpassword/:token',
   authController.protect,
   authController.resetPassword

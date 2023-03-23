@@ -1,5 +1,5 @@
 /** Express router providing user related routes
- * @module Routers/authernticationRouter
+ * @module Routers/authenticationRouter
  * @requires express
  */
 const dotenv = require('dotenv');

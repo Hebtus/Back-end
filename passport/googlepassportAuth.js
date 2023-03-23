@@ -2,8 +2,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/userModel');
 const createSendToken = require('../routes/authenticationRoute');
 
-// console.log('mypassport env is ', process.env);
-//howa 2ary el process env
+/**
+ * @description - Creates Google strategy and creates a new user if it is his first time to register, else he is logged in immediately
+ * @param {object} passport -parameter passed from passportRoute
+ */
 
 exports.googleAuth = function (passport) {
   passport.use(
@@ -12,9 +14,17 @@ exports.googleAuth = function (passport) {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: '/api/v1/oauth/login/google/callback',
-        // callbackURL: '/lol',
-        // passReqToCallback: true,
       },
+      /**
+       *
+       * @param {Object} accessToken -accessToken Object
+       * @param {Object} refreshToken -refreshtoken Object
+       * @param {Object} profile -profile Object
+       * @param {Object} done -done object
+       * @param {Object} req -req Object
+       * @param {Object} res -res Object
+       * @param {Object} next -The next object for express middleware
+       */
       async (accessToken, refreshToken, profile, done) => {
         const newUser = {
           GoogleID: profile.id,
@@ -35,21 +45,9 @@ exports.googleAuth = function (passport) {
             user = await User.create(newUser);
             done(null, user);
           }
-          // createSendToken(user, 200, res);
-          // console.log(`Session Checker: ${req.session.id}`.green);
-          // console.log(req.session);
-          // if (req.session.profile) {
-          //   console.log(`Found User Session`.green);
-          //   next();
-          // } else {
-          //   console.log(`No User Session Found`.red);
-          //   res.redirect('/login');
-          // }
-          // console.log('Successfully logged in!');
         } catch (err) {
           console.error(err);
         }
-        // console.log(profile);
       }
     )
   );

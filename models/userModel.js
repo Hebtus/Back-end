@@ -56,8 +56,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
   },
-  // passwordResetToken: String,
-  // passwordResetExpires: Date,
+
   // eventID: {
   //   //check this with Joseph
   //   type: mongoose.Schema.ObjectId,
@@ -116,42 +115,40 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-// //Hussein Approach
-// userSchema.methods.createPasswordResetToken = function () {
-//   const resetToken = crypto.randomBytes(32).toString('hex');
-
-//   this.passwordResetToken = crypto
-//     .createHash('sha256')
-//     .update(resetToken)
-//     .digest('hex');
-
-//   console.log({ resetToken }, this.passwordResetToken);
-
-//   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-
-//   return resetToken;
-// };
-
-//Joseph Aproach
+/**
+ * Generates a random password reset token and saves it to the database for the user.
+ *
+ * @function
+ * @async
+ * @memberof UserSchema.methods
+ * @returns {Promise<string>} The generated password reset token.
+ * @throws {Error} If there is an error saving the password reset token to the database.
+ */
 userSchema.methods.createResetPasswordToken = async function () {
+  // Generate a random token
   const passwordResetToken = crypto.randomBytes(32).toString('hex');
+
+  // Check if a password reset record already exists for this user
   const passwordReset = await PasswordReset.findOne({ userID: this._id });
+
+  // If no password reset record exists, create one
   if (!passwordReset) {
-    //save token in either email confirm or password tables
     await PasswordReset.create({
       userID: this._id,
       passwordResetToken: crypto
         .createHash('sha256')
         .update(passwordResetToken)
         .digest('hex'),
-      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, //14 days
+      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, // 10 minutes
     });
-  } else {
+  }
+  // If a password reset record exists, update the existing record
+  else {
     passwordReset.passwordResetToken = crypto
       .createHash('sha256')
       .update(passwordResetToken)
       .digest('hex');
-    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
     await passwordReset.save();
   }
 

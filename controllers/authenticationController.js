@@ -319,26 +319,47 @@ exports.logout = catchAsync(async (req, res, next) => {
     .json({ status: 'success', message: 'Successfully logged out' });
 });
 
-// Joseph Approach
+/**
+
+
+@function
+@description Send a password reset token to the user's email address.
+@async
+@name forgotPassword
+@param {object} req - Express request object.
+@param {object} res - Express response object.
+@param {function} next - Express next middleware function.
+@throws {AppError} If the email address is not valid or the user is not found.
+@throws {AppError} If there is an error sending the reset email.
+@returns {Promise<void>} Sends a JSON response with a success or failure message.
+*/
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on posted email
   const { email } = req.body;
-  if (!(email && validator.isEmail(email)))
-    return next(new AppError('Please provide a valid email address', 400));
+  if (!(email && validator.isEmail(email))) {
+    // return next(new AppError('Please provide a valid email address', 400));
+    res.status(400).json({
+      status: 'failed',
+      message: 'Please provide a valid email address',
+    });
+  }
   const user = await User.findOne({ email });
-  if (!user)
-    return next(new AppError('There is no user with this email address', 404));
-  // 2) Create random reset tocken
+  if (!user) {
+    res.status(404).json({
+      status: 'failed',
+      message: 'There is no user with this email address',
+    });
+    //return next(new AppError('There is no user with this email address', 404));
+  }
 
+  // 2) Create random reset token
   const resetToken = await user.createResetPasswordToken(user._id);
 
   //3) send the reset token to the user email address
-
   const resetURL = `${req.protocol}://${req.get(
     'host'
   )}/api/v1/resetpassword/${resetToken}`;
   const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
-
   try {
     await sendEmail({
       email: user.email,
@@ -363,14 +384,23 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   next();
 });
+/**
+ * @description Reset the user's password.
+ * @function
+ * @async
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ * @param {function} next - Express next function.
+ * @returns {Promise<void>} - Promise that resolves once the password reset is complete.
+ * @throws {AppError} - Throws an AppError if the token is invalid or has expired.
+ */
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  //1) Get usere based on token
+  //1) Get user based on token
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.token)
     .digest('hex');
 
-  //console.log(hashedToken);
   const passwordResetDoc = await PasswordReset.findOne({
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
@@ -379,39 +409,21 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid token or has expired'), 400);
   const user = await User.findById(passwordResetDoc.userID);
   if (!user) return next(new AppError('Invalid token or has expired'), 400);
-  //2) If token not expired and user exists , set the new password
+  //2) If token not expired and user exists, set the new password
   if (req.body.password !== req.body.confirmPassword)
     return next(
       new AppError('Password and confirm password does not match'),
       400
     );
   user.password = req.body.password;
-
   user.passwordChangedAt = Date.now();
   passwordResetDoc.passwordResetTokenExpiry = undefined;
   passwordResetDoc.passwordResetToken = undefined;
-
   await user.save();
-
-  //3) Update passwordChangedAt
-  // user.passwordChangedAt = Date.now();
-  //4) Send JWT to let the user log in
-  // const token = signToken(user._id);
-  // res.status(200).json({
-  //   status: 'success',
-  //   token,
-  // });
-
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications
   //and discussions with Frontend. -Joseph
   createSendToken(user, 200, res);
-
-  // const token = signToken(user._id);
-  // res.status(200).json({
-  //   status: 'success',
-  //   message: 'Password reset successfully.',
-  // });
   await passwordResetDoc.save();
 });
 

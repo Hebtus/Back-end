@@ -22,12 +22,12 @@ describe('createResetPasswordToken', () => {
       .then(() => {
         console.log('TestDB is connected successfuly!');
       });
-    //await mongoose.connection.collection('passwordreset').deleteMany({});
+    await mongoose.connection.collection('passwordreset').deleteMany({});
     await mongoose.connection.collection('users').deleteMany({});
   });
 
   afterAll(async () => {
-    //await mongoose.connection.dropDatabase();
+    await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
   });
 

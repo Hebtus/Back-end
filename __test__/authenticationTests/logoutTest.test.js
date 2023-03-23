@@ -32,28 +32,11 @@ test('Check User Logout', async () => {
   //creates test user who is confirmed // avoids sending emails w keda
   await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
-  // const auxres = await request(app)
-  //   .post('/api/v1/login')
-  //   .send({
-  //     email: 'irushbullet@gmail.com',
-  //     password: '123456789',
-  //   })
-  //   .expect(200);
-  // expect(auxres.headers['set-cookie']).toBeDefined();
-  // let jwtToken = auxres.headers['set-cookie'];
-  // let TokenArr = String(jwtToken).split(';');
-  // // let oldDate = TokenArr[2];
-  // // console.log(oldDate);
-  // jwtToken = String(jwtToken).split(';')[0].slice(4);
-  // console.log(jwtToken);
 
   const res = await request(app)
     .get('/api/v1/logout')
     .set('authorization', `Bearer ${jwtToken}`)
-    .send({
-      email: 'irushbullet@gmail.com',
-      password: '123456789',
-    })
+    .send()
     .expect(200);
   expect(res.headers['set-cookie']).toBeDefined();
   // console.log(res.headers);
@@ -74,7 +57,7 @@ test('Check User Logout', async () => {
       email: 'irushbullet@gmail.com',
       password: '123456789',
     })
-    .expect(500); //throws error in case of invalid token
+    .expect(401); //handles the very famous error //that was about to cast our progress to darkness
 });
 
 afterAll(async () => {

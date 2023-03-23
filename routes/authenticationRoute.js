@@ -51,45 +51,6 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
 
-//#region OauthRoutes
-// router.get('/login/facebook', passport.authenticate('facebook'));
-
-// router.get(
-//   '/login/facebook/callback',
-//   passport.authenticate('facebook', {
-//     failureRedirect: '/login/facebook',
-//     scope: ['profile', 'email'],
-//     session: false,
-//   }),
-//   (req, res) => {
-//     // Successful authentication, redirect home.
-//     //res.redirect('/api/v1/events');
-//     res.status(200).json({
-//       status: 'success',
-//       message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
-//     });
-//   }
-// );
-
-// router.get(
-//   '/login/google',
-//   passport.authenticate('google', {
-//     scope: ['profile', 'email'],
-//   })
-// );
-
-// router.get(
-//   '/login/google/callback',
-//   passport.authenticate('google', { failureRedirect: '/' }),
-//   (req, res) => {
-//     // res.redirect('/api/v1/events');
-//     res.status(200).json({
-//       status: 'success',
-//       message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
-//     });
-//   }
-// );
-
 //from here down add requests that are available after u r logged in only
 //remeber to add the berarer token to the autherization in postman
 // router.use(authController.protect);
@@ -97,11 +58,10 @@ router.post('/forgotpassword', authController.forgotPassword);
 //#endregion
 
 router.get('/logout', authController.protect, authController.logout);
-router.patch(
-  '/resetpassword/:token',
-  authController.protect,
-  authController.resetPassword
-);
+router.patch('/resetpassword/:token', authController.resetPassword);
+
+//router.get('/resetpassword/:token', authController.resetPasswordForm);
+
 router.patch(
   '/updatepassword',
   authController.protect,

@@ -56,8 +56,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
   },
-  // passwordResetToken: String,
-  // passwordResetExpires: Date,
+
   // eventID: {
   //   //check this with Joseph
   //   type: mongoose.Schema.ObjectId,
@@ -93,9 +92,9 @@ userSchema.pre('save', async function (next) {
 
   // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
-
+  this.passwordChangedAt = Date.now();
   // Delete passwordConfirm field
-  this.passwordConfirm = undefined;
+  // this.passwordConfirm = undefined;
   next();
 });
 
@@ -116,47 +115,45 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-// //Hussein Approach
-// userSchema.methods.createPasswordResetToken = function () {
-//   const resetToken = crypto.randomBytes(32).toString('hex');
+// /**
+//  * Generates a random password reset token and saves it to the database for the user.
+//  *
+//  * @function
+//  * @async
+//  * @memberof UserSchema.methods
+//  * @returns {Promise<string>} The generated password reset token.
+//  * @throws {Error} If there is an error saving the password reset token to the database.
+//  */
+// userSchema.methods.createResetPasswordToken = async function () {
+//   // Generate a random token
+//   const passwordResetToken = crypto.randomBytes(32).toString('hex');
 
-//   this.passwordResetToken = crypto
-//     .createHash('sha256')
-//     .update(resetToken)
-//     .digest('hex');
+//   // Check if a password reset record already exists for this user
+//   const passwordReset = await PasswordReset.findOne({ userID: this._id });
 
-//   console.log({ resetToken }, this.passwordResetToken);
+//   // If no password reset record exists, create one
+//   if (!passwordReset) {
+//     await PasswordReset.create({
+//       userID: this._id,
+//       passwordResetToken: crypto
+//         .createHash('sha256')
+//         .update(passwordResetToken)
+//         .digest('hex'),
+//       passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, // 10 minutes
+//     });
+//   }
+//   // If a password reset record exists, update the existing record
+//   else {
+//     passwordReset.passwordResetToken = crypto
+//       .createHash('sha256')
+//       .update(passwordResetToken)
+//       .digest('hex');
+//     passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+//     await passwordReset.save();
+//   }
 
-//   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-
-//   return resetToken;
+//   return passwordResetToken;
 // };
-
-//Joseph Aproach
-userSchema.methods.createResetPasswordToken = async function () {
-  const passwordResetToken = crypto.randomBytes(32).toString('hex');
-  const passwordReset = await PasswordReset.findOne({ userID: this._id });
-  if (!passwordReset) {
-    //save token in either email confirm or password tables
-    await PasswordReset.create({
-      userID: this._id,
-      passwordResetToken: crypto
-        .createHash('sha256')
-        .update(passwordResetToken)
-        .digest('hex'),
-      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, //14 days
-    });
-  } else {
-    passwordReset.passwordResetToken = crypto
-      .createHash('sha256')
-      .update(passwordResetToken)
-      .digest('hex');
-    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
-    await passwordReset.save();
-  }
-
-  return passwordResetToken;
-};
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {

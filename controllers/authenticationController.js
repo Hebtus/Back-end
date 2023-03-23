@@ -375,9 +375,16 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
+  if (!passwordResetDoc)
+    return next(new AppError('Invalid token or has expired'), 400);
   const user = await User.findById(passwordResetDoc.userID);
   if (!user) return next(new AppError('Invalid token or has expired'), 400);
   //2) If token not expired and user exists , set the new password
+  if (req.body.password !== req.body.confirmPassword)
+    return next(
+      new AppError('Password and confirm password does not match'),
+      400
+    );
   user.password = req.body.password;
 
   user.passwordChangedAt = Date.now();

@@ -2,13 +2,13 @@ const crypto = require('crypto');
 //const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
+const validator = require('validator');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 const EmailConfirm = require('../models/emailConfirmModel');
 const PasswordReset = require('../models/passwordResetModel');
-const validator = require('validator');
 /**
  * The Controller responsible for handling authentication Requests
  * @module Controllers/authenticationController
@@ -353,7 +353,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   }
 
   // 2) Create random reset token
-  const resetToken = await user.createResetPasswordToken(user._id);
+  const resetToken = await PasswordReset.createResetPasswordToken(user._id);
 
   //3) send the reset token to the user email address
   const resetURL = `${req.protocol}://${req.get(

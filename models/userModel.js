@@ -115,45 +115,45 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-/**
- * Generates a random password reset token and saves it to the database for the user.
- *
- * @function
- * @async
- * @memberof UserSchema.methods
- * @returns {Promise<string>} The generated password reset token.
- * @throws {Error} If there is an error saving the password reset token to the database.
- */
-userSchema.methods.createResetPasswordToken = async function () {
-  // Generate a random token
-  const passwordResetToken = crypto.randomBytes(32).toString('hex');
+// /**
+//  * Generates a random password reset token and saves it to the database for the user.
+//  *
+//  * @function
+//  * @async
+//  * @memberof UserSchema.methods
+//  * @returns {Promise<string>} The generated password reset token.
+//  * @throws {Error} If there is an error saving the password reset token to the database.
+//  */
+// userSchema.methods.createResetPasswordToken = async function () {
+//   // Generate a random token
+//   const passwordResetToken = crypto.randomBytes(32).toString('hex');
 
-  // Check if a password reset record already exists for this user
-  const passwordReset = await PasswordReset.findOne({ userID: this._id });
+//   // Check if a password reset record already exists for this user
+//   const passwordReset = await PasswordReset.findOne({ userID: this._id });
 
-  // If no password reset record exists, create one
-  if (!passwordReset) {
-    await PasswordReset.create({
-      userID: this._id,
-      passwordResetToken: crypto
-        .createHash('sha256')
-        .update(passwordResetToken)
-        .digest('hex'),
-      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, // 10 minutes
-    });
-  }
-  // If a password reset record exists, update the existing record
-  else {
-    passwordReset.passwordResetToken = crypto
-      .createHash('sha256')
-      .update(passwordResetToken)
-      .digest('hex');
-    passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
-    await passwordReset.save();
-  }
+//   // If no password reset record exists, create one
+//   if (!passwordReset) {
+//     await PasswordReset.create({
+//       userID: this._id,
+//       passwordResetToken: crypto
+//         .createHash('sha256')
+//         .update(passwordResetToken)
+//         .digest('hex'),
+//       passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, // 10 minutes
+//     });
+//   }
+//   // If a password reset record exists, update the existing record
+//   else {
+//     passwordReset.passwordResetToken = crypto
+//       .createHash('sha256')
+//       .update(passwordResetToken)
+//       .digest('hex');
+//     passwordReset.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+//     await passwordReset.save();
+//   }
 
-  return passwordResetToken;
-};
+//   return passwordResetToken;
+// };
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {

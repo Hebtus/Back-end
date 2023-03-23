@@ -30,7 +30,7 @@ test('Check User input inCorrect password', async () => {
   await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
-    .post('/api/v1/updatepassword')
+    .patch('/api/v1/updatepassword')
     .set('authorization', `Bearer ${jwtToken}`)
     .send({
       passwordCurrent: 'kambotchas',
@@ -47,7 +47,7 @@ test('Check password confirmation mismatch', async () => {
   await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
-    .post('/api/v1/updatepassword')
+    .patch('/api/v1/updatepassword')
     .set('authorization', `Bearer ${jwtToken}`)
     .send({
       passwordCurrent: '123456789',
@@ -64,7 +64,7 @@ test('Check password confirmation mismatch', async () => {
   await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
-    .post('/api/v1/updatepassword')
+    .patch('/api/v1/updatepassword')
     .set('authorization', `Bearer ${jwtToken}`)
     .send({
       passwordCurrent: '123456789',

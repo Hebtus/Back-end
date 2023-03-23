@@ -23,7 +23,9 @@ mongoose
   .then(() => {
     console.log('DB is connected successfuly!');
 
-    // test.createTestUser();
+    //for testing and saving email creditsssssss
+    //if no user create confirmed user
+    if (!User.find()) test.createTestUser();
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

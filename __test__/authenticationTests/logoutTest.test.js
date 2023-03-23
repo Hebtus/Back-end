@@ -46,6 +46,7 @@ test('Check User Logout', async () => {
   // console.log('newDate is ', newDate);
   newjwtToken = newTokenArr[0].slice(4);
 
+  //This also Tests Middleware function Protect!
   //now we try logout again whic has protected status
   await request(app)
     .get('/api/v1/logout')
@@ -53,10 +54,6 @@ test('Check User Logout', async () => {
     //but we also handled the case where the token follows the structure but is invalid
     // this produces an app error in try catch block
     .set('authorization', `Bearer ${newjwtToken}`)
-    .send({
-      email: 'irushbullet@gmail.com',
-      password: '123456789',
-    })
     .expect(401); //handles the very famous error //that was about to cast our progress to darkness
 });
 

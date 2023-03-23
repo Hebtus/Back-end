@@ -339,14 +339,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   if (!(email && validator.isEmail(email))) {
     // return next(new AppError('Please provide a valid email address', 400));
     res.status(400).json({
-      status: 'failed',
+      status: 'fail',
       message: 'Please provide a valid email address',
     });
   }
   const user = await User.findOne({ email });
   if (!user) {
     res.status(404).json({
-      status: 'failed',
+      status: 'fail',
       message: 'There is no user with this email address',
     });
     //return next(new AppError('There is no user with this email address', 404));
@@ -449,7 +449,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   //check if password != confirmpassword
   if (req.body.password !== req.body.confirmPassword) {
     res.status(401).json({
-      status: 'failed',
+      status: 'fail',
       message: 'confirm password doesnt match',
     });
     return next(new AppError('confirm password doesnt match', 401));
@@ -457,7 +457,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // 2) Check if posted current password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     res.status(401).json({
-      status: 'failed',
+      status: 'fail',
       message: 'Your current password is wrong.',
     });
     return next(new AppError('Your current password is wrong.', 401));

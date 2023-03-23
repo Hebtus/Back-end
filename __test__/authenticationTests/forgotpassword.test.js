@@ -8,7 +8,7 @@ const User = require('../../models/userModel');
 jest.mock('../../utils/email', () => ({
   sendEmail: jest.fn(),
 }));
-const sendEmail = require('../utils/email');
+const sendEmail = require('../../utils/email');
 
 describe('Forgot Password Endpoint', () => {
   let user;

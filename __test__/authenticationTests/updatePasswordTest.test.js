@@ -44,7 +44,7 @@ test('Check User input inCorrect password', async () => {
 });
 
 test('Check password confirmation mismatch', async () => {
-  await createConfirmedUser.createTestUser();
+  // await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
     .patch('/api/v1/updatepassword')
@@ -61,7 +61,7 @@ test('Check password confirmation mismatch', async () => {
 });
 
 test('Check password confirmation mismatch', async () => {
-  await createConfirmedUser.createTestUser();
+  // await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
     .patch('/api/v1/updatepassword')
@@ -77,7 +77,6 @@ test('Check password confirmation mismatch', async () => {
   // done();
 });
 afterAll(async () => {
-  // await mongoose.connection.collection('users').deleteMany({});
-  // await User.deleteMany();
+  await User.deleteMany();
   mongoose.disconnect();
 });

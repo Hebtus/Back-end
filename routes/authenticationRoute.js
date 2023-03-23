@@ -14,7 +14,6 @@ const authController = require('../controllers/authenticationController');
  * Express router to mount user related functions on.
  * @type {object}
  * @const
- * @namespace authernticationRouter
  */
 const router = express.Router();
 

@@ -424,6 +424,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 
+  
   //check if password != confirmpassword
   if (req.body.password !== req.body.confirmPassword) {
     res.status(401).json({
@@ -440,12 +441,14 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     });
     return next(new AppError('Your current password is wrong.', 401));
   }
+  
   // 3) update Password in the DB
   user.password = req.body.password;
   res.status(200).json({
     status: 'success',
     message: 'password updated successfully',
   });
+ 
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 });

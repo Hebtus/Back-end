@@ -34,11 +34,12 @@ passwordResetSchema.pre(/^find/, async function (next) {
 
 passwordResetSchema.statics.createResetPasswordToken = async function (userID) {
   const passwordResetToken = crypto.randomBytes(32).toString('hex');
+  // console.log(userID);
   const passwordReset = await this.findOne({ userID: userID });
   if (!passwordReset) {
     //save token in either email confirm or password tables
     await this.create({
-      userID: this._id,
+      userID: userID,
       passwordResetToken: crypto
         .createHash('sha256')
         .update(passwordResetToken)

@@ -97,9 +97,12 @@ router.post('/forgotpassword', authController.forgotPassword);
 //#endregion
 
 router.get('/logout', authController.protect, authController.logout);
+
+router.get('/resetpassword/:token', authController.resetPasswordForm);
+
 router.patch(
   '/resetpassword/:token',
-  authController.protect,
+  // authController.protect,
   authController.resetPassword
 );
 router.patch(

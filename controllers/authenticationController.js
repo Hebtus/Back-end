@@ -24,7 +24,8 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, res) => {
+//creates token and attaches it to cookie.
+const createToken = (user, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -36,6 +37,21 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
+};
+
+//creates token, attaches it to cookie and sends it as a standard responsee
+const createSendToken = (user, statusCode, res) => {
+  // const token = signToken(user._id);
+  // const cookieOptions = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true,
+  // };
+  // //only for deployment
+  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+  createToken(user, res);
+  // res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
@@ -354,7 +370,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 3) Send it to user's email
   const resetURL = `${req.protocol}://${req.get(
     'host'
-  )}/api/v1/users/resetPassword/${resetToken}`;
+  )}/api/v1/resetpassword/${resetToken}`;
   const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
 
   await sendEmail({
@@ -370,6 +386,32 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   next();
 });
+
+exports.resetPasswordForm = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'PlaceHolder for Frontend URL Page',
+  });
+  // res.redirect(process.env.FRONTEND_URL)
+  //1) Get usere based on token
+  // const hashedToken = crypto
+  //   .createHash('sha256')
+  //   .update(req.params.token)
+  //   .digest('hex');
+  // console.log(hashedToken);
+  // const passwordResetDoc = await PasswordReset.findOne({
+  //   passwordResetToken: hashedToken,
+  //   passwordResetTokenExpiry: { $gt: Date.now() },
+  // });
+  // if (!passwordResetDoc)
+  //   return next(new AppError('Invalid token or has expired'), 400);
+  // const user = await User.findById(passwordResetDoc.userID);
+  // if (!user) return next(new AppError('Invalid token or has expired'), 400);
+  // //send jwt cookie
+  // createToken(user, res);
+  // res.sendFile('reset.html', { root: __dirname + '/../public' });
+});
+
 exports.resetPassword = catchAsync(async (req, res, next) => {
   //1) Get usere based on token
   const hashedToken = crypto
@@ -382,24 +424,28 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
+  if (!passwordResetDoc)
+    return next(new AppError('Invalid token or has expired'), 400);
   const user = await User.findById(passwordResetDoc.userID);
   if (!user) return next(new AppError('Invalid token or has expired'), 400);
   //2) If token not expired and user exists , set the new password
+  console.log(req.body);
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordChangedAt = Date.now();
   passwordResetDoc.passwordResetTokenExpiry = undefined;
   passwordResetDoc.passwordResetToken = undefined;
   await user.save();
+  await passwordResetDoc.save();
 
   //3) Update passwordChangedAt
   // user.passwordChangedAt = Date.now();
   //4) Send JWT to let the user log in
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  // const token = signToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
 
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications
@@ -411,7 +457,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   //   status: 'success',
   //   message: 'Password reset successfully.',
   // });
-  await passwordResetDoc.save();
+  // await passwordResetDoc.save();
 });
 
 // exports.resetPassword = catchAsync(async (req, res, next) => {

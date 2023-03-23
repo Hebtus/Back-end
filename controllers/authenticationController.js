@@ -24,6 +24,11 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+/**
+ * @description - creates token and attaches it to cookie.
+ * @param {object} user  -The user to be authenitcated
+ * @param {object} res -The response object
+ */
 //creates token and attaches it to cookie.
 const createToken = (user, res) => {
   const token = signToken(user._id);
@@ -38,8 +43,13 @@ const createToken = (user, res) => {
 
   res.cookie('jwt', token, cookieOptions);
 };
-
-//creates token, attaches it to cookie and sends it as a standard responsee
+/**
+ * @description - creates token, attaches it to cookie and sends it as a standard responsee
+ * @param {object} user  -The user to be authenitcated
+ * @param {object} statusCode  -The status codes object
+ * @param {object} res -The response object
+ */
+//
 const createSendToken = (user, statusCode, res) => {
   // const token = signToken(user._id);
   // const cookieOptions = {

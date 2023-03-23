@@ -1,5 +1,4 @@
 /** @module Models/userModel */
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -7,7 +6,6 @@ const validator = require('validator');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
 // const EmailConfirm = require('./emailConfirmModel');
-const PasswordReset = require('./passwordResetModel');
 //TODO: Encrypt Passwords!
 
 const userSchema = new mongoose.Schema({

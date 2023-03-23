@@ -23,7 +23,7 @@ mongoose
   .then(() => {
     console.log('DB is connected successfuly!');
 
-    test.createTestUser();
+    // test.createTestUser();
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

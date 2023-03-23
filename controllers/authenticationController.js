@@ -83,7 +83,16 @@ exports.protect = catchAsync(async (req, res, next) => {
   // }
 
   //still needs to handle invalid token error tho I think
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET
+  ).catch((error) => {
+    next(new AppError('Could not decode token.', 401));
+    // Handle the error.
+  });
+  // const decoded = await promisify(jwt.verify, (result, lol) => {
+  //   next(new AppError('Could not decode token.', 401));
+  // })(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {

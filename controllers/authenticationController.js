@@ -24,6 +24,11 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+/**
+ * @description - creates token and attaches it to cookie.
+ * @param {object} user  -The user to be authenitcated
+ * @param {object} res -The response object
+ */
 //creates token and attaches it to cookie.
 const createToken = (user, res) => {
   const token = signToken(user._id);
@@ -38,8 +43,13 @@ const createToken = (user, res) => {
 
   res.cookie('jwt', token, cookieOptions);
 };
-
-//creates token, attaches it to cookie and sends it as a standard responsee
+/**
+ * @description - creates token, attaches it to cookie and sends it as a standard responsee
+ * @param {object} user  -The user to be authenitcated
+ * @param {object} statusCode  -The status codes object
+ * @param {object} res -The response object
+ */
+//
 const createSendToken = (user, statusCode, res) => {
   // const token = signToken(user._id);
   // const cookieOptions = {
@@ -446,6 +456,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 
+  
   //check if password != confirmpassword
   if (req.body.password !== req.body.confirmPassword) {
     res.status(401).json({
@@ -462,12 +473,14 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     });
     return next(new AppError('Your current password is wrong.', 401));
   }
+  
   // 3) update Password in the DB
   user.password = req.body.password;
   res.status(200).json({
     status: 'success',
     message: 'password updated successfully',
   });
+ 
   await user.save();
   // User.findByIdAndUpdate will NOT work as intended!
 });

@@ -197,7 +197,6 @@ test('', () => {});
 //   // done();
 //   //for next test
 //   // const user = await User.findOne();
-//   // user.activeStatus = 1;
 //   // await user.save();
 // });
 

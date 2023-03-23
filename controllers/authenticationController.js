@@ -24,7 +24,8 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const createSendToken = (user, statusCode, res) => {
+//creates token and attaches it to cookie.
+const createToken = (user, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -36,6 +37,21 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
+};
+
+//creates token, attaches it to cookie and sends it as a standard responsee
+const createSendToken = (user, statusCode, res) => {
+  // const token = signToken(user._id);
+  // const cookieOptions = {
+  //   expires: new Date(
+  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+  //   ),
+  //   httpOnly: true,
+  // };
+  // //only for deployment
+  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+  createToken(user, res);
+  // res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
   user.password = undefined;
@@ -83,7 +99,16 @@ exports.protect = catchAsync(async (req, res, next) => {
   // }
 
   //still needs to handle invalid token error tho I think
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET
+  ).catch((error) => {
+    next(new AppError('Could not decode token.', 401));
+    // Handle the error.
+  });
+  // const decoded = await promisify(jwt.verify, (result, lol) => {
+  //   next(new AppError('Could not decode token.', 401));
+  // })(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
@@ -311,7 +336,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   const resetURL = `${req.protocol}://${req.get(
     'host'
-  )}/api/v1/users/resetPassword/${resetToken}`;
+  )}/api/v1/resetpassword/${resetToken}`;
   const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
 
   try {
@@ -338,17 +363,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   next();
 });
-
-/**
- * Resets the user's password and sends a JWT token for the user to log in.
- * @function
- * @async
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @param {Function} next - The next function.
- * @returns {Object} The status of the password reset and a JWT token.
- * @throws {AppError} If the provided token is invalid or has expired.
- */
 exports.resetPassword = catchAsync(async (req, res, next) => {
   //1) Get usere based on token
   const hashedToken = crypto
@@ -361,15 +375,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
-  if (!passwordResetDoc) return next(new AppError('Invaild tocken ', 401));
-
   const user = await User.findById(passwordResetDoc.userID);
-  if (!user) return next(new AppError('Invalid token or has expired'), 401);
-  //2) If token not expired and user exists , set the new password and the reset token
-  if (req.body.password !== req.body.confirmPassword)
-    return next(
-      new AppError('Password and confirm password are not the same ', 401)
-    );
+  if (!user) return next(new AppError('Invalid token or has expired'), 400);
+  //2) If token not expired and user exists , set the new password
   user.password = req.body.password;
 
   user.passwordChangedAt = Date.now();
@@ -377,13 +385,15 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   passwordResetDoc.passwordResetToken = undefined;
 
   await user.save();
-  await passwordResetDoc.save();
+
+  //3) Update passwordChangedAt
+  // user.passwordChangedAt = Date.now();
   //4) Send JWT to let the user log in
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  // const token = signToken(user._id);
+  // res.status(200).json({
+  //   status: 'success',
+  //   token,
+  // });
 
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications
@@ -395,6 +405,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   //   status: 'success',
   //   message: 'Password reset successfully.',
   // });
+  await passwordResetDoc.save();
 });
 
 // exports.resetPassword = catchAsync(async (req, res, next) => {

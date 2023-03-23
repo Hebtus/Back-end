@@ -24,6 +24,7 @@ exports.facebookAuth = function (passport) {
           },
           password: Math.random().toString().substr(2, 10),
           email: profile.id + '@facebook.com',
+          accountConfirmation: 1,
         };
         try {
           let user = await User.findOne({ FacebookID: profile.id });

@@ -98,6 +98,14 @@ router.post('/forgotpassword', authController.forgotPassword);
 
 router.get('/logout', authController.protect, authController.logout);
 router.patch('/resetpassword/:token', authController.resetPassword);
+
+router.get('/resetpassword/:token', authController.resetPasswordForm);
+
+router.patch(
+  '/resetpassword/:token',
+  // authController.protect,
+  authController.resetPassword
+);
 router.patch(
   '/updatepassword',
   authController.protect,

@@ -25,6 +25,7 @@ exports.googleAuth = function (passport) {
           img_url: profile.photos[0].value,
           password: Math.random().toString().substr(2, 10),
           email: profile.emails[0].value,
+          accountConfirmation: 1,
         };
         try {
           let user = await User.findOne({ GoogleID: profile.id });

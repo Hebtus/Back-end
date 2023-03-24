@@ -13,7 +13,7 @@ exports.facebookAuth = function (passport) {
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: '/api/v1/oauth/login/facebook/callback',
-        profileFields: ['email'],
+        profileFields: ['id', 'displayName', 'emails', 'photos'],
       },
       /**
        *
@@ -30,8 +30,8 @@ exports.facebookAuth = function (passport) {
         const newUser = {
           FacebookID: profile.id,
           name: {
-            firstName: 'Habiba', //profile.displayName.split(' ')[0],
-            lastName: 'Hassan', //profile.displayName.split(' ')[1],
+            firstName: profile.displayName.split(' ')[0],
+            lastName: profile.displayName.split(' ')[1],
           },
           password: Math.random().toString().substr(2, 10),
           email: profile.id + '@facebook.com',

@@ -20,12 +20,14 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => {
+  .then(async () => {
     console.log('DB is connected successfuly!');
 
     //for testing and saving email creditsssssss
     //if no user create confirmed user
-    if (!User.find()) test.createTestUser();
+    const anyuser = await User.find();
+    // console.log(anyuser);
+    if (anyuser.length === 0) test.createTestUser();
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

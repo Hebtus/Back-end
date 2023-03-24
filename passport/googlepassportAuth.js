@@ -1,7 +1,7 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/userModel');
 const createSendToken = require('../routes/authenticationRoute');
-
+const mongoose = require('mongoose');
 /**
  * @description - Creates Google strategy and creates a new user if it is his first time to register, else he is logged in immediately
  * @param {object} passport -parameter passed from passportRoute
@@ -38,8 +38,13 @@ exports.googleAuth = function (passport) {
           accountConfirmation: 1,
         };
         try {
-          let user = await User.findOne({ GoogleID: profile.id });
+          let user = await User.findOne({
+            $or: [{ GoogleID: profile.id }, { email: profile.emails[0].value }],
+          });
           if (user) {
+            user.GoogleID = profile.id;
+            user.email = profile.emails[0].value;
+            user.save();
             done(null, user);
           } else {
             user = await User.create(newUser);

@@ -1,3 +1,9 @@
+// placeholder to give no false failed tests on calling npm test
+// test('', () => {});
+
+// Commented to save mailtrap emails lol
+// will produce an exta failure
+
 const request = require('supertest');
 // const session = require('express-session');
 const dotenv = require('dotenv');

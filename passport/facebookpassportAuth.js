@@ -13,7 +13,7 @@ exports.facebookAuth = function (passport) {
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: '/api/v1/oauth/login/facebook/callback',
-        profileFields: ['email'],
+        profileFields: ['id', 'displayName', 'emails', 'photos'],
       },
       /**
        *

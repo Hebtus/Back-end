@@ -22,7 +22,8 @@ beforeAll(async () => {
     .then(() => {
       console.log('TestDB is connected successfuly!');
     });
-  await mongoose.connection.collection('users').deleteMany({});
+  // await mongoose.connection.collection('users').deleteMany({});
+  await mongoose.connection.db.dropDatabase();
   const user = await User.create({
     name: {
       firstName: 'yasmina',

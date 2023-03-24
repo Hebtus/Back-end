@@ -22,7 +22,8 @@ beforeAll(async () => {
     .then(() => {
       console.log('TestDB is connected successfuly!');
     });
-  await mongoose.connection.collection('users').deleteMany({});
+  // await mongoose.connection.collection('users').deleteMany({});
+  await mongoose.connection.db.dropDatabase();
 });
 // jest.setTimeout(60000);
 
@@ -40,7 +41,7 @@ test('Check User Creation with no firstName', async () => {
     });
   } catch (e) {
     error = e;
-    console.log(e);
+    // console.log(e);
   }
   expect(error._message).toBe('User validation failed');
   expect(String(error.errors['name.firstName'])).toBe(
@@ -62,7 +63,7 @@ test('Check User Creation with no lastName', async () => {
     });
   } catch (e) {
     error = e;
-    console.log(e);
+    // console.log(e);
   }
   expect(error._message).toBe('User validation failed');
   expect(String(error.errors['name.lastName'])).toBe(
@@ -84,7 +85,7 @@ test('Check User Creation with no email', async () => {
     });
   } catch (e) {
     error = e;
-    console.log(e);
+    // console.log(e);
   }
   expect(error._message).toBe('User validation failed');
   expect(String(error.errors['email'])).toBe('Please provide your email');
@@ -104,7 +105,7 @@ test('Check User Creation with invalid email', async () => {
     });
   } catch (e) {
     error = e;
-    console.log(e);
+    // console.log(e);
   }
   expect(error._message).toBe('User validation failed');
   expect(String(error.errors['email'])).toBe('Please provide a valid email');
@@ -112,6 +113,7 @@ test('Check User Creation with invalid email', async () => {
 
 afterAll(async () => {
   // await mongoose.connection.collection('users').deleteMany({});
-  await User.deleteMany();
+  // await User.deleteMany();
+  await mongoose.connection.db.dropDatabase();
   mongoose.disconnect();
 });

@@ -188,10 +188,11 @@ exports.signup = catchAsync(async (req, res, next) => {
     if (emailconfirm !== null) {
       // console.log('emailconfirm is', emailconfirm);
       //already sent before
-      res.status(400).json({
-        status: 'Fail',
+      return res.status(400).json({
+        status: 'fail',
         message: 'Email confirmation already sent!',
       });
+
       //not found, then either he had already confirmed
     } else if (existingUser.accountConfirmation) {
       exports.login(req, res, next);
@@ -211,16 +212,17 @@ exports.signup = catchAsync(async (req, res, next) => {
     !req.body.name.firstName ||
     !req.body.name.lastName
   ) {
-    res.status(400).json({
+    return res.status(400).json({
       status: 'fail',
       message: 'Please Enter password and email and name!',
     });
   }
   if (req.body.password !== req.body.confirmPassword) {
-    res.status(400).json({
+    return res.status(400).json({
       status: 'fail',
       message: 'Password and confirm Passwords do not match!',
     });
+    // console.log('lolxd');
   }
 
   //create user
@@ -275,26 +277,29 @@ exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   // 1) Check if email and password exist
   if (!email || !password) {
-    res.status(401).json({
+    return res.status(401).json({
       status: 'fail',
       message: 'Please provide email and password!',
     });
+    next();
   }
   // 2) Check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    res.status(401).json({
+    return res.status(401).json({
       status: 'fail',
       message: 'Incorrect email or password!',
     });
+    next();
   }
   if (!user.accountConfirmation) {
     // return next(new AppError('User not confirmed', 401));
-    res.status(401).json({
+    return res.status(401).json({
       status: 'fail',
       message: 'User not confirmed, please confirm the user through email!',
     });
+    // next();
   }
 
   // console.log('user is ', user);
@@ -308,7 +313,7 @@ exports.login = catchAsync(async (req, res, next) => {
  * @description - Handles the logout logic.
  */
 exports.logout = catchAsync(async (req, res, next) => {
-  //overwrite cookie at client side and set it to expire after 2 seconds
+  //overwrite cookie at client side and set it to expire
   res.cookie('jwt', 'loggedout', {
     // expires: new Date(Date.now() + 500),
     expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
@@ -338,14 +343,14 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const { email } = req.body;
   if (!(email && validator.isEmail(email))) {
     // return next(new AppError('Please provide a valid email address', 400));
-    res.status(400).json({
+    return res.status(400).json({
       status: 'failed',
       message: 'Please provide a valid email address',
     });
   }
   const user = await User.findOne({ email });
   if (!user) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'failed',
       message: 'There is no user with this email address',
     });
@@ -406,15 +411,22 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
   if (!passwordResetDoc)
-    return next(new AppError('Invalid token or has expired'), 400);
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Token is invalid',
+    });
   const user = await User.findById(passwordResetDoc.userID);
-  if (!user) return next(new AppError('Invalid token or has expired'), 400);
+  if (!user)
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Token is invalid',
+    });
   //2) If token not expired and user exists, set the new password
   if (req.body.password !== req.body.confirmPassword)
-    return next(
-      new AppError('Password and confirm password does not match'),
-      400
-    );
+    return res.status(400).json({
+      status: 'fail',
+      message: 'confirm password doesnt match',
+    });
   user.password = req.body.password;
   user.passwordChangedAt = Date.now();
   passwordResetDoc.passwordResetTokenExpiry = undefined;

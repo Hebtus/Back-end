@@ -24,7 +24,8 @@ beforeAll(async () => {
     .then(() => {
       console.log('TestDB is connected successfuly!');
     });
-  await mongoose.connection.collection('users').deleteMany({});
+  // await mongoose.connection.collection('users').deleteMany({});
+  await mongoose.connection.db.dropDatabase();
 });
 test('Check User input inCorrect password', async () => {
   await createConfirmedUser.createTestUser();
@@ -44,7 +45,6 @@ test('Check User input inCorrect password', async () => {
 });
 
 test('Check password confirmation mismatch', async () => {
-  await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
     .patch('/api/v1/updatepassword')
@@ -61,7 +61,6 @@ test('Check password confirmation mismatch', async () => {
 });
 
 test('Check password confirmation mismatch', async () => {
-  await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
   const res = await request(app)
     .patch('/api/v1/updatepassword')

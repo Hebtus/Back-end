@@ -4,6 +4,7 @@ const app = require('./app');
 const test = require('./__test__/testutils/createConfirmedUser');
 //Load config
 dotenv.config({ path: '.config.env' });
+const Seeder = require('./seeds/seeder');
 
 const User = require('./models/userModel');
 
@@ -27,7 +28,10 @@ mongoose
     //if no user create confirmed user
     const anyuser = await User.find();
     // console.log(anyuser);
-    if (anyuser.length === 0) test.createTestUser();
+    // if (anyuser.length === 0) test.createTestUser();
+    // if (anyuser.length === 0) {
+    //   Seeder.Seed();
+    // }
     // mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');

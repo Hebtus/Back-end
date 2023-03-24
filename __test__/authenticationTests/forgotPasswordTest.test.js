@@ -68,6 +68,6 @@ test('should return an error if the email address is missing or incorrect', asyn
 });
 afterAll(async () => {
   // await mongoose.connection.collection('users').deleteMany({});
-  // await User.deleteMany();
+  await User.deleteMany();
   mongoose.disconnect();
 });

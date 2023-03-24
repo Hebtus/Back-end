@@ -21,8 +21,9 @@ describe('resetPassword', () => {
       useUnifiedTopology: true,
     });
 
-    await User.deleteMany();
-    await PasswordReset.deleteMany();
+    // await User.deleteMany();
+    // await PasswordReset.deleteMany();
+    await mongoose.connection.db.dropDatabase();
 
     user = await User.create({
       name: {

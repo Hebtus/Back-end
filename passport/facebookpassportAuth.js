@@ -26,8 +26,7 @@ exports.facebookAuth = function (passport) {
        * @param {Object} next -The next object for express middleware
        */
       async (accessToken, refreshToken, profile, done, req, res, next) => {
-
-        console.log(profile);
+        // console.log(profile);
         // 1)Create a new User object and add data to it
         const newUser = {
           FacebookID: profile.id,

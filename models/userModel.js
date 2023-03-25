@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
   locationName: {
     type: String,
     default: 'Faculty of Engineering, Cairo University',
+    maxlength: [100, 'An event must have no more than 100 characters'],
   },
   img_url: {
     type: String,

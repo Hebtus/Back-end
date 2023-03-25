@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-// const Event = require('./eventModel');
+const Event = require('./eventModel');
 const ticketSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -50,11 +50,22 @@ const ticketSchema = new mongoose.Schema({
   },
 });
 //automatically adds 1 to ticketsSold in its respective Event
-ticketSchema.post('findByIdAndUpdate', async function (next) {
+//findOneAndUpdate is called by findbyIdandUpdate
+ticketSchema.pre('findOneAndUpdate', async (doc) => {
+  console.log(this);
+  console.log('doc', doc);
+  //check on capacity
+  // if
   await Event.findByIdAndUpdate(this.eventID, {
     $inc: { ticketsSold: 1 },
   });
 });
+// ticketSchema.post('findByIdAndUpdate', async (doc) => {
+//   console.log(doc);
+//   await Event.findByIdAndUpdate(doc.eventID, {
+//     $inc: { ticketsSold: 1 },
+//   });
+// });
 //All find querries
 ticketSchema.pre(/^find/, function (next) {
   this.select({

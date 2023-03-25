@@ -26,27 +26,37 @@ const eventSchema = new mongoose.Schema({
   img_url: {
     type: String,
     default: '',
-    validate: [validator.isURL, 'The URL must be valid.'],
+    validate: [
+      //wrapper for making it not required
+      (val) => {
+        if (val.length !== 0) validator.isURL();
+        else {
+          return 1;
+        }
+      },
+      'The URL must be valid.',
+    ],
   },
   location: {
     type: locationSchema,
   },
   locationName: {
+    //TODO: add validators here
     type: String,
     required: true,
-    maxlength: [60, 'An event must have less or more than 40 characters'],
+    maxlength: [100, 'An event must have no more than 100 characters'],
+    default: 'Faculty of Engineering, Cairo University',
   },
   description: {
     type: String,
     trim: true,
-    required: true,
     maxlength: 400,
   },
   tags: [String],
   category: {
     type: String,
     enum: {
-      // Gender values that user can choose from
+      // TODO: Add validators on tag length
       values: ['Music', 'Food & Drink', 'Charity & Causes'],
       message: '{VALUE} is not supported in event categories',
     },
@@ -72,11 +82,12 @@ const eventSchema = new mongoose.Schema({
   ticketsSold: {
     type: Number,
     min: [0, 'Tickets Sold can not be lower than zero.'],
+    default: 0,
   },
   creatorID: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: true,
+    // required: true,
     unique: true,
   },
 });

@@ -65,6 +65,12 @@ const bookingsSchema = new mongoose.Schema({
     default: Date.now(),
     validate: [validator.isDate, 'Must be right date format.'],
   },
+  quantity: {
+    type: Number,
+    required: [true, 'Ticket must have a quantity'],
+    default: 1,
+    min: [1, 'Cannot have quantity less than 1'],
+  },
   userID: {
     // Refrence ID that refers to the attendee
     type: mongoose.Schema.ObjectId,
@@ -78,6 +84,7 @@ const bookingsSchema = new mongoose.Schema({
     required: [true, 'The booked ticket  must belong to an event'],
     unique: true,
   },
+
   // eventID: {
   //   // Refrence ID that refers to the event
   //   type: mongoose.Schema.ObjectId,
@@ -89,7 +96,7 @@ const bookingsSchema = new mongoose.Schema({
 //automatically adds 1 to currentReservations in its respective ticket
 bookingsSchema.post('save', async function () {
   await Ticket.findByIdAndUpdate(this.ticketID, {
-    $inc: { currentReservations: 1 },
+    $inc: { currentReservations: this.quantity ? this.quantity : 1 },
   });
 });
 
@@ -103,3 +110,4 @@ bookingsSchema.pre(/^find/, function (next) {
 });
 
 const Booking = mongoose.model('Booking', bookingsSchema);
+module.exports = Booking;

@@ -7,6 +7,9 @@ dotenv.config({ path: '.config.env' });
 const Seeder = require('./seeds/seeder');
 
 const User = require('./models/userModel');
+const Event = require('./models/eventModel');
+const Tickets = require('./models/ticketModel');
+const Booking = require('./models/bookingModel');
 
 //Database connection
 console.log('MYDB env is ', process.env.DATABASE_LOCAL);
@@ -32,9 +35,42 @@ mongoose
     // if (anyuser.length === 0) {
     //   Seeder.Seed();
     // }
-    // mongoose.connection.db.dropDatabase();
+    await mongoose.connection.db.dropDatabase();
 
     // console.log('DB is removed successfuly!');
+    //Schema Testing
+    const testEvent = new Event({
+      name: 'loleventxd',
+      startDate: Date.now(),
+      endtDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
+      privacy: false,
+    });
+
+    const testTickets = new Tickets({
+      name: '2a3det 4ay',
+      type: 'Regular',
+      price: 100,
+      capacity: 10,
+      sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
+      sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
+    });
+
+    const testBooking = new Booking({
+      name: { firstName: 'lol', lastName: 'attendeelastname' },
+      gender: 'Male',
+      phoneNumber: 12345678910,
+      guestEmail: 'irushbullet@google.com',
+      price: 100,
+      quantity: 2,
+      purchasedOn: Date.now() + 1000 * 60 * 60 * 24 * 1,
+    });
+    await testEvent.save().then(async () => {
+      testTickets.eventID = testEvent._id;
+      await testTickets.save().then(() => {
+        testBooking.ticketID = testTickets._id;
+        testBooking.save();
+      });
+    });
   });
 
 // const testerfunc = async () => {

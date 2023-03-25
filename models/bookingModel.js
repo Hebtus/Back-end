@@ -94,7 +94,7 @@ const bookingsSchema = new mongoose.Schema({
 });
 
 //automatically adds 1 to currentReservations in its respective ticket
-bookingsSchema.post('save', async function () {
+bookingsSchema.pre('save', async function () {
   await Ticket.findByIdAndUpdate(this.ticketID, {
     $inc: { currentReservations: this.quantity ? this.quantity : 1 },
   });

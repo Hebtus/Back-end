@@ -51,13 +51,27 @@ const ticketSchema = new mongoose.Schema({
 });
 //automatically adds 1 to ticketsSold in its respective Event
 //findOneAndUpdate is called by findbyIdandUpdate
-ticketSchema.pre('findOneAndUpdate', async (doc) => {
-  console.log(this);
-  console.log('doc', doc);
+ticketSchema.pre('findOneAndUpdate', async function (next) {
+  //this should refert to model itself since this is a model middleware
+  // console.log(this);
+  const currentReservationsInc = this._update.$inc.currentReservations;
+  // console.log(currentReservationsInc);
   //check on capacity
-  // if
-  await Event.findByIdAndUpdate(this.eventID, {
-    $inc: { ticketsSold: 1 },
+  const docToUpdate = await this.model.findById(this._conditions._id);
+  // console.log(this.model);
+  // console.log(docToUpdate);
+
+  if (
+    currentReservationsInc + docToUpdate.currentReservations >
+    docToUpdate.capacity
+  ) {
+    //do nothing
+    //or actually refuse update?
+    //make error to stop update?
+    next();
+  }
+  await Event.findByIdAndUpdate(docToUpdate.eventID, {
+    $inc: { ticketsSold: currentReservationsInc },
   });
 });
 // ticketSchema.post('findByIdAndUpdate', async (doc) => {

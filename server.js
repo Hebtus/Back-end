@@ -47,7 +47,7 @@ mongoose
     });
 
     const testTickets = new Tickets({
-      name: '2a3det 4ay',
+      name: '2a3det 4ayTicket',
       type: 'Regular',
       price: 100,
       capacity: 10,

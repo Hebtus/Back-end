@@ -5,7 +5,7 @@ const express = require('express');
 const authenticationRouter = require('./routes/authenticationRoute');
 const eventRouter = require('./routes/eventRoute');
 const passportRouter = require('./routes/passportRoute');
-// const eventRouter = require('./routes/eventRoute');
+const eventRouter = require('./routes/eventRoute');
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });

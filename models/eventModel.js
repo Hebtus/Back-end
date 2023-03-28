@@ -95,7 +95,6 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     // required: true,
-    unique: true,
   },
 });
 eventSchema.pre('save', function (next) {

@@ -44,6 +44,23 @@ mongoose
       startDate: Date.now(),
       endtDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
       privacy: false,
+      category: 'Music',
+    });
+
+    const testEvent2 = new Event({
+      name: 'lolevent2xd',
+      startDate: Date.now(),
+      endtDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
+      privacy: false,
+      category: 'Music',
+    });
+
+    const testEvent3 = new Event({
+      name: 'lolevent3xd',
+      startDate: Date.now(),
+      endtDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
+      privacy: false,
+      category: 'Food & Drink',
     });
 
     const testTickets = new Tickets({
@@ -71,7 +88,11 @@ mongoose
         testBooking.save();
       });
     });
+    await testEvent2.save();
+    await testEvent3.save();
   });
+
+// console.log(Date.now());
 
 // const testerfunc = async () => {
 //   const testUser = new User({

@@ -1,4 +1,4 @@
-// const crypto = require('crypto');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const locationSchema = require('./shared/locationModel');
@@ -18,7 +18,7 @@ const eventSchema = new mongoose.Schema({
     required: [true, 'An event must have a start date.'],
     validate: [validator.isDate, 'Must be right date format.'],
   },
-  endtDate: {
+  endDate: {
     type: Date,
     required: [true, 'An event must have an end date.'],
     validate: [validator.isDate, 'Must be right date format.'],
@@ -74,9 +74,16 @@ const eventSchema = new mongoose.Schema({
   password: {
     type: String,
     minlength: 8,
+    // required: { It did not work properly , I did it in middleware instead
+    //   function() {
+    //     return this.privacy;
+    //   },
+    //   message: 'Password is required if privacy is true',
+    // },
   },
   privacy: {
     type: Boolean,
+    default: false,
     required: true,
   },
   ticketsSold: {
@@ -91,8 +98,15 @@ const eventSchema = new mongoose.Schema({
     unique: true,
   },
 });
+eventSchema.pre('save', function (next) {
+  if (this.privacy) {
+    if (!this.password) {
+      return next(new Error('Password is required if event is private'));
+    }
+  }
+  return next();
+});
 
-//All find querries
 eventSchema.pre(/^find/, function (next) {
   this.select({
     __v: 0,
@@ -102,5 +116,30 @@ eventSchema.pre(/^find/, function (next) {
   next();
 });
 
+eventSchema.pre('save', async function (next) {
+  // Hash the password with cost of 12
+  if (this.password) {
+    this.password = await crypto
+      .createHash('sha256')
+      .update(this.password)
+      .digest('hex');
+  }
+  next();
+});
+
+// eventSchema.pre('findOne', function (next) {
+//   this.select({
+//     _id: 0,
+//     creatorID: 0,
+//     ticketsSold: 0,
+//     password: 0,
+//     draft: 0,
+//     goPublicDate: 0,
+//     privacy: 0,
+//   });
+//   next();
+// });
+
 const Event = mongoose.model('Event', eventSchema);
+
 module.exports = Event;

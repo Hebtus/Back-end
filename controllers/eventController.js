@@ -2,7 +2,6 @@ const { promisify } = require('util');
 const crypto = require('crypto');
 const Event = require('../models/eventModel');
 const catchAsync = require('../utils/catchAsync');
-const Event = require('../models/eventModel');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
   // if (req.params)

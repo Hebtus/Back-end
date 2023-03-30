@@ -5,19 +5,30 @@ const test = require('./__test__/testutils/createConfirmedUser');
 //Load config
 dotenv.config({ path: '.config.env' });
 const Seeder = require('./seeds/seeder');
-
+const cors = require('cors');
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
+  credentials: true,
+  preflightContinue: true,
+  optionsSuccessStatus: 204,
+};
+app.use('*', cors(corsOptions));
+
 //Database connection
+
 console.log('MYDB env is ', process.env.DATABASE_LOCAL);
 
 const DBstring =
   process.env.NODE_ENV === 'development'
     ? process.env.DATABASE_LOCAL
-    : process.env.DATABASE;
+    : process.env.DATABASE_DEPLOY;
 
 mongoose
   .connect(DBstring, {
@@ -29,14 +40,14 @@ mongoose
 
     //for testing and saving email creditsssssss
     //if no user create confirmed user
-    const anyuser = await User.find();
+    // const anyuser = await User.find();
     // console.log(anyuser);
     // if (anyuser.length === 0) test.createTestUser();
     // if (anyuser.length === 0) {
     //   Seeder.Seed();
     // }
-    await mongoose.connection.db.dropDatabase();
-    test.createTestUser();
+    // await mongoose.connection.db.dropDatabase();
+    // test.createTestUser();
     // console.log('DB is removed successfuly!');
     //Schema Testing
     // const testEvent = new Event({

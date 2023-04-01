@@ -176,6 +176,7 @@ const SendConfirmationEmail = async (user, req, res, next) => {
  * @description  Handles the Sign up request.
  */
 exports.signup = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   //check if user exists:
   const existingUser = await User.findOne({
     email: req.body.email,

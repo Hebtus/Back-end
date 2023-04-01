@@ -40,14 +40,15 @@ mongoose
 
     //for testing and saving email creditsssssss
     //if no user create confirmed user
-    // const anyuser = await User.find();
-    // console.log(anyuser);
-    // if (anyuser.length === 0) test.createTestUser();
-    // if (anyuser.length === 0) {
-    //   Seeder.Seed();
-    // }
+    const anyuser = await User.find();
+    console.log(anyuser);
+    if (anyuser.length === 0) test.createTestUser();
+    if (anyuser.length === 0) {
+      Seeder.Seed();
+    }
     // await mongoose.connection.db.dropDatabase();
-    // test.createTestUser();
+    await User.deleteMany();
+    test.createTestUser();
     // console.log('DB is removed successfuly!');
     //Schema Testing
     // const testEvent = new Event({

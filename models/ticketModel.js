@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const Event = require('./eventModel');
+
 const ticketSchema = new mongoose.Schema({
   name: {
     type: String,

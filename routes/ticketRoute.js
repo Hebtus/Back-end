@@ -1,17 +1,26 @@
-// const express = require('express');
-// const authController = require('../controllers/authenticationController');
-// const ticketController = require('../controllers/ticketController');
+/** Express router providing user related routes
+ * @module Routers/authernticationRouter
+ * @requires express
+ */
+// const dotenv = require('dotenv');
+const express = require('express');
+// const passport = require('passport');
 
-// //allows nested routing
-// //and lets the controller get access to previous parameters
-// const router = express.Router({ mergeParams: true });
+// const userController = require('../controllers/userController');
+// dotenv.config({ path: './config.env' });
+const authController = require('../controllers/authenticationController');
+const tickController = require('../controllers/ticketController');
+/**
+ * Express router to mount user related functions on.
+ * @type {object}
+ * @const
+ * @namespace authernticationRouter
+ */
+const router = express.Router();
 
-// router.route('/').get(ticketController.getAllTickets).post(
-//   authController.protect,
-//   //restrict to creators
-//   ticketController.createTicket
-// );
-
-// //restrict to creator
-
-// router.route('/:id').patch(ticketController.editTicket);
+router.post('/tickets', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
+router.get(
+  '/events/{event_id}/tickets',
+  authController.protect,
+  tickController.getEventTickets
+);

@@ -4,6 +4,7 @@ const express = require('express');
 
 const authenticationRouter = require('./routes/authenticationRoute');
 const eventRouter = require('./routes/eventRoute');
+const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
 // const cookieParser = require('cookie-parser');
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/v1', authenticationRouter);
 app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/events', eventRouter);
+app.use('/api/v1/creators/events', creatorRouter);
 // app.use('/login/google/callback', googleCallback);
 // app.use('/', viewRouter);
 // app.use('/api/v1/tours', tourRouter);

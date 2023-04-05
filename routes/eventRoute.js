@@ -15,6 +15,11 @@ router.route('/').get(eventController.getEvents).post(
   //restrict to creators
   eventController.createEvent
 );
+router.get(
+  'creators/events/{event_id}/sales',
+  authController.protect,
+  eventController.getEventSales
+);
 
 router
   .route('/:id')

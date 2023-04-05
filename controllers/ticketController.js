@@ -7,20 +7,34 @@ const catchAsync = require('../utils/catchAsync');
  */
 
 exports.createTicket = catchAsync(async (req, res, next) => {
-  const newTicket = await Ticket.create({
-    eventID: req.body.eventID,
-    type: req.body.type,
-    price: req.body.price,
-    capacity: req.body.capacity,
-    sellingStartTime: req.body.sellingStartTime,
-    sellingEndTime: req.body.sellingEndTime,
-  });
-  res.status(200).json({
-    status: 'success',
-    message: 'ticket created successfully',
-  });
-  await newTicket.save();
-  return newTicket;
+  if (
+    !req.body.eventID ||
+    !req.body.type ||
+    !req.body.price ||
+    !req.body.capacity ||
+    !req.body.sellingStartTime ||
+    !req.body.sellingEndTime
+  ) {
+    res.status(401).json({
+      status: 'fail',
+      message: 'please provide the needed information for ticket creation',
+    });
+  } else {
+    const newTicket = await Ticket.create({
+      eventID: req.body.eventID,
+      type: req.body.type,
+      price: req.body.price,
+      capacity: req.body.capacity,
+      sellingStartTime: req.body.sellingStartTime,
+      sellingEndTime: req.body.sellingEndTime,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'ticket created successfully',
+    });
+    await newTicket.save();
+    return newTicket;
+  }
 });
 
 exports.getEventTickets = async (req, res) => {

@@ -38,6 +38,8 @@ router
 //     eventController.deleteEvent
 //   );
 // //restrict to creators
-// router.route('/:id/sales').get(eventController.getEventSales);
+router
+  .route('/:id/sales')
+  .get(authController.protect, eventController.getEventSales);
 
 module.exports = router;

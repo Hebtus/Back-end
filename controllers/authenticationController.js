@@ -173,7 +173,14 @@ const SendConfirmationEmail = async (user, req, res, next) => {
 //  * @exports authenticationController:signup
 
 /**
+ * @function
  * @description  Handles the Sign up request.
+ * @async
+ * @name signup
+ * @param {object} req - The request object
+ * @param {object} res - The response object
+ * @param {object} next - The next object for express middleware
+ * @returns {object} - Returns the response object
  */
 exports.signup = catchAsync(async (req, res, next) => {
   console.log(req.body);
@@ -218,6 +225,8 @@ exports.signup = catchAsync(async (req, res, next) => {
       message: 'Please Enter password and email and name!',
     });
   }
+  // console.log(typeof req.body.password, typeof req.body.confirmPassword);
+  // console.log(req.body.confirmPassword);
   if (req.body.password !== req.body.confirmPassword) {
     return res.status(400).json({
       status: 'fail',
@@ -237,10 +246,12 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * @function
  * @description - Confirms email and then lets user in.
  * @param {object} req  -The request object
  * @param {object} res  -The response object
  * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
  */
 exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
@@ -272,7 +283,12 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * @function
  * @description - Handles Login request.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
  */
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
@@ -311,7 +327,12 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 /**
+ * @function
  * @description - Handles the logout logic.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
  */
 exports.logout = catchAsync(async (req, res, next) => {
   //overwrite cookie at client side and set it to expire
@@ -448,6 +469,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 // });
 
 /**
+ * @function
  * @description - updates current user password
  * @param {object} req  -The request object
  * @param {object} res  -The response object

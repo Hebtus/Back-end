@@ -43,9 +43,9 @@ mongoose
     const anyuser = await User.find();
     console.log(anyuser);
     if (anyuser.length === 0) test.createTestUser();
-    if (anyuser.length === 0) {
-      Seeder.Seed();
-    }
+    // if (anyuser.length === 0) {
+    //   Seeder.Seed();
+    // }
     // await mongoose.connection.db.dropDatabase();
     await User.deleteMany();
     test.createTestUser();

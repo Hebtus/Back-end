@@ -67,13 +67,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    // console.log(eventsData[0]);
-    // if (req.query.time === 'today') {
-    //   eventsData = await Event.find({ startDate: { $lt: endofToday } });
-    // } else {
-    //   //this weekend
-    //   eventsData = await Event.find({ startDate: { $lt: endofToday } });
-    // }
     goQuery = false;
   }
 

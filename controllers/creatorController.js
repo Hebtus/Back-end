@@ -4,6 +4,32 @@ const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const Ticket = require('../models/ticketModel');
 
+exports.getEvents = catchAsync(async (req, res, next) => {
+  console.log(req.user._id);
+  //Pagination Setup
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 20;
+  const skip = (page - 1) * limit;
+
+  if (req.query.csv === 'true') {
+    return res.status(200).json({
+      status: 'success',
+      message: 'Still being implemented :)',
+      data: { events: [] },
+    });
+  }
+
+  const eventsData = await Event.find({ creatorID: req.user._id })
+    .select(['-creatorID'])
+    .skip(skip)
+    .limit(limit);
+
+  res.status(200).json({
+    status: 'success',
+    data: { events: eventsData },
+  });
+});
+
 exports.getEvent = catchAsync(async (req, res, next) => {
   console.log(req.user);
   const event = await Event.findOne({ _id: req.params.id });

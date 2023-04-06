@@ -136,10 +136,30 @@ exports.getEventwithPassword = catchAsync(async (req, res, next) => {
   });
 });
 exports.editEvent = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama bas m4 google',
-  });
+  const updatedEvent = {};
+  updatedEvent.description = req.body.description;
+  updatedEvent.category = req.body.category;
+  updatedEvent.tags = req.body.tags;
+  updatedEvent.privacy = req.body.privacy;
+  updatedEvent.goPublicDate = req.body.goPublicDate;
+  const event = await Event.findByIdAndUpdate(req.params.id, updatedEvent);
+  if (!event) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'No event found with this id ',
+    });
+  } else if (!event.creatorID.equals(req.user._id)) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'You cannot edit events that are not yours ',
+    });
+  } else {
+    res.status(200).json({
+      status: 'success',
+      data: event,
+    });
+  }
+  next();
 });
 
 exports.deleteEvent = catchAsync(async (req, res, next) => {

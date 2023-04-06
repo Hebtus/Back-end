@@ -24,14 +24,13 @@ router.get(
 router
   .route('/:id')
   .get(eventController.getEvent)
-  .post(eventController.getEventwithPassword); //TODO: Determine if we should make sure that uere is logged in or  can access the event with out logging in
-
+  .post(eventController.getEventwithPassword) //TODO: Determine if we should make sure that uere is logged in or  can access the event with out logging in
+  .patch(
+    authController.protect,
+    //restrict to creators
+    eventController.editEvent
+  );
 //.post(eventController.getEventWithPassword);
-//.patch(
-//   authController.protect,
-//   //restrict to creators
-//   eventController.editEvent
-// )
 //   .delete(
 //     authController.protect,
 //     //restrict to creators

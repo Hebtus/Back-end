@@ -6,14 +6,14 @@ const AppError = require('../utils/appError');
 const Ticket = require('../models/ticketModel');
 
 exports.getEvent = catchAsync(async (req, res, next) => {
-  //console.log(req.user);
+  console.log(req.user);
   const event = await Event.findOne({ _id: req.params.id });
   if (!event) {
     res.status(404).json({
       status: 'fail',
       message: 'No event found with this id ',
     });
-  } else if (!event.creatorID.equals('6428d14e2548b83651dd7a12')) {
+  } else if (!event.creatorID.equals(req.user._id)) {
     res.status(404).json({
       status: 'fail',
       message: 'You cannot access events that are not yours ',

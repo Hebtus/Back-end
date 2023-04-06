@@ -1,58 +1,124 @@
 const { promisify } = require('util');
 const crypto = require('crypto');
 const Event = require('../models/eventModel');
+const Ticket = require('../models/ticketModel');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
-  // if (req.params)
-
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
-  // console.log(req.query.category);
-
+  // ie. no need for checks
+  let longitude;
+  let latitude;
+  if (req.query.location) {
+    const locationValues = req.query.location.split(',');
+    longitude = locationValues[0];
+    latitude = locationValues[1];
+  } else {
+    longitude = 31.2584644;
+    latitude = 30.0594885;
+  }
+  //TODO: Implement Pagination and limits
   //TODO: add the GeoJSON logic to all of the queries
-  let bypass = 1;
+  let goQuery = 1;
   let eventsData = [];
-  if (req.query.category && bypass) {
-    eventsData = await Event.find({ category: req.query.category });
-    bypass = false;
+  if (req.query.category && goQuery) {
+    eventsData = await Event.find({
+      category: req.query.category,
+      privacy: 0,
+      draft: 0,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: 50 * 1000, //assume 50 km radius
+        },
+      },
+    });
+    goQuery = false;
   }
 
-  if (req.query.time && bypass) {
-    if (req.query.date == null) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'There must be an associated time to query properly',
-      });
-    }
-    const today = new Date(req.query.date);
-    // endofDay.setUTCHours(23, 59, 59, 999);
-    //Check for later
-    const endofToday = new Date(today.setHours(23, 59, 59, 999));
-    if (req.query.time === 'today') {
-      eventsData = await Event.find({ startDate: { $lt: endofToday } });
-    } else {
-      //this weekend
-      eventsData = await Event.find({ startDate: { $lt: endofToday } });
-    }
-    bypass = false;
+  if (req.query.startDate && req.query.endDate && goQuery) {
+    // The query works fine with both ISO format and UTC format
+    // Other timezones and formats are not checked.
+
+    eventsData = await Event.find({
+      $or: [
+        { startDate: { $gte: req.query.startDate, $lte: req.query.endDate } },
+        { endDate: { $gte: req.query.startDate, $lte: req.query.endDate } },
+      ],
+      privacy: 0,
+      draft: 0,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: 50 * 1000, //assume 50 km radius
+        },
+      },
+    });
+
+    // console.log(eventsData[0]);
+    // if (req.query.time === 'today') {
+    //   eventsData = await Event.find({ startDate: { $lt: endofToday } });
+    // } else {
+    //   //this weekend
+    //   eventsData = await Event.find({ startDate: { $lt: endofToday } });
+    // }
+    goQuery = false;
   }
 
-  if (req.query.free && bypass) {
-    eventsData = await Event.find({ category: req.params });
-    bypass = false;
+  if (req.query.free && goQuery) {
+    //find events which have free tickets
+    eventsData = await Event.find({
+      privacy: false,
+      draft: false,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: 50 * 1000, //assume 50 km radius
+        },
+      },
+    });
+    const eventIDs = eventsData.map((event) => event._id);
+
+    //We first Make sure that these tickets are available to the user
+    // ie. not sold out
+    // and their selling time has not passed or is not yet to come etc etc
+    let freeEventIDs = await Ticket.find({
+      eventID: { $in: eventIDs },
+      price: 0,
+      sellingStartTime: { $lte: Date.now() },
+      sellingEndTime: { $gte: Date.now() },
+      $expr: { $lt: ['$currentReservations', '$capacity'] },
+    }).select(['eventID', '-_id']);
+    //take only the eventID's
+    freeEventIDs = freeEventIDs.map((event) => event.eventID);
+
+    eventsData = eventsData.filter((event) => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const freeEventID of freeEventIDs) {
+        if (event._id.equals(freeEventID)) {
+          // console.log('matched thingy ');
+          return true;
+        }
+      }
+      return false;
+    });
+
+    goQuery = false;
   }
 
-  if (req.query.online && bypass) {
-    eventsData = await Event.find({ online: 1 });
-    bypass = false;
+  if (req.query.online && goQuery) {
+    //online events are exempt from location restriction
+    eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 });
+    goQuery = false;
   }
 
-  // const lol = await Event.find({ category: req.params });
+  //if no valid parameter had been specified for some reason
+  if (goQuery) {
+    eventsData = [];
+  }
 
-  // console.log(lol);
-
-  res.status('200').json({
+  res.status(200).json({
     status: 'success',
     data: { events: eventsData },
   });

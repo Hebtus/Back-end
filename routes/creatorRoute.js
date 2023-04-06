@@ -2,7 +2,7 @@ const express = require('express');
 // const authController = require('../controllers/authenticationController');
 const creatorController = require('../controllers/creatorController');
 const authController = require('../controllers/authenticationController');
-const eventController = require('../controllers/eventController');
+
 const router = express.Router();
 
 // router.route('/').get(creatorController.getAllEvents);

@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/authenticationController');
 const eventController = require('../controllers/eventController');
+const tickController = require('../controllers/ticketController');
 const ticketRouter = require('./ticketRoute');
 const bookingRouter = require('./bookingRoute');
 
@@ -19,6 +20,11 @@ router.get(
   'creators/events/{event_id}/sales',
   authController.protect,
   eventController.getEventSales
+);
+router.get(
+  '/:id/tickets',
+  authController.protect,
+  tickController.getEventTickets
 );
 
 router

@@ -22,7 +22,7 @@ exports.createTicket = catchAsync(async (req, res, next) => {
   } else {
     const newTicket = await Ticket.create({
       eventID: req.body.eventID,
-      name:req.body.name,
+      name: req.body.name,
       type: req.body.type,
       price: req.body.price,
       capacity: req.body.capacity,
@@ -39,17 +39,19 @@ exports.createTicket = catchAsync(async (req, res, next) => {
 });
 
 exports.getEventTickets = async (req, res) => {
-  const { eventId } = req.params.eventID;
+  const { eventId } = req.params.id;
   try {
-    const event = await Ticket.findAll({ eventID: eventId });
-    if (!event) {
+    const ticket = await Ticket.findOne({ eventID: eventId });
+    if (!ticket) {
       return res
         .status(404)
         .json({ status: 'fail', message: 'invalid eventID' });
     }
     res.status(200).json({
       status: 'success',
-      data: event,
+      data: {
+        ticket,
+      },
     });
   } catch (err) {
     console.log(err);

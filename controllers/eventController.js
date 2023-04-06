@@ -8,12 +8,19 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
   // ie. no need for checks
+
+  //Pagination Setup
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 20;
+  const skip = (page - 1) * limit;
+
+  //Geoquery setup
   let longitude;
   let latitude;
   if (req.query.location) {
     const locationValues = req.query.location.split(',');
-    longitude = locationValues[0];
-    latitude = locationValues[1];
+    longitude = locationValues[0] * 1; //times 1 to convert them into numbers
+    latitude = locationValues[1] * 1;
   } else {
     longitude = 31.2584644;
     latitude = 30.0594885;
@@ -33,7 +40,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           $maxDistance: 50 * 1000, //assume 50 km radius
         },
       },
-    });
+    })
+      .skip(skip)
+      .limit(limit);
     goQuery = false;
   }
 
@@ -54,7 +63,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           $maxDistance: 50 * 1000, //assume 50 km radius
         },
       },
-    });
+    })
+      .skip(skip)
+      .limit(limit);
 
     // console.log(eventsData[0]);
     // if (req.query.time === 'today') {
@@ -77,7 +88,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           $maxDistance: 50 * 1000, //assume 50 km radius
         },
       },
-    });
+    })
+      .skip(skip)
+      .limit(limit);
     const eventIDs = eventsData.map((event) => event._id);
 
     //We first Make sure that these tickets are available to the user
@@ -109,7 +122,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 
   if (req.query.online && goQuery) {
     //online events are exempt from location restriction
-    eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 });
+    eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 })
+      .skip(skip)
+      .limit(limit);
     goQuery = false;
   }
 

@@ -16,17 +16,17 @@ router.route('/').get(eventController.getEvents).post(
   //restrict to creators
   eventController.createEvent
 );
-router.get(
-  'creators/events/{event_id}/sales',
-  authController.protect,
-  eventController.getEventSales
-);
+
 router.get(
   '/:id/tickets',
   authController.protect,
   tickController.getEventTickets
 );
-
+router.get(
+  '/:id/sales',
+  authController.protect,
+  eventController.getEventSales
+);
 router
   .route('/:id')
   .get(eventController.getEvent)

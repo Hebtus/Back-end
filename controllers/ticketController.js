@@ -39,7 +39,7 @@ exports.createTicket = catchAsync(async (req, res, next) => {
 });
 
 exports.getEventTickets = async (req, res) => {
-  const { eventId } = req.params.id;
+  const  eventId  = req.params.id;
   try {
     const ticket = await Ticket.findOne({ eventID: eventId });
     if (!ticket) {

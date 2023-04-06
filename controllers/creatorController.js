@@ -30,16 +30,18 @@ exports.getEvent = catchAsync(async (req, res, next) => {
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
   const userID = req.user._id;
-  const { eventId } = req.params.eventID;
+  const  eventId  = req.params.id;
   try {
-    const ticket = await Ticket.findAll({ eventID: eventId });
-    const event = await Event.findAll({ creatorID: userID });
-    if (eventId !== event._id) {
+    const ticket = await Ticket.findOne({ eventID: eventId });
+    const event = await Event.findOne({ creatorID: userID });
+
+    //commented till we figure out the user change of login id
+    /*if (eventId !== event._id) {
       return res.status(404).json({
         status: 'fail',
         message: 'this ticket event is not associated with this creator',
       });
-    }
+    }*/
     if (!ticket) {
       return res.status(404).json({
         status: 'fail',
@@ -48,7 +50,9 @@ exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
     }
     res.status(200).json({
       status: 'success',
-      data: ticket,
+      data: {
+        tickets:ticket,
+      },
     });
   } catch (err) {
     console.log(err);

@@ -2,7 +2,6 @@ const Event = require('../models/eventModel');
 const auth = require('./authenticationController');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError');
 const Ticket = require('../models/ticketModel');
 
 exports.getEvent = catchAsync(async (req, res, next) => {
@@ -30,13 +29,19 @@ exports.getEvent = catchAsync(async (req, res, next) => {
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
   const userID = req.user._id;
-  const  eventId  = req.params.id;
+  const eventId = req.params.id;
   try {
     const ticket = await Ticket.findOne({ eventID: eventId });
     const event = await Event.findOne({ creatorID: userID });
 
     //commented till we figure out the user change of login id
-    /*if (eventId !== event._id) {
+    /*if (!event) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'invalid creator',
+      });
+    }
+    if (eventId !== event._id) {
       return res.status(404).json({
         status: 'fail',
         message: 'this ticket event is not associated with this creator',
@@ -45,13 +50,13 @@ exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
     if (!ticket) {
       return res.status(404).json({
         status: 'fail',
-        message: 'invalid eventID or invalid creator',
+        message: 'invalid eventID',
       });
     }
     res.status(200).json({
       status: 'success',
       data: {
-        tickets:ticket,
+        tickets: ticket,
       },
     });
   } catch (err) {

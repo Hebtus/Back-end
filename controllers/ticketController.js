@@ -22,6 +22,7 @@ exports.createTicket = catchAsync(async (req, res, next) => {
   } else {
     const newTicket = await Ticket.create({
       eventID: req.body.eventID,
+      name:req.body.name,
       type: req.body.type,
       price: req.body.price,
       capacity: req.body.capacity,

@@ -18,9 +18,11 @@ const tickController = require('../controllers/ticketController');
  */
 const router = express.Router();
 
-router.post('/tickets', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
+router.post('/', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
 router.get(
   '/events/{event_id}/tickets',
   authController.protect,
   tickController.getEventTickets
 );
+
+module.exports = router;

@@ -12,11 +12,53 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   if (req.query.csv === 'true') {
-    return res.status(200).json({
-      status: 'success',
-      message: 'Still being implemented :)',
-      data: { events: [] },
+    //Get all events without pagination
+    const eventsData = await Event.find({ creatorID: req.user._id }).select([
+      '-creatorID',
+    ]);
+    // write to a csv file and send to client
+    let csvData = [
+      'Event',
+      'Date',
+      'Status',
+      'Tickets Sold',
+      'Tickets Available',
+    ].join(',');
+    csvData += '\n\r';
+    eventsData.forEach(async (event) => {
+      //aggregate on Tickets to find Total capacity
+      const ticketQuery = await Ticket.aggregate([
+        { $match: { eventID: event._id } },
+        {
+          $group: {
+            _id: null,
+            ticketsAvailable: { $sum: '$capacity' },
+          },
+        },
+      ]);
+      // console.log(ticketQuery);
+      // console.log(ticketQuery[0]);
+      csvData += [
+        event.name,
+        event.startDate,
+        !event.draft ? 'draft' : 'live',
+        event.ticketsSold,
+        ticketQuery[0].ticketsAvailable,
+      ].join(',');
+      csvData += '\n\r';
     });
+
+    res
+      // .set({
+      //   'Content-Type': 'text/csv',
+      //   'Content-Disposition': `attachment; filename="users.csv"`,
+      // })
+      .send(csvData)
+      .status(200)
+      .json({
+        status: 'success',
+        message: 'CSV file sent',
+      });
   }
 
   const eventsData = await Event.find({ creatorID: req.user._id })

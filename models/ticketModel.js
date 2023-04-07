@@ -47,7 +47,6 @@ const ticketSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Event',
     required: [true, 'Ticket Type must belong to an event.'],
-    unique: true,
   },
 });
 //automatically adds 1 to ticketsSold in its respective Event

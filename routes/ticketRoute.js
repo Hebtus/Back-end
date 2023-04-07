@@ -10,6 +10,7 @@ const express = require('express');
 // dotenv.config({ path: './config.env' });
 const authController = require('../controllers/authenticationController');
 const tickController = require('../controllers/ticketController');
+const promoCodeController = require('../controllers/promoCodeController');
 /**
  * Express router to mount user related functions on.
  * @type {object}
@@ -19,5 +20,16 @@ const tickController = require('../controllers/ticketController');
 const router = express.Router();
 
 router.post('/', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
+
+router.post(
+  '/:id/promocodes',
+  authController.protect,
+  promoCodeController.createPromoCode
+);
+router.post(
+  '/:id/promocodescsv',
+  authController.protect,
+  promoCodeController.createPromoCodeCSV
+);
 
 module.exports = router;

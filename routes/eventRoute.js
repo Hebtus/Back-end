@@ -22,11 +22,7 @@ router.get(
   authController.protect,
   tickController.getEventTickets
 );
-router.get(
-  '/:id/sales',
-  authController.protect,
-  eventController.getEventSales
-);
+router.get('/:id/sales', authController.protect, eventController.getEventSales);
 router
   .route('/:id')
   .get(eventController.getEvent)

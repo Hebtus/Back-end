@@ -51,8 +51,12 @@ mongoose
     // await User.deleteMany();
     const anyuser = await User.find();
     // console.log(anyuser);
-    if (anyuser.length === 0) test.createTestUser();
-
+    let user1;
+    let user2;
+    if (anyuser.length === 0) {
+      user1 = await test.createTestUser();
+      user2 = await test.createTestUser2();
+    }
     // const allbookings = await Booking.find();
     // console.log('allbookings is ', allbookings);
 
@@ -68,50 +72,52 @@ mongoose
     // console.log('DB is removed successfuly!');
     // // // Schema Testing
 
-    const testEvent2 = new Event({
-      name: 'lolerseventus',
-      startDate: Date.now() + 1000 * 60 * 60 * 24 * 20,
-      endDate: Date.now() + 1000 * 60 * 60 * 24 * 25, //after 10 days
-      privacy: false,
-      draft: false,
-      category: 'Food & Drink',
-    });
+    // const testEvent2 = new Event({
+    //   name: 'lolerseventus',
+    //   startDate: Date.now() + 1000 * 60 * 60 * 24 * 20,
+    //   endDate: Date.now() + 1000 * 60 * 60 * 24 * 25, //after 10 days
+    //   privacy: false,
+    //   draft: false,
+    //   category: 'Food & Drink',
+    //   creatorID: user1._id,
+    // });
 
-    const testEvent = new Event({
-      name: 'loleventxd',
-      startDate: Date.now() - 1000 * 60 * 60 * 24 * 10,
-      endDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
-      privacy: false,
-      draft: false,
-      category: 'Music',
-    });
+    // const testEvent = new Event({
+    //   name: 'loleventxd',
+    //   startDate: Date.now() - 1000 * 60 * 60 * 24 * 10,
+    //   endDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
+    //   privacy: false,
+    //   draft: false,
+    //   category: 'Music',
+    //   creatorID: user1._id,
+    // });
 
-    const testTickets = new Tickets({
-      name: '2a3det 4ayTicket',
-      type: 'Regular',
-      price: 100,
-      capacity: 10,
-      sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
-      sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
-    });
+    // const testTickets = new Tickets({
+    //   name: '2a3det 4ayTicket',
+    //   type: 'Regular',
+    //   price: 100,
+    //   capacity: 10,
+    //   sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
+    //   sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
+    // });
 
-    const testBooking = new Booking({
-      name: { firstName: 'lol', lastName: 'attendeelastname' },
-      gender: 'Male',
-      phoneNumber: 12345678910,
-      guestEmail: 'irushbullet@google.com',
-      price: 100,
-      quantity: 2,
-      purchasedOn: Date.now(),
-    });
-    await testEvent2.save();
-    await testEvent.save().then(async () => {
-      testTickets.eventID = testEvent._id;
-      await testTickets.save().then(() => {
-        testBooking.ticketID = testTickets._id;
-        testBooking.save();
-      });
-    });
+    // const testBooking = new Booking({
+    //   name: { firstName: 'lol', lastName: 'attendeelastname' },
+    //   gender: 'Male',
+    //   phoneNumber: 12345678910,
+    //   guestEmail: 'irushbullet@google.com',
+    //   price: 100,
+    //   quantity: 2,
+    //   purchasedOn: Date.now(),
+    // });
+    // await testEvent2.save();
+    // await testEvent.save().then(async () => {
+    //   testTickets.eventID = testEvent._id;
+    //   await testTickets.save().then(() => {
+    //     testBooking.ticketID = testTickets._id;
+    //     testBooking.save();
+    //   });
+    // });
   });
 
 // console.log(Date.now());

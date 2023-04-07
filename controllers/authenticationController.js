@@ -89,14 +89,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2) Verification token
 
   // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
-  // let decoded;
-  // try {
-  //   // handles when somehow the a cookie named jwt starting with bearer but is invalid comes
-  //   decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  //   next();
-  // } catch (err) {
-  //   return next(new AppError('Token not verified.', 401));
-  // }
 
   //still needs to handle invalid token error tho I think
   const decoded = await promisify(jwt.verify)(

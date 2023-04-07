@@ -7,7 +7,8 @@ const router = express.Router();
 
 // router.route('/').get(creatorController.getAllEvents);
 
-router.get('/', authController.protect, creatorController.getEvents);
+// router.get('/', authController.protect, creatorController.getEvents);
+router.get('/', creatorController.getEvents);
 router.route('/:id').get(authController.protect, creatorController.getEvent);
 router.get(
   '/:id/tickets',

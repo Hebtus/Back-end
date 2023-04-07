@@ -15,10 +15,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   if (req.query.csv === 'true') {
     //Get all events without pagination
     //for testing
-    const eventsData = await Event.find({
-      creatorID: '642f3260de49962dcfb8179c',
-    }).select([
-      // const eventsData = await Event.find({ creatorID: req.user._id }).select([
+
+    const eventsData = await Event.find({ creatorID: req.user._id }).select([
       '-creatorID',
     ]);
     // write to a csv file and send to client

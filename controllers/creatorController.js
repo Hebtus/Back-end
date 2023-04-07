@@ -3,6 +3,7 @@ const auth = require('./authenticationController');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const Ticket = require('../models/ticketModel');
+const Booking = require('../models/bookingModel');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
   // req.user._id = '642f3260de49962dcfb8179c';
@@ -110,6 +111,50 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   }
   next();
 });
+
+exports.deleteEvent = catchAsync(async (req, res, next) => {
+  // console.log(req.user);
+  const event = await Event.findOne({ _id: req.params.id });
+  if (!event) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'No event found with this id ',
+    });
+  } else if (!event.creatorID.equals(req.user._id)) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'You cannot access events that are not yours ',
+    });
+  } else {
+    //put delete logic here
+    //get bookings.. and delete them
+    //first get Tickets
+    let eventTickets = await Ticket.find({
+      eventID: req.params.id,
+    });
+
+    //take only the eventID's
+    const ticketIDs = eventTickets.map((ticket) => ticket._id);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const currTicketID of ticketIDs) {
+      // eslint-disable-next-line no-await-in-loop
+      await Booking.deleteMany({ ticketID: currTicketID });
+    }
+
+    // get Tickets and delete them
+    await Ticket.deleteMany({ eventID: req.params.id });
+    //finally delete the event
+    await Event.deleteOne({ _id: req.params.id });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'event deleted successfully',
+    });
+  }
+  next();
+});
+
 //now i have some inquires , is there a better way to check the association betwen this creator and the ticket ? the loop bacl from ticket to event to creator?
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {

@@ -104,14 +104,14 @@ mongoose
       quantity: 2,
       purchasedOn: Date.now(),
     });
-    // await testEvent2.save();
-    // await testEvent.save().then(async () => {
-    //   testTickets.eventID = testEvent._id;
-    //   await testTickets.save().then(() => {
-    //     testBooking.ticketID = testTickets._id;
-    //     testBooking.save();
-    //   });
-    // });
+    await testEvent2.save();
+    await testEvent.save().then(async () => {
+      testTickets.eventID = testEvent._id;
+      await testTickets.save().then(() => {
+        testBooking.ticketID = testTickets._id;
+        testBooking.save();
+      });
+    });
   });
 
 // console.log(Date.now());

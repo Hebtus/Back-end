@@ -6,13 +6,12 @@ const authController = require('../controllers/authenticationController');
 const router = express.Router();
 
 // router.route('/').get(creatorController.getAllEvents);
-
-router.get('/', authController.protect, creatorController.getEvents);
-router.route('/:id').get(authController.protect, creatorController.getEvent);
-router.get(
-  '/:id/tickets',
-  authController.protect,
-  creatorController.getEventTicketByCreator
-);
+router.use(authController.protect);
+router.get('/', creatorController.getEvents);
+router
+  .route('/:id')
+  .get(creatorController.getEvent)
+  .delete(creatorController.deleteEvent);
+router.get('/:id/tickets', creatorController.getEventTicketByCreator);
 // router.route('/events/:id/sales').get(creatorController.getSales);
 module.exports = router;

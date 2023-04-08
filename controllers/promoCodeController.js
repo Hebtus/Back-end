@@ -1,19 +1,58 @@
-const { promisify } = require('util');
-const crypto = require('crypto');
+const multer = require('multer');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
 const promoCode = require('../models/promoCodeModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+
+//for reading csv file
+// const csv = require('csv-parser');
+const { Readable } = require('stream');
+const { parse } = require('fast-csv');
+
+const multerTempStorage = multer.memoryStorage();
+//Limit the file size to 5MB
+const multerLimits = { filesize: 5 * 10 ** 6, fields: 0, files: 1 };
+
+// Filters the type of files that this request accepts
+// const multerFilter = (req, file, cb) => {
+//   if (file.mimetype.startsWith('image')) {
+//     cb(null, true);
+//   } else {
+//     cb(new AppError('Not an image! Please upload only images.', 400), false);
+//   }
+// };
+
+const csvFilter = (_req, file, cb) => {
+  // console.log('Reading file in middleware', file.originalname);
+  if (file === undefined) {
+    cb('Please upload a file first to proceed.', false);
+  } else if (file.mimetype.includes('csv')) {
+    cb(null, true);
+  } else {
+    cb('Please upload only CSV file type.', false);
+  }
+};
+
+exports.uploadCSV = multer({
+  storage: multerTempStorage,
+  fileFilter: csvFilter,
+  limits: multerLimits,
+});
 
 exports.createPromoCode = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
 
-  const ticket = await Ticket.findOne({ _id: req.params.id }).catch(() =>
-    res.status(400).json({
+  let ticket;
+  try {
+    ticket = await Ticket.findOne({ _id: req.params.id });
+  } catch (err) {
+    return res.status(400).json({
       status: 'fail',
       message: 'No ticket found with this id ',
-    })
-  );
+    });
+  }
+
   if (!ticket) {
     return res.status(400).json({
       status: 'fail',
@@ -91,6 +130,43 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
 exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
+  let ticket;
+  try {
+    ticket = await Ticket.findOne({ _id: req.params.id });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'No ticket found with this id ',
+    });
+  }
+
+  if (!ticket) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'No ticket found with this id ',
+    });
+  }
+
+  const event = await Event.findOne({ _id: ticket.eventID });
+  if (!event.creatorID.equals(req.user._id)) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'You cannot access events that are not yours ',
+    });
+  }
+
+  if (req.file === undefined) {
+    return res.status(400).send('Please upload a CSV file!');
+  }
+  const csvfile = req.file;
+  const stream = Readable.from(csvfile.buffer);
+
+  // stream.pipe(csv()).on('data', async (row) => {
+  //   console.log(row);
+  // });
+  stream.pipe(parse({ headers: true })).on('data', async (row) => {
+    console.log(row);
+  });
 
   res.status(200).json({
     status: 'success',

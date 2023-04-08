@@ -9,6 +9,7 @@ const promoCodeSchema = new mongoose.Schema({
     required: [true, 'Please provide a ticket name'],
     minlength: [1, 'Event Name can not be less than 1 character.'],
     maxlength: [30, 'Event Name can not be more than 30 characters long.'],
+    unique: true,
   },
   limits: {
     //capacity of promoCode
@@ -22,13 +23,10 @@ const promoCodeSchema = new mongoose.Schema({
     type: Number,
     min: [0, 'Minimum percentage cannot be less than 0'],
     max: [100, 'Maximum percentage cannot be more than 100'],
-    default: 1,
   },
   discountAmount: {
     type: Number,
     min: [0, 'Minimum Discount Amount cannot be less than 0'],
-    max: [100, 'Maximum Discount Amount cannot be more than 100'],
-    default: 1,
   },
   uses: {
     //The actual number of times a promoCode was used
@@ -57,14 +55,16 @@ promoCodeSchema.pre('save', function (next) {
       new Error('At least one of percentage or discountAmount should be given')
     );
   //make sure that the number of uses never exceeds current capacity
-  if (!this.uses > !this.limits)
+  if (this.uses > this.limits)
     return next(new Error('Uses cannot be bigger than limit!'));
   next();
 });
 
 //makes sure that the number of uses never exceeds current capacity
 promoCodeSchema.pre('update', function (next) {
-  if (!this.uses > !this.limits)
+  // console.log('uses are ', this.uses);
+  // console.log(this.limits);
+  if (this.uses > this.limits)
     return next(new Error('Uses cannot be bigger than limit!'));
   next();
 });

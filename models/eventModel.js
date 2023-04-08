@@ -66,6 +66,8 @@ const eventSchema = new mongoose.Schema({
   },
   draft: {
     type: Boolean,
+    default: true,
+    required: true,
   },
   goPublicDate: {
     type: Date,
@@ -97,7 +99,16 @@ const eventSchema = new mongoose.Schema({
     // required: true,
   },
 });
+eventSchema.index({ location: '2dsphere' });
+
+//TODO: Check that isNew Works Correctly
 eventSchema.pre('save', function (next) {
+  if (this.isNew && !this.location) {
+    this.location = {
+      coordinates: [31.2107164, 30.0246686],
+    };
+  }
+
   if (this.privacy) {
     if (!this.password) {
       return next(new Error('Password is required if event is private'));

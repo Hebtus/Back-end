@@ -9,6 +9,10 @@ function arraySize(val) {
 
 //the type validates the longitude and latitude numbers
 //Format is [longitude, latitude]
+// longitude must be between -180 and 180
+// latitude must be between -90 and 90
+
+//the format here is reverse compared to the one in google maps
 
 const locationSchema = new mongoose.Schema({
   type: {
@@ -31,7 +35,8 @@ const locationSchema = new mongoose.Schema({
         message: '{VALUE} is not supported for coordinates index',
       },
     },
-    default: [30.0594885, 31.2584644], //[longitude,latitude] // defaults to Cairo
+    //30.026759916715474, 31.211617533138092
+    default: [31.2107164, 30.0246686], //[longitude,latitude] // defaults to our Favorite place :)
     validate: [arraySize, 'Coordinates must be exactly 2'],
   },
 });

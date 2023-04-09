@@ -4,8 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = "test:${BUILD_NUMBER}"
         CONTAINER_NAME = "test"
-        GITHUB_USERNAME = credentials('GITHUB_USERNAME')
-        GITHUB_TOKEN = credentials('GITHUB_TOKEN')
+        GITHUB_USERNAME = "${env.GITHUB_USERNAME}"
+        GITHUB_TOKEN = "${env.GITHUB_TOKEN}"
     }
 
     stages {

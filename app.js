@@ -6,6 +6,7 @@ const authenticationRouter = require('./routes/authenticationRoute');
 const eventRouter = require('./routes/eventRoute');
 const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
+const ticketRouter = require('./routes/ticketRoute');
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });

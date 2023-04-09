@@ -54,8 +54,8 @@ mongoose
     let user1;
     let user2;
     if (anyuser.length === 0) {
-      user1 = await test.createTestUser();
-      user2 = await test.createTestUser2();
+      //user1 = await test.createTestUser();
+      //user2 = await test.createTestUser2();
     }
     // const allbookings = await Booking.find();
     // console.log('allbookings is ', allbookings);

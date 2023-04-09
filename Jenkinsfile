@@ -23,7 +23,6 @@ pipeline {
                 //sh "docker run -p 3001:3001 -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
                 sh "docker run -p 3001:3001 -d --name ${CONTAINER_NAME} -e GITHUB_USERNAME=$GITHUB_USERNAME -e GITHUB_TOKEN=$GITHUB_TOKEN ${IMAGE_NAME}"
             }
-            }
         }
     }
 }

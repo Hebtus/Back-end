@@ -31,7 +31,6 @@ exports.createTicket = catchAsync(async (req, res, next) => {
     const newTicket = await Ticket.create({
       name: req.body.name,
       eventID: req.body.eventID,
-      name: req.body.name,
       type: req.body.type,
       price: req.body.price,
       capacity: req.body.capacity,
@@ -72,20 +71,32 @@ exports.editTicket = async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'capacity',
+    'currentReservations',
     'sellingEndTime',
+    'sellingStartTime',
+    'name',
     'price',
     'type'
   );
-  const updatedTicket = await Ticket.findByIdAndUpdate(
-    req.params.id,
-    filteredBody,
-    {
-      new: true,
 
-      context: 'query',
-    }
-  );
-
+  const updatedTicket = await Ticket.findById(req.params.id);
+  if (!updatedTicket) {
+    return res.status(404).json({
+      status: 'failed',
+      message: "Couldn't find ticket with this id",
+    });
+  }
+  if (filteredBody.name) updatedTicket.name = filteredBody.name;
+  if (filteredBody.currentReservations)
+    updatedTicket.currentReservations = filteredBody.currentReservations;
+  if (filteredBody.sellingEndTime)
+    updatedTicket.sellingEndTime = filteredBody.sellingEndTime;
+  if (filteredBody.sellingStartTime)
+    updatedTicket.sellingStartTime = filteredBody.sellingStartTime;
+  if (filteredBody.capacity) updatedTicket.capacity = filteredBody.capacity;
+  if (filteredBody.type) updatedTicket.type = filteredBody.type;
+  if (filteredBody.price) updatedTicket.price = filteredBody.price;
+  await updatedTicket.save();
   res.status(200).json({
     status: 'success',
     data: {

@@ -244,8 +244,47 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 });
 
 exports.getEventSales = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama bas m4 google',
-  });
+  try {
+    const ticket = await Ticket.findOne({ eventID: req.params.id });
+    const event = await Event.findOne({ creatorID: req.user._id });
+    //commented till we figure out the user change of login id
+    if (!event) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'invalid creator',
+      });
+    }
+    if (!event._id.equals(req.params.id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'this ticket event is not associated with this creator',
+      });
+    }
+    if (!ticket) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'invalid eventID',
+      });
+    }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        totalGrossSales: ticket.currentReservations * ticket.price,
+        totalNetSales:
+          ticket.currentReservations * ticket.price -
+          ticket.currentReservations * ticket.price * 0.225,
+        salesByType: {
+          ticketID: ticket._id,
+          ticketName: ticket.name,
+          ticketType: ticket.type,
+          price: ticket.price,
+          sold: ticket.currentReservations,
+          capacity: ticket.capacity,
+        },
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
 });

@@ -29,6 +29,7 @@ router.post(
 router.post(
   '/:id/promocodescsv',
   authController.protect,
+  promoCodeController.uploadCSV.single('csvFile'), //name of field that will be expected from client
   promoCodeController.createPromoCodeCSV
 );
 

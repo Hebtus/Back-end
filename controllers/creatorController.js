@@ -129,7 +129,7 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
     //put delete logic here
     //get bookings.. and delete them
     //first get Tickets
-    let eventTickets = await Ticket.find({
+    const eventTickets = await Ticket.find({
       eventID: req.params.id,
     });
 
@@ -158,25 +158,23 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 //now i have some inquires , is there a better way to check the association betwen this creator and the ticket ? the loop bacl from ticket to event to creator?
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
-  const userID = req.user._id;
-  const eventId = req.params.id;
+  //const userID = req.user._id;
   try {
-    const ticket = await Ticket.findOne({ eventID: eventId });
-    const event = await Event.findOne({ creatorID: userID });
-
+    const ticket = await Ticket.findOne({ eventID: req.params.id });
+    const event = await Event.findOne({ creatorID: req.user._id });
     //commented till we figure out the user change of login id
-    /*if (!event) {
+    if (!event) {
       return res.status(404).json({
         status: 'fail',
         message: 'invalid creator',
       });
     }
-    if (eventId !== event._id) {
+    if (!event._id.equals(req.params.id)) {
       return res.status(404).json({
         status: 'fail',
         message: 'this ticket event is not associated with this creator',
       });
-    }*/
+    }
     if (!ticket) {
       return res.status(404).json({
         status: 'fail',

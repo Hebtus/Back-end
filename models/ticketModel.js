@@ -26,8 +26,9 @@ const ticketSchema = new mongoose.Schema({
   },
   capacity: {
     type: Number,
-    required: [true, 'please sepcify ticket capacity'],
+    required: [true, 'Please sepcify ticket capacity'],
     max: [10000000, 'Maximum Conceivable capacity reached'],
+    min: [1, 'Minimum enumerable capacity should be greater than 0'],
     default: 1,
     validate: {
       validator: function (val) {
@@ -39,6 +40,7 @@ const ticketSchema = new mongoose.Schema({
   sellingStartTime: {
     type: Date,
     default: Date.now(),
+    required: [true, 'Please provide a selling start  date'],
     validate: [
       {
         validator: validator.isDate,
@@ -60,6 +62,7 @@ const ticketSchema = new mongoose.Schema({
   },
   sellingEndTime: {
     type: Date,
+    required: [true, 'Please provide a selling end  date'],
     validate: [
       {
         validator: validator.isDate,

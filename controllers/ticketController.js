@@ -14,36 +14,23 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 exports.createTicket = catchAsync(async (req, res, next) => {
-  if (
-    (!req.body.name, // You forgot to pass the name
-    !req.body.eventID ||
-      !req.body.type ||
-      !req.body.price ||
-      !req.body.capacity ||
-      !req.body.sellingStartTime ||
-      !req.body.sellingEndTime)
-  ) {
-    res.status(401).json({
-      status: 'fail',
-      message: 'please provide the needed information for ticket creation',
+  // I changes it to be suitable for error handling and to be more short
+  const ticket = new Ticket(req.body);
+
+  await ticket
+    .save()
+    .then(() => {
+      res.status(200).json({
+        status: 'success',
+        message: 'ticket created successfully',
+      });
+    })
+    .catch((err) => {
+      res.status(404).json({
+        status: 'failed',
+        message: err.message,
+      });
     });
-  } else {
-    const newTicket = await Ticket.create({
-      name: req.body.name,
-      eventID: req.body.eventID,
-      type: req.body.type,
-      price: req.body.price,
-      capacity: req.body.capacity,
-      sellingStartTime: req.body.sellingStartTime,
-      sellingEndTime: req.body.sellingEndTime,
-    });
-    res.status(200).json({
-      status: 'success',
-      message: 'ticket created successfully',
-    });
-    await newTicket.save();
-    return newTicket;
-  }
 });
 
 exports.getEventTickets = async (req, res) => {
@@ -115,3 +102,51 @@ exports.editTicket = async (req, res, next) => {
     },
   });
 };
+// exports.createTicket = catchAsync(async (req, res, next) => {
+//   if (
+//     (!req.body.name, // You forgot to pass the name
+//     !req.body.eventID ||
+//       !req.body.type ||
+//       !req.body.price ||
+//       !req.body.capacity ||
+//       !req.body.sellingStartTime ||
+//       !req.body.sellingEndTime)
+//   ) {
+//     res.status(401).json({
+//       status: 'fail',
+//       message: 'please provide the needed information for ticket creation',
+//     });
+//   } else {
+//     const newTicket = await Ticket.create({
+//       name: req.body.name,
+//       eventID: req.body.eventID,
+//       type: req.body.type,
+//       price: req.body.price,
+//       capacity: req.body.capacity,
+//       sellingStartTime: req.body.sellingStartTime,
+//       sellingEndTime: req.body.sellingEndTime,
+//     });
+//     res.status(200).json({
+//       status: 'success',
+//       message: 'ticket created successfully',
+//   // I changes it to be suitable for error handling and to be more short
+//   const ticket = new Ticket(req.body);
+
+//   await ticket
+//     .save()
+//     .then(() => {
+//       res.status(200).json({
+//         status: 'success',
+//         message: 'ticket created successfully',
+//       });
+//     })
+//     .catch((err) => {
+//       res.status(404).json({
+//         status: 'failed',
+//         message: err.message,
+//       });
+//     });
+//     await newTicket.save();
+//     return newTicket;
+//   }
+// });

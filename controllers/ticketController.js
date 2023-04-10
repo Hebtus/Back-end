@@ -50,7 +50,7 @@ exports.getEventTickets = async (req, res) => {
         .status(404)
         .json({ status: 'fail', message: 'invalid eventID' });
     }
-    /*if (
+    if (
       !(
         Date.now() >= ticket.sellingStartTime &&
         Date.now() < ticket.sellingStartTime
@@ -60,7 +60,7 @@ exports.getEventTickets = async (req, res) => {
         status: 'fail',
         message: 'ticket not available in the mean time',
       });
-    }*/
+    }
     res.status(200).json({
       status: 'success',
       data: {

@@ -7,6 +7,8 @@ const eventRouter = require('./routes/eventRoute');
 const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
 const ticketRouter = require('./routes/ticketRoute');
+const bookingRouter = require('./routes/bookingRoute');
+
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });
@@ -22,6 +24,7 @@ app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/events', eventRouter);
 app.use('/api/v1/tickets', ticketRouter);
 app.use('/api/v1/creators/events', creatorRouter);
+app.use('/api/v1', bookingRouter); //TODO: base route to be discussed later
 
 // app.use('/login/google/callback', googleCallback);
 // app.use('/', viewRouter);

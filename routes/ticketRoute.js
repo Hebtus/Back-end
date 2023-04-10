@@ -20,7 +20,7 @@ const promoCodeController = require('../controllers/promoCodeController');
 const router = express.Router();
 
 router.post('/', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
-
+router.patch('/:id', authController.protect, tickController.editTicket); // Auth does not work
 router.post(
   '/:id/promocodes',
   authController.protect,

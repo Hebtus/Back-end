@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const Event = require('./eventModel');
+const AppError = require('../utils/appError');
 
 const ticketSchema = new mongoose.Schema({
   name: {
@@ -25,34 +26,43 @@ const ticketSchema = new mongoose.Schema({
   },
   capacity: {
     type: Number,
-    required: [true, 'please sepcify ticket capacity'],
+    required: [true, 'Please sepcify ticket capacity'],
     max: [10000000, 'Maximum Conceivable capacity reached'],
+    min: [1, 'Minimum enumerable capacity should be greater than 0'],
     default: 1,
     validate: {
       validator: function (val) {
         return val >= this.currentReservations;
       },
-      message: 'Capacity is below current reservations',
+      message: 'Capacity is below the current reservations',
     },
   },
   sellingStartTime: {
     type: Date,
     default: Date.now(),
+    required: [true, 'Please provide a selling start  date'],
     validate: [
       {
         validator: validator.isDate,
-        message: 'Must be right date format.',
+        message: 'Date must be in the right date format.',
       },
       {
         validator: function (value) {
           return new Date(value) > new Date();
         },
         message: 'Date must be in the future',
+      },
+      {
+        validator: function (value) {
+          return value < this.sellingEndTime;
+        },
+        message: 'Start selling date must be before end selling date',
       },
     ],
   },
   c: {
     type: Date,
+    required: [true, 'Please provide a selling end  date'],
     validate: [
       {
         validator: validator.isDate,
@@ -66,10 +76,9 @@ const ticketSchema = new mongoose.Schema({
       },
       {
         validator: function (value) {
-          console.log(value, this.sellingStartTime);
           return value > this.sellingStartTime;
         },
-        message: 'End date must be after selling date',
+        message: 'End selling date must be after start selling date',
       },
     ],
   },
@@ -126,10 +135,48 @@ ticketSchema.pre(/^find/, function (next) {
   });
   next();
 });
-ticketSchema.pre('findOneAndUpdate', function (next) {
-  this.options.runValidators = true;
-  next();
-});
+// ticketSchema.pre('findOneAndUpdate', function (next) {
+//   // this.options.runValidators = true;
+//   const updateTicket = this.getUpdate();
+//   const Ticket = this.findOne(this.getQuery());
+//   if (updateTicket.sellingEndTime) {
+//     const date = new Date(new Date(updateTicket.sellingEndTime).toISOString());
+//     if (!validator.isDate(date)) {
+//       //console.log(date);
+//       next(new AppError('Date must ust be right date format.', 404));
+//     }
+//     if (date < new Date()) {
+//       next(new AppError('Date must be in the future', 404));
+//     }
+//     if (Ticket.sellingStartTime > updateTicket.sellingEndTime) {
+//       next(new AppError('End date must be after selling date', 404));
+//     }
+//   }
+//   if (updateTicket.sellingStartTime) {
+//     const date = new Date(new Date(updateTicket.sellingEndTime).toISOString());
+//     if (!validator.isDate(date)) {
+//       next(new AppError('Date must be right date format.', 404));
+//     }
+//     if (date < new Date()) {
+//       next(new AppError('Date must be in the future', 404));
+//     }
+//     if (updateTicket.sellingStartTime > Ticket.sellingEndTime) {
+//       next(new AppError('Start date must be before selling date', 404));
+//     }
+//   }
+//   if (updateTicket.capacity) {
+//     console.log(updateTicket.capacity, Ticket.currentReservations, 'lol');
+//     if (updateTicket.capacity < Ticket.currentReservations)
+//       next(new AppError('Capacity is below current reservations', 404));
+//   }
+//   if (updateTicket.currentReservations) {
+//     if (updateTicket.currentReservations > Ticket.capacity)
+//       next(
+//         new AppError('Current reservations exceeds the allowed capacity', 404)
+//       );
+//   }
+//   next();
+// });
 
 const Ticket = mongoose.model('Ticket', ticketSchema);
 

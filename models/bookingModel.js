@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const nameSchema = require('./shared/nameModel');
 const Ticket = require('./ticketModel');
+const AppError = require('../utils/appError');
 
 const bookingsSchema = new mongoose.Schema({
   // Attendee Name
@@ -30,11 +31,12 @@ const bookingsSchema = new mongoose.Schema({
   },
   phoneNumber: {
     //Attendee phone number
-    type: Number,
+    type: String,
     required: [true, 'Please provide your phone number'],
     validate: {
       validator: function (val) {
         // Validating the phone number to make sure  that it has exact 11 digits.
+
         return val.toString().length === 11;
       },
       message: (val) => `Phone number has  to be 11 digits only `,
@@ -63,6 +65,7 @@ const bookingsSchema = new mongoose.Schema({
     //Date of the Booking
     type: Date,
     default: Date.now(),
+
     validate: [validator.isDate, 'Must be right date format.'],
   },
   quantity: {
@@ -75,14 +78,15 @@ const bookingsSchema = new mongoose.Schema({
     // Refrence ID that refers to the attendee
     type: mongoose.Schema.ObjectId,
     ref: 'User',
+    required: [true, 'The booked seat  must belong to user ID'],
     // the booking might not belong to a user regisetered in the system.
   },
+
   ticketID: {
     // Refrence ID that refers to the ticket type which it belongs to
     type: mongoose.Schema.ObjectId,
     ref: 'Ticket',
-    required: [true, 'The booked ticket  must belong to an event'],
-    unique: true,
+    required: [true, 'The booked seat  must belong to a ticket'],
   },
 
   // eventID: {
@@ -94,10 +98,21 @@ const bookingsSchema = new mongoose.Schema({
 });
 
 //automatically adds 1 to currentReservations in its respective ticket
-bookingsSchema.pre('save', async function () {
-  await Ticket.findByIdAndUpdate(this.ticketID, {
-    $inc: { currentReservations: this.quantity ? this.quantity : 1 },
-  });
+bookingsSchema.pre('save', async function (next) {
+  // I have altered to find/save  to run capacity validatios
+  const updatedTicket = await Ticket.findById(this.ticketID);
+  updatedTicket.currentReservations += this.quantity;
+  await updatedTicket
+    .save()
+    .then()
+    .catch((err) =>
+      next(
+        new AppError(
+          'The number of seats you want to book exceeds the full capacity of this event for this ticket type.',
+          404
+        )
+      )
+    );
 });
 
 //All find querries

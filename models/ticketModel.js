@@ -52,6 +52,7 @@ const ticketSchema = new mongoose.Schema({
     ],
   },
   sellingEndTime: {
+  c: {
     type: Date,
     validate: [
       {

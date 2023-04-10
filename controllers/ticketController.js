@@ -15,9 +15,17 @@ const filterObj = (obj, ...allowedFields) => {
 };
 exports.createTicket = catchAsync(async (req, res, next) => {
   // I changes it to be suitable for error handling and to be more short
-  const ticket = new Ticket(req.body);
+  const newTicket = await Ticket.create({
+    name: req.body.name,
+    eventID: req.body.eventID,
+    type: req.body.type,
+    price: req.body.price,
+    capacity: req.body.capacity,
+    sellingStartTime: req.body.sellingStartTime,
+    sellingEndTime: req.body.sellingEndTime,
+  });
 
-  await ticket
+  await newTicket
     .save()
     .then(() => {
       res.status(200).json({
@@ -36,13 +44,13 @@ exports.createTicket = catchAsync(async (req, res, next) => {
 exports.getEventTickets = async (req, res) => {
   const eventId = req.params.id;
   try {
-    const ticket = await Ticket.findOne({ eventID: eventId });
+    const ticket = await Ticket.find({ eventID: eventId });
     if (!ticket) {
       return res
         .status(404)
         .json({ status: 'fail', message: 'invalid eventID' });
     }
-    if (
+    /*if (
       !(
         Date.now() >= ticket.sellingStartTime &&
         Date.now() < ticket.sellingStartTime
@@ -52,7 +60,7 @@ exports.getEventTickets = async (req, res) => {
         status: 'fail',
         message: 'ticket not available in the mean time',
       });
-    }
+    }*/
     res.status(200).json({
       status: 'success',
       data: {

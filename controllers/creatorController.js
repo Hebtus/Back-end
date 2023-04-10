@@ -160,7 +160,7 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
   //const userID = req.user._id;
   try {
-    const ticket = await Ticket.findOne({ eventID: req.params.id });
+    const ticket = await Ticket.find({ eventID: req.params.id });
     const event = await Event.findOne({ creatorID: req.user._id });
     //commented till we figure out the user change of login id
     if (!event) {

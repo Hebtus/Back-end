@@ -245,42 +245,53 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
-    const ticket = await Ticket.findOne({ eventID: req.params.id });
-    const event = await Event.findOne({ creatorID: req.user._id });
-    //commented till we figure out the user change of login id
+    const event = await Event.findOne({
+      _id: req.params.id,
+      creatorID: req.user._id,
+    });
+
     if (!event) {
       return res.status(404).json({
         status: 'fail',
-        message: 'invalid creator',
+        message: 'Invalid event or creator',
       });
     }
-    if (!event._id.equals(req.params.id)) {
+
+    const tickets = await Ticket.find({ eventID: req.params.id });
+
+    if (!tickets.length) {
       return res.status(404).json({
         status: 'fail',
-        message: 'this ticket event is not associated with this creator',
+        message: 'No tickets found for this event',
       });
     }
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'invalid eventID',
+
+    let total = 0;
+    const salesByType = [];
+
+    tickets.forEach((ticket) => {
+      const subtotal = ticket.currentReservations * ticket.price;
+      total += subtotal;
+
+      salesByType.push({
+        ticketID: ticket._id,
+        ticketName: ticket.name,
+        ticketType: ticket.type,
+        price: ticket.price,
+        sold: ticket.currentReservations,
+        capacity: ticket.capacity,
+        subtotal,
       });
-    }
+    });
+
+    const totalNetSales = total - total * 0.225;
+
     res.status(200).json({
       status: 'success',
       data: {
-        totalGrossSales: ticket.currentReservations * ticket.price,
-        totalNetSales:
-          ticket.currentReservations * ticket.price -
-          ticket.currentReservations * ticket.price * 0.225,
-        salesByType: {
-          ticketID: ticket._id,
-          ticketName: ticket.name,
-          ticketType: ticket.type,
-          price: ticket.price,
-          sold: ticket.currentReservations,
-          capacity: ticket.capacity,
-        },
+        totalGrossSales: total,
+        totalNetSales,
+        salesByType,
       },
     });
   } catch (err) {

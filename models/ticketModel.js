@@ -60,7 +60,7 @@ const ticketSchema = new mongoose.Schema({
       },
     ],
   },
-  c: {
+  sellingEndTime: {
     type: Date,
     required: [true, 'Please provide a selling end  date'],
     validate: [

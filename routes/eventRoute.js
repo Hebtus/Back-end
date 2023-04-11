@@ -1,3 +1,4 @@
+const multer = require('multer');
 const express = require('express');
 const authController = require('../controllers/authenticationController');
 const eventController = require('../controllers/eventController');
@@ -6,7 +7,7 @@ const ticketRouter = require('./ticketRoute');
 const bookingRouter = require('./bookingRoute');
 
 const router = express.Router();
-
+const upload = multer({ dest: 'public/img/events' });
 //redirects URL's in form of /events/{event_id}/tickets/
 // router.use('/:eventID/tickets', ticketRouter);
 // router.use('/:eventID/bookings', bookingRouter);
@@ -14,6 +15,8 @@ const router = express.Router();
 router.route('/').get(eventController.getEvents).post(
   //authController.protect,
   //restrict to creators
+  //eventController.uploadEventPhoto,
+  //upload.single('photo'),
   eventController.createEvent
 );
 

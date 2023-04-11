@@ -24,18 +24,22 @@ const eventSchema = new mongoose.Schema({
     validate: [validator.isDate, 'Must be right date format.'],
   },
   img_url: {
-    type: String,
-    default: '',
-    validate: [
-      //wrapper for making it not required
-      (val) => {
-        if (val.length !== 0) validator.isURL();
-        else {
-          return 1;
-        }
-      },
-      'The URL must be valid.',
-    ],
+    source: {
+      file: { type: Buffer, required: true },
+      filename: { type: String, required: true },
+      mimetype: { type: String, required: true },
+    },
+    // default: '',
+    // validate: [
+    //   //wrapper for making it not required
+    //   (val) => {
+    //     if (val.length !== 0) validator.isURL();
+    //     else {
+    //       return 1;
+    //     }
+    //   },
+    //   'The URL must be valid.',
+    // ],
   },
   location: {
     type: locationSchema,

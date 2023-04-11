@@ -1,21 +1,39 @@
 const multer = require('multer');
+//const fs = require('fs');
 const { promisify } = require('util');
 const crypto = require('crypto');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const cloudinary = require('../utils/cloudinary');
 
 //Multer
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, callback) => {
-//     callback(null, 'public/img/events');
-//   },
-//   filename:(req, file, callback) => {
-//     //user-userid-timestamp.jpeg
-//   }
-// })
-//const upload = multer({ dest: 'public/img/events' });
-//exports.uploadEventPhoto = upload.single('photo');
+const multerStorage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    callback(null, 'public/img/events');
+  },
+  filename: (req, file, callback) => {
+    //user-userid-timestamp.jpeg
+    const ext = file.mimetype.split('/')[1];
+    callback(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+  },
+});
+const multerFilter = (req, file, callback) => {
+  if (file.mimetype.startsWith('image')) {
+    callback(null, true);
+  } else {
+    callback(
+      new AppError('Not an image please upload only images', 400),
+      false
+    );
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+exports.uploadEventPhoto = upload.single('img_url');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
   //check on mongoose behaviour with non existent parameters
@@ -152,14 +170,86 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 //   });
 // });
 
-exports.createEvent = catchAsync(async (req, res, next) => {
-  console.log(req.body);
-  const event = await Event.create(req.body); //TODO: To be continued with Habaiba .. I just created it to test my event requests
-  res.status('200').json({
-    status: 'success',
-    data: event,
-  });
-});
+exports.createEvent = async (req, res, next) => {
+  //console.log(req.body);
+  //console.log(req.file);
+  // const event = await Event.create(req.body); //TODO: To be continued with Habaiba .. I just created it to test my event requests
+  // res.status('200').json({
+  //   status: 'success',
+  //   data: event,
+  // });
+  ///////////////////////////////
+  // const event = await Event.create({
+  //   name: req.body.name,
+  //   privacy: req.body.privacy,
+  //   password: req.body.password,
+  //   //img_url: "'" + req.file.filename + "'",
+  //   startDate: req.body.startDate,
+  //   endDate: req.body.endDate,
+  //   locationName: req.body.locationName,
+  //   tags: req.body.tags,
+  //   ticketsSold: req.body.ticketsSold,
+  // });
+  // await event
+  //   .save()
+  //   .then(() => {
+  //     res.status(200).json({
+  //       status: 'success',
+  //       message: 'event created successfully',
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     res.status(404).json({
+  //       status: 'failed',
+  //       message: err.message,
+  //     });
+  //   });
+  const {
+    name,
+    privacy,
+    password,
+    img_url,
+    startDate,
+    endDate,
+    locationName,
+    tags,
+    ticketsSold,
+  } = req.body;
+  try {
+    const result = await cloudinary.uploader.upload(
+      req.file.path,
+      //{folder: events,}
+      { resource_type: 'auto', folder: 'events' }
+    );
+    console.log(result.secure_url);
+    await Event.create({
+      name,
+      privacy,
+      password,
+      creatorID: req.user.id,
+      img_url: result.secure_url,
+      //  {
+      //   public_id: result.public_id,
+      //   url: result.secure_url,
+      // },
+      startDate,
+      endDate,
+      locationName,
+      tags,
+      ticketsSold,
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'event created successfully',
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(404).json({
+      status: 'failed',
+      message: err.message,
+    });
+  }
+};
 
 exports.getEvent = catchAsync(async (req, res, next) => {
   //if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {

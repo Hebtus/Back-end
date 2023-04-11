@@ -12,11 +12,9 @@ const bookingRouter = require('./routes/bookingRoute');
 // const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });
-
 const app = express();
 
 app.use(express.json());
-
 // app.use(cookieParser());
 
 app.use('/api/v1', authenticationRouter);

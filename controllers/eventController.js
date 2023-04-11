@@ -254,7 +254,6 @@ exports.createEvent = async (req, res, next) => {
       //{folder: events,}
       { resource_type: 'auto', folder: 'events' }
     );
-    console.log(result.secure_url);
     await Event.create({
       name,
       privacy,

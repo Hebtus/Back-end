@@ -37,7 +37,7 @@ const eventSchema = new mongoose.Schema({
     validate: [
       //wrapper for making it not required
       (val) => {
-        if (val.length !== 0) validator.isURL();
+        if (val.length !== 0) validator.isURL(val);
         else {
           return 1;
         }

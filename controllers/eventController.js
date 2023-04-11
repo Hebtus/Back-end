@@ -207,60 +207,15 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  //#region
-  //console.log(req.body);
-  //console.log(req.file);
-  // const event = await Event.create(req.body); //TODO: To be continued with Habaiba .. I just created it to test my event requests
-  // res.status('200').json({
-  //   status: 'success',
-  //   data: event,
-  // });
-  ///////////////////////////////
-  // const event = await Event.create({
-  //   name: req.body.name,
-  //   privacy: req.body.privacy,
-  //   password: req.body.password,
-  //   //img_url: "'" + req.file.filename + "'",
-  //   startDate: req.body.startDate,
-  //   endDate: req.body.endDate,
-  //   locationName: req.body.locationName,
-  //   tags: req.body.tags,
-  //   ticketsSold: req.body.ticketsSold,
-  // });
-  // await event
-  //   .save()
-  //   .then(() => {
-  //     res.status(200).json({
-  //       status: 'success',
-  //       message: 'event created successfully',
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     res.status(404).json({
-  //       status: 'failed',
-  //       message: err.message,
-  //     });
-  //   });
-  //#endregion
-
-  // console.log(req.file.buffer);
-  // console.log('req body ', req.body);
-  // console.log('req body ', req.body.file); // req.body.file is undefined
-  // console.log('req body ', req.file); //req.file is undefined
-  // console.log('req body ', req.body.buffer); //req.file is undefined
-
   if (req.file === undefined) {
     return res.status(400).send('Please upload an image file!');
   }
   const imageFile = req.file;
-  // console.log('imageFile', imageFile);
-  // console.log(req.body);
-  // console.log(req.file);
+
   const {
     name,
     privacy,
     password,
-    image,
     startDate,
     endDate,
     locationName,
@@ -268,21 +223,15 @@ exports.createEvent = catchAsync(async (req, res, next) => {
     ticketsSold,
   } = req.body;
 
-  let cld_upload_stream = cloudinary.uploader.upload_stream(
+  const cloudUploadStream = cloudinary.uploader.upload_stream(
     { folder: 'events' },
     async (error, result) => {
-      // console.log(error, result);
-      // res.json({ public_id: result.public_id, url: result.secure_url });
       await Event.create({
         name,
         privacy,
         password,
         creatorID: req.user.id,
         img_url: result.secure_url,
-        //  {
-        //   public_id: result.public_id,
-        //   url: result.secure_url,
-        // },
         startDate,
         endDate,
         locationName,
@@ -295,35 +244,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       });
     }
   );
-  streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
-
-  // const result = await cloudinary.uploader.upload(
-  //   // req.file.buffer,
-  //   image
-  //   //{folder: events,}
-  //   // { resource_type: 'auto', folder: 'events' }
-  // );
-  // const result = await cloudinary.uploader.upload(imageFile);
-  // await Event.create({
-  //   name,
-  //   privacy,
-  //   password,
-  //   creatorID: req.user.id,
-  //   img_url: result.secure_url,
-  //   //  {
-  //   //   public_id: result.public_id,
-  //   //   url: result.secure_url,
-  //   // },
-  //   startDate,
-  //   endDate,
-  //   locationName,
-  //   tags,
-  //   ticketsSold,
-  // });
-  // res.status(200).json({
-  //   status: 'success',
-  //   message: 'event created successfully',
-  // });
+  streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
 });
 
 //TODO: Add URL here

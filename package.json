@@ -11,7 +11,8 @@
     "stest": "jest ./__test__/DBTests signupTest.test.js",
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
-    "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose"
+    "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",
+    "debug" : "ndb server.js"
   },
   "author": "",
   "license": "ISC",

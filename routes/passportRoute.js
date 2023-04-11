@@ -65,6 +65,7 @@ router.get(
   '/login/google/callback',
   passport.authenticate('google', { failureRedirect: '/', session: false }),
   (req, res) => {
+    console.log('req', req);
     // res.redirect('/api/v1/events');
     res.status(200).json({
       status: 'success',

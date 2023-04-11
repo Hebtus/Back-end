@@ -20,7 +20,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     const eventsData = await Event.find({ creatorID: req.user._id }).select([
       '-creatorID',
     ]);
-    // write to a csv file and send to client
+    // write csv headers
     let csvData = [
       'Event',
       'Date',
@@ -29,12 +29,10 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       'Tickets Available',
     ].join(',');
     csvData += '\n';
-    // csvData += 'lolololeoldeoldeodleodleodl';
 
+    //loop on each event
     // eslint-disable-next-line no-restricted-syntax
     for (const event of eventsData) {
-      console.log('looping on event');
-      console.log(event);
       // eslint-disable-next-line no-await-in-loop
       const ticketQuery = await Ticket.aggregate([
         { $match: { eventID: event._id } },
@@ -45,7 +43,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           },
         },
       ]);
-      console.log(ticketQuery);
+      // console.log(ticketQuery);
       // console.log(ticketQuery[0]);
       // console.log(ticketQuery[0].ticketsAvailable);
       // console.log(ticketQuery === []);

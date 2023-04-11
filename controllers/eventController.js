@@ -8,6 +8,7 @@ const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const cloudinary = require('../utils/cloudinary');
+const streamifier = require('streamifier');
 
 // takes any
 const makeprivateEventsPublic = async () => {
@@ -19,16 +20,18 @@ const makeprivateEventsPublic = async () => {
 };
 
 //Multer
-const multerStorage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, 'public/img/events');
-  },
-  filename: (req, file, callback) => {
-    //user-userid-timestamp.jpeg
-    const ext = file.mimetype.split('/')[1];
-    callback(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  },
-});
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, callback) => {
+//     callback(null, 'public/img/events');
+//   },
+//   filename: (req, file, callback) => {
+//     //user-userid-timestamp.jpeg
+//     const ext = file.mimetype.split('/')[1];
+//     callback(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   },
+// });
+const multerTempStorage = multer.memoryStorage();
+
 const multerFilter = (req, file, callback) => {
   if (file.mimetype.startsWith('image')) {
     callback(null, true);
@@ -40,10 +43,10 @@ const multerFilter = (req, file, callback) => {
   }
 };
 const upload = multer({
-  storage: multerStorage,
+  storage: multerTempStorage,
   fileFilter: multerFilter,
 });
-exports.uploadEventPhoto = upload.single('img_url');
+exports.uploadEventPhoto = upload.single('image');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
   await makeprivateEventsPublic();
@@ -203,7 +206,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 //   });
 // });
 
-exports.createEvent = async (req, res, next) => {
+exports.createEvent = catchAsync(async (req, res, next) => {
+  //#region
   //console.log(req.body);
   //console.log(req.file);
   // const event = await Event.create(req.body); //TODO: To be continued with Habaiba .. I just created it to test my event requests
@@ -237,51 +241,90 @@ exports.createEvent = async (req, res, next) => {
   //       message: err.message,
   //     });
   //   });
+  //#endregion
+
+  // console.log(req.file.buffer);
+  // console.log('req body ', req.body);
+  // console.log('req body ', req.body.file); // req.body.file is undefined
+  // console.log('req body ', req.file); //req.file is undefined
+  // console.log('req body ', req.body.buffer); //req.file is undefined
+
+  if (req.file === undefined) {
+    return res.status(400).send('Please upload an image file!');
+  }
+  const imageFile = req.file;
+  // console.log('imageFile', imageFile);
+  // console.log(req.body);
+  // console.log(req.file);
   const {
     name,
     privacy,
     password,
-    img_url,
+    image,
     startDate,
     endDate,
     locationName,
     tags,
     ticketsSold,
   } = req.body;
-  try {
-    const result = await cloudinary.uploader.upload(
-      req.file.path,
-      //{folder: events,}
-      { resource_type: 'auto', folder: 'events' }
-    );
-    await Event.create({
-      name,
-      privacy,
-      password,
-      creatorID: req.user.id,
-      img_url: result.secure_url,
-      //  {
-      //   public_id: result.public_id,
-      //   url: result.secure_url,
-      // },
-      startDate,
-      endDate,
-      locationName,
-      tags,
-      ticketsSold,
-    });
-    res.status(200).json({
-      status: 'success',
-      message: 'event created successfully',
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(404).json({
-      status: 'failed',
-      message: err.message,
-    });
-  }
-};
+
+  let cld_upload_stream = cloudinary.uploader.upload_stream(
+    { folder: 'events' },
+    async (error, result) => {
+      // console.log(error, result);
+      // res.json({ public_id: result.public_id, url: result.secure_url });
+      await Event.create({
+        name,
+        privacy,
+        password,
+        creatorID: req.user.id,
+        img_url: result.secure_url,
+        //  {
+        //   public_id: result.public_id,
+        //   url: result.secure_url,
+        // },
+        startDate,
+        endDate,
+        locationName,
+        tags,
+        ticketsSold,
+      });
+      res.status(200).json({
+        status: 'success',
+        message: 'event created successfully',
+      });
+    }
+  );
+  streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
+
+  // const result = await cloudinary.uploader.upload(
+  //   // req.file.buffer,
+  //   image
+  //   //{folder: events,}
+  //   // { resource_type: 'auto', folder: 'events' }
+  // );
+  // const result = await cloudinary.uploader.upload(imageFile);
+  // await Event.create({
+  //   name,
+  //   privacy,
+  //   password,
+  //   creatorID: req.user.id,
+  //   img_url: result.secure_url,
+  //   //  {
+  //   //   public_id: result.public_id,
+  //   //   url: result.secure_url,
+  //   // },
+  //   startDate,
+  //   endDate,
+  //   locationName,
+  //   tags,
+  //   ticketsSold,
+  // });
+  // res.status(200).json({
+  //   status: 'success',
+  //   message: 'event created successfully',
+  // });
+});
 
 //TODO: Add URL here
 exports.getEvent = catchAsync(async (req, res, next) => {

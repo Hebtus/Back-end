@@ -79,7 +79,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   // ) {
   //   token = req.headers.authorization.split(' ')[1];
   // } else
-  console.log('my cookieee is ', req.cookies.jwt);
+  // console.log('my cookieee is ', req.cookies.jwt);
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }

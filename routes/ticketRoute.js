@@ -19,16 +19,13 @@ const promoCodeController = require('../controllers/promoCodeController');
  */
 const router = express.Router();
 
-router.post('/', authController.protect, tickController.createTicket); //make sure i have to be logged in to create a ticket
-router.patch('/:id', authController.protect, tickController.editTicket); // Auth does not work
-router.post(
-  '/:id/promocodes',
-  authController.protect,
-  promoCodeController.createPromoCode
-);
+router.use(authController.protect);
+
+router.post('/', tickController.createTicket); //make sure i have to be logged in to create a ticket
+router.patch('/:id', tickController.editTicket); // Auth does not work
+router.post('/:id/promocodes', promoCodeController.createPromoCode);
 router.post(
   '/:id/promocodescsv',
-  authController.protect,
   promoCodeController.uploadCSV.single('csvFile'), //name of field that will be expected from client
   promoCodeController.createPromoCodeCSV
 );

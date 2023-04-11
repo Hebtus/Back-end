@@ -51,22 +51,18 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
 
-//from here down add requests that are available after u r logged in only
+//from here down add requests that are available after you are logged in only
 //remeber to add the berarer token to the autherization in postman
-// router.use(authController.protect);
+router.use(authController.protect);
 
 //#endregion
 
-router.get('/logout', authController.protect, authController.logout);
+router.get('/logout', authController.logout);
 router.patch('/resetpassword/:token', authController.resetPassword);
 
 //router.get('/resetpassword/:token', authController.resetPasswordForm);
 
-router.patch(
-  '/updatepassword',
-  authController.protect,
-  authController.updatePassword
-);
+router.patch('/updatepassword', authController.updatePassword);
 //from here down add whatever requests that are avialble to creators only
 
 module.exports = router;

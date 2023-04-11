@@ -50,7 +50,13 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
   // ie. no need for checks
-
+  const Filter = {
+    creatorID: 0,
+    ticketsSold: 0,
+    password: 0,
+    draft: 0,
+    goPublicDate: 0,
+  };
   //Pagination Setup
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
@@ -83,6 +89,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     goQuery = false;
@@ -106,6 +113,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
 
@@ -124,6 +132,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     const eventIDs = eventsData.map((event) => event._id);
@@ -158,6 +167,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   if (req.query.online && goQuery) {
     //online events are exempt from location restriction
     eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     goQuery = false;
@@ -175,6 +185,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
   }
@@ -273,13 +284,15 @@ exports.createEvent = async (req, res, next) => {
   }
 };
 
+//TODO: Add URL here
 exports.getEvent = catchAsync(async (req, res, next) => {
   //if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
   // Yes, it's a valid ObjectId, proceed with `findById` call.
+  await makeprivateEventsPublic();
 
   const event = await Event.findOne({ _id: req.params.id }).select({
     //Note : I did not put them in the pre find middleware because not all
-    // find requests will deselect the same fields ex: get event by crearot will retrieve all fields
+    // find requests will deselect the same fields ex: get event by creator will retrieve all fields
     creatorID: 0,
     ticketsSold: 0,
     password: 0,
@@ -378,13 +391,6 @@ exports.editEvent = async (req, res, next) => {
   });
 };
 
-exports.deleteEvent = catchAsync(async (req, res, next) => {
-  res.status('200').json({
-    status: 'success',
-    message: '3azama bas m4 google',
-  });
-});
-
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
     const event = await Event.findOne({
@@ -423,8 +429,8 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
     //     $group: {
 
     tickets.forEach((ticket) => {
-      const subtotal = ticket.currentReservations * ticket.price;
-      total += subtotal;
+      //   const subtotal = ticket.currentReservations * ticket.price;
+      //   total += subtotal;
 
       salesByType.push({
         ticketID: ticket._id,
@@ -433,7 +439,6 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
         price: ticket.price,
         sold: ticket.currentReservations,
         capacity: ticket.capacity,
-        subtotal,
       });
     });
 

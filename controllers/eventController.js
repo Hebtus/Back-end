@@ -289,6 +289,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     const tickets = await Ticket.find({ eventID: req.params.id });
 
+    //el check da m4 lazem n3mlo
     if (!tickets.length) {
       return res.status(404).json({
         status: 'fail',
@@ -298,7 +299,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     let total = 0;
     const salesByType = [];
-
+    //aggregate on bookings
     tickets.forEach((ticket) => {
       const subtotal = ticket.currentReservations * ticket.price;
       total += subtotal;

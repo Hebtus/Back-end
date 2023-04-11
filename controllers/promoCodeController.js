@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const multer = require('multer');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
@@ -128,6 +129,26 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
   });
 });
 
+async function parseCSV(readable, csvData, csvHeaders) {
+  let counter = 1;
+  for await (const chunk of readable) {
+    line = chunk.split('\n');
+
+    for await (const data of line) {
+      if (counter === 1) {
+        csvHeaders = data.split(',');
+      } else {
+        if (data === '') {
+          continue;
+        }
+        csvData.push(data.split(','));
+      }
+      counter += 1;
+    }
+  }
+  return { csvData, csvHeaders };
+}
+
 exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
   let ticket;
@@ -164,10 +185,151 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   // stream.pipe(csv()).on('data', async (row) => {
   //   console.log(row);
   // });
-  stream.pipe(parse({ headers: true })).on('data', async (row) => {
-    console.log(row);
-  });
+  //8aleban 4eel kol response w 7ot makano AppError
+  let promoCodes = [];
+  let errorflag = 0;
 
+  stream.setEncoding('utf8');
+  // stream.
+  let csvHeaders = [];
+  let csvData = [];
+  let parsed = await parseCSV(stream, csvHeaders, csvData);
+  csvHeaders = parsed.csvHeaders;
+  csvData = parsed.csvData;
+
+  console.log('csvHeaders is', csvHeaders);
+  console.log('csvData is', csvData);
+
+  //assumed format
+  //codeName discountOrPercentage discount/percentage limits
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax
+  for await (const data of csvData) {
+    const csvCodeName = data[0];
+    const csvDiscountOrPercentage = data[1];
+    const csvLimits = data[3];
+    if (csvDiscountOrPercentage === 1) {
+      const csvDiscount = data[2];
+      await promoCode.create({
+        codeName: csvCodeName,
+        limits: csvLimits,
+        discountAmount: csvDiscount,
+        discountOrPercentage: csvDiscountOrPercentage,
+        ticketID: req.params.id,
+      });
+    } else {
+      const csvPercentage = data[2];
+      await promoCode.create({
+        codeName: csvCodeName,
+        limits: csvLimits,
+        percentage: csvPercentage,
+        discountOrPercentage: 0,
+        ticketID: req.params.id,
+      });
+    }
+  }
+  //#region
+  // await stream
+  //   .pipe(parse({ headers: true }))
+  //   .on('data', async (promoCoderow) => {
+  //     console.log('row is ', promoCoderow);
+  //     promoCodes += promoCoderow;
+  //start applying promoCode logic here including validation and etc
+  // if (
+  //   !promoCoderow.codeName ||
+  //   !promoCoderow.discountOrPercentage ||
+  //   !promoCoderow.limits
+  // ) {
+  //   console.log('bsra7a lol gedannn');
+  //   // res.status(400).json({
+  //   //   status: 'fail',
+  //   //   message:
+  //   //     'Promocode codeName, discountOrPercentage and limits are required',
+  //   // });
+  //   // stream.destroy(
+  //   //   'Promocode codeName, discountOrPercentage and limits are required'
+  //   // );
+  //   // stream.destroy(
+  //   //   new AppError(
+  //   //     'Promocode codeName, discountOrPercentage and limits are required',
+  //   //     400
+  //   //   )
+  //   // );
+  //   // return new AppError(
+  //   //   'Promocode codeName, discountOrPercentage and limits are required',
+  //   //   400
+  //   // );
+  // }
+
+  // if (promoCoderow.discountOrPercentage === 1) {
+  //   //   //discount
+  //   //   if (!req.body.discount) {
+  //   //     return res.status(400).json({
+  //   //       status: 'fail',
+  //   //       message: 'Discount is required in case of discountorPercentage = 1',
+  //   //     });
+  //   //   }
+  //   //   //check that the discount is not greater than the ticket price
+  //   //   // if (promoCoderow.discount > ticket.price) {
+  //   //   //   return res.status(400).json({
+  //   //   //     status: 'fail',
+  //   //   //     message: 'Discount cannot be greater than the ticket price ',
+  //   //   //   });
+  //   //   }
+  //   await promoCode
+  //     .create({
+  //       codeName: promoCoderow.codeName,
+  //       limits: promoCoderow.limits,
+  //       discountAmount: promoCoderow.discount,
+  //       discountOrPercentage: 1,
+  //       ticketID: req.params.id,
+  //     })
+  //     .catch((err) => {
+  //       return next(err);
+  //     });
+  // } else {
+  //   //percentage
+  //   // if (!promoCoderow.percentage) {
+  //   //   return res.status(400).json({
+  //   //     status: 'fail',
+  //   //     message:
+  //   //       'Percentage is required in case of discountorPercentage = 0',
+  //   //   });
+  //   console.log('perc is', req.body);
+  //   // console.log('perc is', req.body.percentage);
+  //   await promoCode
+  //     .create({
+  //       codeName: promoCoderow.codeName,
+  //       limits: promoCoderow.limits,
+  //       percentage: promoCoderow.percentage,
+  //       discountOrPercentage: 0,
+  //       ticketID: req.params.id,
+  //     })
+  //     .catch((err) => {
+  //       return next(err);
+  //     });
+  // }
+  //   })
+  //   .on('error', (err) => {
+  //     // return next(err);
+  //     console.log('entered here bardo w bamassy');
+  //     errorflag = 1;
+  //   });
+  // console.log('promoCodes is', promoCodes);
+  // for (const pc of promoCodes) {
+  //   console.log(pc);
+  // }
+  // promoCodes.for((pc) => {
+  //   console.log(pc);
+  // });
+
+  // if (errorflag === 1) {
+  //   console.log('Entered here w bamassy');
+  //   return new AppError('Error in CSV file', 400);
+  // }
+
+  //endregion
+
+  // console.log('promoCodes is', promoCodes);
   res.status(200).json({
     status: 'success',
     message: 'PromoCode created Successfully.',

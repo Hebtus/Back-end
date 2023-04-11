@@ -14,7 +14,7 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 exports.createTicket = catchAsync(async (req, res, next) => {
-  // I changes it to be suitable for error handling and to be more short
+  // I changed it to be suitable for error handling and to be more short -Hussein
   const newTicket = await Ticket.create({
     name: req.body.name,
     eventID: req.body.eventID,
@@ -41,39 +41,30 @@ exports.createTicket = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.getEventTickets = async (req, res) => {
+exports.getEventTickets = catchAsync(async (req, res, next) => {
   const eventId = req.params.id;
-  try {
-    const ticket = await Ticket.find({ eventID: eventId });
-    if (!ticket) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'invalid eventID' });
-    }
-    if (
-      !(
-        Date.now() >= ticket.sellingStartTime &&
-        Date.now() < ticket.sellingStartTime
-      )
-    ) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'ticket not available in the mean time',
-      });
-    }
-    res.status(200).json({
-      status: 'success',
-      data: {
-        ticket,
-      },
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
-  }
-};
+  // we check for 2 things
+  // sellingStartTime and sellingEndTime
 
-exports.editTicket = async (req, res, next) => {
+  const ticket = await Ticket.find({
+    eventID: eventId,
+    $and: [
+      {
+        sellingStartTime: { $lte: Date.now() },
+        sellingEndTime: { $gt: Date.now() },
+      },
+    ],
+    $expr: { $lt: ['$currentReservations', '$capacity'] },
+  });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      ticket,
+    },
+  });
+});
+
+exports.editTicket = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'capacity',
@@ -109,7 +100,7 @@ exports.editTicket = async (req, res, next) => {
       user: updatedTicket,
     },
   });
-};
+});
 // exports.createTicket = catchAsync(async (req, res, next) => {
 //   if (
 //     (!req.body.name, // You forgot to pass the name

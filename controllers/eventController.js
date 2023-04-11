@@ -4,9 +4,19 @@ const { promisify } = require('util');
 const crypto = require('crypto');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
+const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const cloudinary = require('../utils/cloudinary');
+
+// takes any
+const makeprivateEventsPublic = async () => {
+  const privateEvents = await Event.updateMany(
+    { privacy: true, goPublicDate: { $lte: Date.now() } },
+    { privacy: false }
+  );
+  console.log('Private Events were ', privateEvents);
+};
 
 //Multer
 const multerStorage = multer.diskStorage({
@@ -36,6 +46,7 @@ const upload = multer({
 exports.uploadEventPhoto = upload.single('img_url');
 
 exports.getEvents = catchAsync(async (req, res, next) => {
+  await makeprivateEventsPublic();
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
   // ie. no need for checks
@@ -152,9 +163,20 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     goQuery = false;
   }
 
-  //if no valid parameter had been specified for some reason
+  //no parameter case
   if (goQuery) {
-    eventsData = [];
+    eventsData = await Event.find({
+      privacy: 0,
+      draft: 0,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: 50 * 1000, //assume 50 km radius
+        },
+      },
+    })
+      .skip(skip)
+      .limit(limit);
   }
 
   res.status(200).json({
@@ -379,6 +401,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     const tickets = await Ticket.find({ eventID: req.params.id });
 
+    //el check da m4 lazem n3mlo
     if (!tickets.length) {
       return res.status(404).json({
         status: 'fail',
@@ -388,6 +411,16 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     let total = 0;
     const salesByType = [];
+    //aggregate on bookings
+
+    // Booking.aggregate([
+    //   {
+    //     $match: {
+    //       eventID: mongoose.Types.ObjectId(req.params.id),
+    //     },
+    //   },
+    //   {
+    //     $group: {
 
     tickets.forEach((ticket) => {
       const subtotal = ticket.currentReservations * ticket.price;

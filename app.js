@@ -13,13 +13,14 @@ const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 // const test = require('./__test__/testutils/createConfirmedUser');
 
-// const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser');
 
 dotenv.config({ path: './config.env' });
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 // app.use('/api/v1/lol', async (req, res, next) => {
 //   try {

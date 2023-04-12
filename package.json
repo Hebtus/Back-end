@@ -11,7 +11,8 @@
     "stest": "jest ./__test__/DBTests signupTest.test.js",
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
-    "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose"
+    "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",
+    "debug": "ndb server.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,12 +20,15 @@
     "@faker-js/faker": "^7.6.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "cloudinary": "^1.35.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
     "fast-csv": "^4.3.6",
+    "helmet": "^6.1.5",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
     "multer": "^1.4.5-lts.1",
@@ -33,6 +37,7 @@
     "passport-facebook": "^3.0.0",
     "passport-facebook-token": "^4.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "streamifier": "^0.1.1",
     "stripe": "^11.14.0",
     "validator": "^13.9.0"
   },

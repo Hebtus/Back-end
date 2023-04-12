@@ -20,7 +20,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     const eventsData = await Event.find({ creatorID: req.user._id }).select([
       '-creatorID',
     ]);
-    // write to a csv file and send to client
+    // write csv headers
     let csvData = [
       'Event',
       'Date',
@@ -29,12 +29,10 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       'Tickets Available',
     ].join(',');
     csvData += '\n';
-    // csvData += 'lolololeoldeoldeodleodleodl';
 
+    //loop on each event
     // eslint-disable-next-line no-restricted-syntax
     for (const event of eventsData) {
-      console.log('looping on event');
-      console.log(event);
       // eslint-disable-next-line no-await-in-loop
       const ticketQuery = await Ticket.aggregate([
         { $match: { eventID: event._id } },
@@ -45,7 +43,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           },
         },
       ]);
-      console.log(ticketQuery);
+      // console.log(ticketQuery);
       // console.log(ticketQuery[0]);
       // console.log(ticketQuery[0].ticketsAvailable);
       // console.log(ticketQuery === []);
@@ -157,38 +155,33 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 
 //now i have some inquires , is there a better way to check the association betwen this creator and the ticket ? the loop bacl from ticket to event to creator?
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
-exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
+exports.getCreatorEventTickets = catchAsync(async (req, res, next) => {
   //const userID = req.user._id;
-  try {
-    const ticket = await Ticket.find({ eventID: req.params.id });
-    const event = await Event.findOne({ creatorID: req.user._id });
-    //commented till we figure out the user change of login id
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'invalid creator',
-      });
-    }
-    if (!event._id.equals(req.params.id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'this ticket event is not associated with this creator',
-      });
-    }
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'invalid eventID',
-      });
-    }
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tickets: ticket,
-      },
+  const ticket = await Ticket.find({ eventID: req.params.id });
+  const event = await Event.findOne({ creatorID: req.user._id });
+  //commented till we figure out the user change of login id
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'invalid creator',
     });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
   }
+  if (!event._id.equals(req.params.id)) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'this ticket event is not associated with this creator',
+    });
+  }
+  if (!ticket) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'invalid eventID',
+    });
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tickets: ticket,
+    },
+  });
 });

@@ -14,7 +14,7 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 exports.createTicket = catchAsync(async (req, res, next) => {
-  // I changes it to be suitable for error handling and to be more short
+  // I changed it to be suitable for error handling and to be more short -Hussein
   const newTicket = await Ticket.create({
     name: req.body.name,
     eventID: req.body.eventID,
@@ -78,7 +78,7 @@ exports.getEventTickets = async (req, res) => {
   }
 };
 
-exports.editTicket = async (req, res, next) => {
+exports.editTicket = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'capacity',
@@ -114,7 +114,7 @@ exports.editTicket = async (req, res, next) => {
       user: updatedTicket,
     },
   });
-};
+});
 // exports.createTicket = catchAsync(async (req, res, next) => {
 //   if (
 //     (!req.body.name, // You forgot to pass the name

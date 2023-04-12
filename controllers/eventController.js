@@ -1,14 +1,56 @@
+const multer = require('multer');
+//const fs = require('fs');
 const { promisify } = require('util');
 const crypto = require('crypto');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
+const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
+const cloudinary = require('../utils/cloudinary');
+const streamifier = require('streamifier');
+
+// takes any
+const makeprivateEventsPublic = async () => {
+  const privateEvents = await Event.updateMany(
+    { privacy: true, goPublicDate: { $lte: Date.now() } },
+    { privacy: false }
+  );
+  console.log('Private Events were ', privateEvents);
+};
+
+//Multer
+const multerTempStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, callback) => {
+  if (file.mimetype.startsWith('image')) {
+    callback(null, true);
+  } else {
+    callback(
+      new AppError('Not an image please upload only images', 400),
+      false
+    );
+  }
+};
+const upload = multer({
+  storage: multerTempStorage,
+  fileFilter: multerFilter,
+});
+exports.uploadEventPhoto = upload.single('image');
+/////////////////////////////////////////////////////
 
 exports.getEvents = catchAsync(async (req, res, next) => {
+  await makeprivateEventsPublic();
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
   // ie. no need for checks
-
+  const Filter = {
+    creatorID: 0,
+    ticketsSold: 0,
+    password: 0,
+    draft: 0,
+    goPublicDate: 0,
+  };
   //Pagination Setup
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
@@ -41,6 +83,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     goQuery = false;
@@ -64,6 +107,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
 
@@ -82,6 +126,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         },
       },
     })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     const eventIDs = eventsData.map((event) => event._id);
@@ -116,14 +161,27 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   if (req.query.online && goQuery) {
     //online events are exempt from location restriction
     eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 })
+      .select(Filter)
       .skip(skip)
       .limit(limit);
     goQuery = false;
   }
 
-  //if no valid parameter had been specified for some reason
+  //no parameter case
   if (goQuery) {
-    eventsData = [];
+    eventsData = await Event.find({
+      privacy: 0,
+      draft: 0,
+      location: {
+        $near: {
+          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+          $maxDistance: 50 * 1000, //assume 50 km radius
+        },
+      },
+    })
+      .select(Filter)
+      .skip(skip)
+      .limit(limit);
   }
 
   res.status(200).json({
@@ -140,21 +198,55 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  console.log(req.body);
-  const event = await Event.create(req.body); //TODO: To be continued with Habaiba .. I just created it to test my event requests
-  res.status('200').json({
-    status: 'success',
-    data: event,
-  });
+  if (req.file === undefined) {
+    return res.status(400).send('Please upload an image file!');
+  }
+  const imageFile = req.file;
+
+  const {
+    name,
+    privacy,
+    password,
+    startDate,
+    endDate,
+    locationName,
+    tags,
+    ticketsSold,
+  } = req.body;
+
+  const cloudUploadStream = cloudinary.uploader.upload_stream(
+    { folder: 'events' },
+    async (error, result) => {
+      await Event.create({
+        name,
+        privacy,
+        password,
+        creatorID: req.user.id,
+        img_url: result.secure_url,
+        startDate,
+        endDate,
+        locationName,
+        tags,
+        ticketsSold,
+      });
+      res.status(200).json({
+        status: 'success',
+        message: 'event created successfully',
+      });
+    }
+  );
+  streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
 });
 
+//TODO: Add URL here
 exports.getEvent = catchAsync(async (req, res, next) => {
   //if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
   // Yes, it's a valid ObjectId, proceed with `findById` call.
+  await makeprivateEventsPublic();
 
   const event = await Event.findOne({ _id: req.params.id }).select({
     //Note : I did not put them in the pre find middleware because not all
-    // find requests will deselect the same fields ex: get event by crearot will retrieve all fields
+    // find requests will deselect the same fields ex: get event by creator will retrieve all fields
     creatorID: 0,
     ticketsSold: 0,
     password: 0,
@@ -209,39 +301,50 @@ exports.getEventwithPassword = catchAsync(async (req, res, next) => {
     data: event,
   });
 });
-exports.editEvent = catchAsync(async (req, res, next) => {
-  const updatedEvent = {};
-  updatedEvent.description = req.body.description;
-  updatedEvent.category = req.body.category;
-  updatedEvent.tags = req.body.tags;
-  updatedEvent.privacy = req.body.privacy;
-  updatedEvent.goPublicDate = req.body.goPublicDate;
-  const event = await Event.findByIdAndUpdate(req.params.id, updatedEvent);
-  if (!event) {
+
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
+
+exports.editEvent = async (req, res, next) => {
+  const filteredBody = filterObj(
+    req.body,
+    'description',
+    'category',
+    'tags',
+    'privacy',
+    'goPublicDate'
+  );
+  const updatedEvent = await Event.findById(req.params.id);
+  if (!updatedEvent) {
     res.status(404).json({
       status: 'fail',
       message: 'No event found with this id ',
     });
-  } else if (!event.creatorID.equals(req.user._id)) {
+  } else if (!updatedEvent.creatorID.equals(req.user._id)) {
     res.status(404).json({
       status: 'fail',
       message: 'You cannot edit events that are not yours ',
     });
-  } else {
-    res.status(200).json({
-      status: 'success',
-      data: event,
-    });
   }
-  next();
-});
-
-exports.deleteEvent = catchAsync(async (req, res, next) => {
-  res.status('200').json({
+  if (filteredBody.description)
+    updatedEvent.description = filteredBody.description;
+  if (filteredBody.category) updatedEvent.category = filteredBody.category;
+  if (filteredBody.tags) updatedEvent.tags = filteredBody.tags;
+  if (filteredBody.privacy) updatedEvent.privacy = filteredBody.privacy;
+  if (filteredBody.goPublicDate)
+    updatedEvent.goPublicDate = filteredBody.goPublicDate;
+  await updatedEvent.save();
+  res.status(200).json({
     status: 'success',
-    message: '3azama bas m4 google',
+    data: updatedEvent,
   });
-});
+};
+
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
     const page = req.query.page * 1 || 1;
@@ -264,6 +367,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
+    //el check da m4 lazem n3mlo
     if (!tickets.length) {
       return res.status(404).json({
         status: 'fail',
@@ -273,10 +377,20 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     let total = 0;
     const salesByType = [];
+    //aggregate on bookings
+
+    // Booking.aggregate([
+    //   {
+    //     $match: {
+    //       eventID: mongoose.Types.ObjectId(req.params.id),
+    //     },
+    //   },
+    //   {
+    //     $group: {
 
     tickets.forEach((ticket) => {
-      const subtotal = ticket.currentReservations * ticket.price;
-      total += subtotal;
+      //   const subtotal = ticket.currentReservations * ticket.price;
+      //   total += subtotal;
 
       salesByType.push({
         ticketID: ticket._id,
@@ -285,7 +399,6 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
         price: ticket.price,
         sold: ticket.currentReservations,
         capacity: ticket.capacity,
-        subtotal,
       });
     });
 

@@ -72,12 +72,17 @@ const createSendToken = (user, statusCode, res) => {
  */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
+  console.log('entered here');
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
+  // if (
+  //   req.headers.authorization &&
+  //   req.headers.authorization.startsWith('Bearer')
+  // ) {
+  //   token = req.headers.authorization.split(' ')[1];
+  // } else
+  // console.log('my cookieee is ', req.cookies.jwt);
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 /*
   if (!token) {
@@ -283,9 +288,14 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.login = catchAsync(async (req, res, next) => {
+  console.log('Entered login route');
   const { email, password } = req.body;
+  console.log(req);
+  console.log(req.body);
+  console.log(email, password);
   // 1) Check if email and password exist
   if (!email || !password) {
+    // console.log('Wlahy 7aram');
     return res.status(401).json({
       status: 'fail',
       message: 'Please provide email and password!',

@@ -10,21 +10,21 @@ const app = require('./app');
 //Load config
 dotenv.config({ path: '.config.env' });
 const Seeder = require('./seeds/seeder');
-const cors = require('cors');
+// const cors = require('cors');
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
-const corsOptions = {
-  origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
-  credentials: true,
-  preflightContinue: true,
-  optionsSuccessStatus: 204,
-};
-app.use('*', cors(corsOptions));
+// const corsOptions = {
+//   origin: ['http://localhost:62383'],
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//   // allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
+//   credentials: true,
+//   preflightContinue: true,
+//   optionsSuccessStatus: 204,
+// };
+// app.use('*', cors(corsOptions));
 
 //Database connection
 

@@ -36,13 +36,12 @@ const Booking = require('./models/bookingModel');
 // console.log(typeof now);
 // now = now.toUTCString();
 
-console.log('MYDB env is ', process.env.DATABASE_LOCAL);
-
 const DBstring =
   process.env.NODE_ENV === 'development'
     ? process.env.DATABASE_LOCAL
     : process.env.DATABASE_DEPLOY;
 
+console.log('connecting to ', DBstring);
 mongoose
   .connect(DBstring, {
     useNewUrlParser: true,

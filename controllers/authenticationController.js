@@ -84,7 +84,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-/*
+  /*
   if (!token) {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401)
@@ -180,7 +180,7 @@ const SendConfirmationEmail = async (user, req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.signup = catchAsync(async (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   //check if user exists:
   const existingUser = await User.findOne({
     email: req.body.email,

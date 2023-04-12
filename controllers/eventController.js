@@ -242,9 +242,12 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
     message: '3azama bas m4 google',
   });
 });
-
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 20;
+    const skip = (page - 1) * limit;
+
     const event = await Event.findOne({
       _id: req.params.id,
       creatorID: req.user._id,
@@ -257,7 +260,9 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
       });
     }
 
-    const tickets = await Ticket.find({ eventID: req.params.id });
+    const tickets = await Ticket.find({ eventID: req.params.id })
+      .skip(skip)
+      .limit(limit);
 
     if (!tickets.length) {
       return res.status(404).json({

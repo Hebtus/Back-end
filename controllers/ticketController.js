@@ -42,9 +42,14 @@ exports.createTicket = catchAsync(async (req, res, next) => {
 });
 
 exports.getEventTickets = async (req, res) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 20;
+  const skip = (page - 1) * limit;
   const eventId = req.params.id;
   try {
-    const ticket = await Ticket.find({ eventID: eventId });
+    const ticket = await Ticket.find({ eventID: eventId })
+      .skip(skip)
+      .limit(limit);
     if (!ticket) {
       return res
         .status(404)

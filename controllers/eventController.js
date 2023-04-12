@@ -10,6 +10,11 @@ const AppError = require('../utils/appError');
 const cloudinary = require('../utils/cloudinary');
 const streamifier = require('streamifier');
 
+/**
+ * The Controller responsible for handling requests relating to Events
+ * @module Controllers/eventController
+ */
+
 // takes any
 const makeprivateEventsPublic = async () => {
   const privateEvents = await Event.updateMany(
@@ -39,6 +44,14 @@ const upload = multer({
 exports.uploadEventPhoto = upload.single('image');
 /////////////////////////////////////////////////////
 
+/**
+ * @function
+ * @description - Called by client to get all events in the main page or filter them according to Category and Time. The function also handles pagination and geoquery.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.getEvents = catchAsync(async (req, res, next) => {
   await makeprivateEventsPublic();
   //check on mongoose behaviour with non existent parameters

@@ -6,6 +6,11 @@ const promoCode = require('../models/promoCodeModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
+/**
+ * The Controller responsible for handling requests relating to promocodes
+ * @module Controllers/promoCodeController
+ */
+
 //for reading csv file
 // const csv = require('csv-parser');
 const { Readable } = require('stream');
@@ -14,15 +19,6 @@ const { parse } = require('fast-csv');
 const multerTempStorage = multer.memoryStorage();
 //Limit the file size to 5MB
 const multerLimits = { filesize: 5 * 10 ** 6, fields: 0, files: 1 };
-
-// Filters the type of files that this request accepts
-// const multerFilter = (req, file, cb) => {
-//   if (file.mimetype.startsWith('image')) {
-//     cb(null, true);
-//   } else {
-//     cb(new AppError('Not an image! Please upload only images.', 400), false);
-//   }
-// };
 
 const csvFilter = (_req, file, cb) => {
   // console.log('Reading file in middleware', file.originalname);
@@ -40,7 +36,14 @@ exports.uploadCSV = multer({
   fileFilter: csvFilter,
   limits: multerLimits,
 });
-
+/**
+ * @function
+ * @description - Called by creator to create promocodes.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.createPromoCode = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
 
@@ -129,6 +132,14 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * @function
+ * @description - Parses CSV file and returns the data and headers
+ * @param {object} readable -The readable stream object
+ * @param {object} csvData -The csv data object
+ * @param {object} csvHeaders -The csv headers object
+ * @returns {object} - Returns the csv data and headers
+ */
 async function parseCSV(readable, csvData, csvHeaders) {
   let counter = 1;
   for await (const chunk of readable) {
@@ -149,6 +160,14 @@ async function parseCSV(readable, csvData, csvHeaders) {
   return { csvData, csvHeaders };
 }
 
+/**
+ * @function
+ * @description - Called by creator to export his promocodes and create them in the form of CSV.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
   let ticket;

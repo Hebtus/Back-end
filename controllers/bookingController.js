@@ -3,6 +3,10 @@ const { promisify } = require('util');
 // const Event = require('../models/eventModel');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
+/**
+ * The Controller responsible for handling requests regarding Bookings
+ * @module Controllers/bookingController
+ */
 
 exports.addAttendee = catchAsync(async (req, res, next) => {
   const attendee = new Booking(req.body);

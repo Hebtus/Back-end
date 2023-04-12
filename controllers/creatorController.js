@@ -5,6 +5,19 @@ const catchAsync = require('../utils/catchAsync');
 const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
 
+/**
+ * The Controller responsible for handling requests made by Creator to Manipulate Tickets and Events
+ * @module Controllers/creatorController
+ */
+
+/**
+ * @function
+ * @description - Returns Events by Creator  in the Manage Events. The Request has implementes Pagination and can accept CSV that exports events in form of CSV.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.getEvents = catchAsync(async (req, res, next) => {
   // req.user._id = '642f3260de49962dcfb8179c';
   // console.log(req.user._id);
@@ -110,6 +123,14 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   next();
 });
 
+/**
+ * @function
+ * @description - Delete an Event and all its associated Tickets and Bookings. Accessible Only by Creator.
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.deleteEvent = catchAsync(async (req, res, next) => {
   // console.log(req.user);
   const event = await Event.findOne({ _id: req.params.id });

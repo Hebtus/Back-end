@@ -2,6 +2,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/userModel');
 const createSendToken = require('../routes/authenticationRoute');
 const mongoose = require('mongoose');
+
+/**
+ * The Function responsible for handling requests made by Users to login using Google
+ * @module passport/googlepassportAuth
+ */
+
 /**
  * @description - Creates Google strategy and creates a new user if it is his first time to register, else he is logged in immediately
  * @param {object} passport -parameter passed from passportRoute

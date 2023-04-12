@@ -9,14 +9,14 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'sudo docker system prune -af'
-                sh "sudo docker build -t ${IMAGE_NAME} ."
+                sh "docker system prune -af"
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
         stage('Deploy') {
             steps {
-                sh "sudo docker stop ${CONTAINER_NAME} || true"
+                sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm -f ${CONTAINER_NAME} || true"
                 sh "docker run -p 3000:3000 -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
             }

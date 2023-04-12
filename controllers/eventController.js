@@ -20,16 +20,6 @@ const makeprivateEventsPublic = async () => {
 };
 
 //Multer
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, callback) => {
-//     callback(null, 'public/img/events');
-//   },
-//   filename: (req, file, callback) => {
-//     //user-userid-timestamp.jpeg
-//     const ext = file.mimetype.split('/')[1];
-//     callback(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-//   },
-// });
 const multerTempStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, callback) => {
@@ -47,6 +37,7 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 exports.uploadEventPhoto = upload.single('image');
+/////////////////////////////////////////////////////
 
 exports.getEvents = catchAsync(async (req, res, next) => {
   await makeprivateEventsPublic();

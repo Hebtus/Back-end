@@ -178,13 +178,11 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
 exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
   //const userID = req.user._id;
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 20;
+  const page = req.query.page * 1 || 5;
+  const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
   try {
-    const ticket = await Ticket.find({ eventID: req.params.id })
-      .skip(skip)
-      .limit(limit);
+    const ticket = await Ticket.find({ eventID: req.params.id });
     const event = await Event.findOne({ creatorID: req.user._id });
     //commented till we figure out the user change of login id
     if (!event) {

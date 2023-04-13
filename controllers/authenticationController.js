@@ -41,15 +41,6 @@ const createToken = (user, res) => {
 
 //creates token, attaches it to cookie and sends it as a standard responsee
 const createSendToken = (user, statusCode, res) => {
-  // const token = signToken(user._id);
-  // const cookieOptions = {
-  //   expires: new Date(
-  //     Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  // };
-  // //only for deployment
-  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
   createToken(user, res);
   // res.cookie('jwt', token, cookieOptions);
 
@@ -81,16 +72,20 @@ exports.protect = catchAsync(async (req, res, next) => {
   //   token = req.headers.authorization.split(' ')[1];
   // } else
   // console.log('my cookieee is ', req.cookies.jwt);
+
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  /*
+  // console.log('req.cookies ', req);
+  // console.log('req.cookies ', req.cookies);
+  console.log('token is ', token);
+  // console.log('reqhead auth is ', req.headers.authorization);
+
   if (!token) {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401)
     );
   }
-*/
   // 2) Verification token
 
   // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
@@ -126,6 +121,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
+  console.log('curr user ', currentUser);
   next();
 });
 
@@ -290,9 +286,9 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
 exports.login = catchAsync(async (req, res, next) => {
   console.log('Entered login route');
   const { email, password } = req.body;
-  console.log(req);
-  console.log(req.body);
-  console.log(email, password);
+  // console.log(req);
+  // console.log(req.body);
+  // console.log(email, password);
   // 1) Check if email and password exist
   if (!email || !password) {
     // console.log('Wlahy 7aram');
@@ -480,6 +476,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
  */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   // 1) Get user from collection
+  console.log('Received req on update password');
   const user = await User.findById(req.user._id).select('+password');
   if (!user) throw new AppError('Invalid User', 400);
 

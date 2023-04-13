@@ -19,8 +19,9 @@ COPY . .
 # Expose port 3001
 EXPOSE 3001
 
-# Start the app
-CMD [ "npm", "start" ]
+# Start the app using pm2
+CMD [ "pm2-runtime", "npm", "--", "start" ]
+
 
 #using this command instead of npm start
 #the pm2-runtime command is used instead of pm2 start to ensure that logs are displayed in the container output.

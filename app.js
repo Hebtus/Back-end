@@ -21,17 +21,34 @@ dotenv.config({ path: './config.env' });
 const app = express();
 app.enable('trust proxy');
 
-const corsOptions = {
-  origin: '*', // ['http://localhost:62383'],
+//////////////////el bta3a dee btbwz login for some reason
+// preflightContinue: true,
+///////////////////////
+// const corsOptions = {
+//   origin: '*', //['http://localhost:62383', 'http://localhost:5173'],
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+//   allowedHeaders:
+//     'Token,Content-Type,Authorization,X-Forwarded-For,Access-Control-Allow-Origin,Access-Control-Allow-Headers,Access-Control-Allow-Methods,Access-Control-Allow-Credentials,ngrok-skip-browser-warning',
+//   credentials: true,
+//   preflightContinue: true,
+//   optionsSuccessStatus: 204,
+// };
+const cookieCorsOptions = {
+  origin: [
+    'http://16.170.37.222',
+    'http://localhost:62383',
+    'http://localhost:5173',
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
-  credentials: true,
-  preflightContinue: true,
+  allowedHeaders: 'Content-Type, *, Cookie, jwt',
+  credentials: false,
+  // preflightContinue: true,
   optionsSuccessStatus: 204,
 };
+
 // app.use('*', cors(corsOptions));
-app.use(cors());
-app.options('*', cors());
+app.use(cors(cookieCorsOptions));
+// app.options('*', cors());
 app.use(helmet());
 
 app.use(express.json());

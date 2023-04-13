@@ -46,36 +46,28 @@ exports.getEventTickets = async (req, res) => {
   const limit = req.query.limit * 1 || 20;
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
-  try {
-    const ticket = await Ticket.find({ eventID: eventId })
-      .skip(skip)
-      .limit(limit);
-    if (!ticket) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'invalid eventID' });
-    }
-    if (
-      !(
-        Date.now() >= ticket.sellingStartTime &&
-        Date.now() < ticket.sellingStartTime
-      )
-    ) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'ticket not available in the mean time',
-      });
-    }
-    res.status(200).json({
-      status: 'success',
-      data: {
-        ticket,
+
+  const ticket = await Ticket.find({
+    eventID: eventId,
+    $and: [
+      {
+        sellingStartTime: { $lte: Date.now() },
+        sellingEndTime: { $gt: Date.now() },
       },
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
+    ],
+  })
+    .skip(skip)
+    .limit(limit);
+  if (!ticket) {
+    return res.status(404).json({ status: 'fail', message: 'invalid eventID' });
   }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      ticket,
+    },
+  });
 };
 
 exports.editTicket = catchAsync(async (req, res, next) => {

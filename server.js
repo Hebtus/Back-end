@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
@@ -104,22 +105,24 @@ mongoose
     //   sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
     //   sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
     // });
-
-    // const testBooking = new Booking({
-    //   name: { firstName: 'lol', lastName: 'attendeelastname' },
-    //   gender: 'Male',
-    //   phoneNumber: 12345678910,
-    //   guestEmail: 'irushbullet@google.com',
-    //   price: 100,
-    //   quantity: 2,
-    //   purchasedOn: Date.now(),
-    // });
+/*
+    const testBooking = new Booking({
+      name: { firstName: 'lol', lastName: 'attendeelastname' },
+      gender: 'Male',
+      phoneNumber: 12345678910,
+      guestEmail: 'irushbullet@google.com',
+      userID:'642e4b8a1ba39c145cf15843',
+      ticketID: '64349f5f23a2b28029e0443b',
+      price: 100,
+      quantity: 2,
+      purchasedOn: Date.now(),
+    });
     // await testEvent2.save();
     // await testEvent.save().then(async () => {
     //   testTickets.eventID = testEvent._id;
     //   await testTickets.save().then(() => {
     //     testBooking.ticketID = testTickets._id;
-    //     testBooking.save();
+    testBooking.save();*/
     //   });
     // });
   });

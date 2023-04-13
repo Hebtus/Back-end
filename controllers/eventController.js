@@ -2,18 +2,13 @@ const multer = require('multer');
 //const fs = require('fs');
 const { promisify } = require('util');
 const crypto = require('crypto');
+const streamifier = require('streamifier');
 const Event = require('../models/eventModel');
 const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const cloudinary = require('../utils/cloudinary');
-const streamifier = require('streamifier');
-
-/**
- * The Controller responsible for handling requests relating to Events
- * @module Controllers/eventController
- */
 
 // takes any
 const makeprivateEventsPublic = async () => {
@@ -357,7 +352,6 @@ exports.editEvent = async (req, res, next) => {
     data: updatedEvent,
   });
 };
-
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
     const page = req.query.page * 1 || 1;
@@ -380,7 +374,6 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    //el check da m4 lazem n3mlo
     if (!tickets.length) {
       return res.status(404).json({
         status: 'fail',
@@ -390,30 +383,36 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     let total = 0;
     const salesByType = [];
-    //aggregate on bookings
-
-    // Booking.aggregate([
-    //   {
-    //     $match: {
-    //       eventID: mongoose.Types.ObjectId(req.params.id),
-    //     },
-    //   },
-    //   {
-    //     $group: {
-
-    tickets.forEach((ticket) => {
-      //   const subtotal = ticket.currentReservations * ticket.price;
-      //   total += subtotal;
-
-      salesByType.push({
-        ticketID: ticket._id,
-        ticketName: ticket.name,
-        ticketType: ticket.type,
-        price: ticket.price,
-        sold: ticket.currentReservations,
-        capacity: ticket.capacity,
+    
+    // Aggregate bookings data for each ticket
+    for (let i = 0; i < tickets.length; i++) {
+      const ticket = tickets[i];
+      console.log(ticket._id);
+      const bookings = await Booking.find({
+        ticketID:ticket._id,
       });
-    });
+
+      if (bookings.length > 0) {
+        let subtotal = 0;
+
+        // Calculate the total sales and seats sold for the ticket
+        for (let j = 0; j < bookings.length; j++) {
+          const booking = bookings[j];
+          subtotal += booking.price * booking.quantity;
+        }
+        total += subtotal;
+
+        // Add the sales data for the ticket to the salesByType array
+        salesByType.push({
+          ticketID: ticket._id,
+          ticketName: ticket.name,
+          ticketType: ticket.type,
+          price: ticket.price,
+          sold: ticket.currentReservations,
+          capacity: ticket.capacity,
+        });
+      }
+    }
 
     const totalNetSales = total - total * 0.225;
 

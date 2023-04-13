@@ -77,7 +77,17 @@ exports.getEventTickets = async (req, res) => {
     return res.status(500).json({ error: 'Something went wrong' });
   }
 };
-
+/**
+@function
+@description Edit the ticket information of a specefic event.
+@async
+@name forgotPassword
+@param {object} req - Express request object.
+@param {object} res - Express response object.
+@param {function} next - Express next middleware function.
+@throws {AppError} If there is no  ticket with this id.
+@throws {AppError} If there is an validation errors.
+ */
 exports.editTicket = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,

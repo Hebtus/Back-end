@@ -53,8 +53,9 @@ router.post('/forgotpassword', authController.forgotPassword);
 
 //from here down add requests that are available after you are logged in only
 //remeber to add the berarer token to the autherization in postman
-router.use(() => {
+router.use((req, res, next) => {
   console.log('lolxdddd ');
+  next();
 }, authController.protect);
 
 //#endregion

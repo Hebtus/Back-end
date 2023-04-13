@@ -12,6 +12,6 @@ router
   .route('/:id')
   .get(creatorController.getEvent)
   .delete(creatorController.deleteEvent);
-router.get('/:id/tickets', creatorController.getCreatorEventTickets);
+router.get('/:id/tickets', creatorController.getEventTicketByCreator);
 // router.route('/events/:id/sales').get(creatorController.getSales);
 module.exports = router;

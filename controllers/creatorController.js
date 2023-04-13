@@ -176,33 +176,41 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 
 //now i have some inquires , is there a better way to check the association betwen this creator and the ticket ? the loop bacl from ticket to event to creator?
 //also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
-exports.getCreatorEventTickets = catchAsync(async (req, res, next) => {
+exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
   //const userID = req.user._id;
-  const ticket = await Ticket.find({ eventID: req.params.id });
-  const event = await Event.findOne({ creatorID: req.user._id });
-  //commented till we figure out the user change of login id
-  if (!event) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'invalid creator',
+  const page = req.query.page * 1 || 5;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+  try {
+    const ticket = await Ticket.find({ eventID: req.params.id });
+    const event = await Event.findOne({ creatorID: req.user._id });
+    //commented till we figure out the user change of login id
+    if (!event) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'invalid creator',
+      });
+    }
+    if (!event._id.equals(req.params.id)) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'this ticket event is not associated with this creator',
+      });
+    }
+    if (!ticket) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'invalid eventID',
+      });
+    }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tickets: ticket,
+      },
     });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
-  if (!event._id.equals(req.params.id)) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'this ticket event is not associated with this creator',
-    });
-  }
-  if (!ticket) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'invalid eventID',
-    });
-  }
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tickets: ticket,
-    },
-  });
 });

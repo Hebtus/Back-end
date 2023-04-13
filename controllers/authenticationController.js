@@ -36,7 +36,8 @@ const createToken = (user, res) => {
   //only for deployment
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
-  res.cookie('jwt', token, cookieOptions);
+  // res.cookie('jwt', token, cookieOptions);
+  res.token = token;
 };
 
 //creates token, attaches it to cookie and sends it as a standard responsee
@@ -49,6 +50,7 @@ const createSendToken = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: 'success',
+    token: res.token,
     data: {
       user,
     },
@@ -76,9 +78,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
+  if (req.body.token) token = req.body.token;
+  if (req.headers.token) token = req.headers.token;
+  // console.log(req);
   // console.log('req.cookies ', req);
   // console.log('req.cookies ', req.cookies);
-  console.log('token is ', token);
+  // console.log('token is ', token);
+  // console.log(req.headers);
   // console.log('reqhead auth is ', req.headers.authorization);
 
   if (!token) {
@@ -87,8 +93,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
   // 2) Verification token
-
-  // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
 
   //still needs to handle invalid token error tho I think
   const decoded = await promisify(jwt.verify)(
@@ -121,7 +125,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
-  console.log('curr user ', currentUser);
+  // console.log('curr user ', currentUser);
   next();
 });
 
@@ -337,7 +341,7 @@ exports.logout = catchAsync(async (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     // expires: new Date(Date.now() + 500),
     expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
-    httpOnly: true,
+    // httpOnly: true,
   });
   res
     .status(200)
@@ -359,6 +363,7 @@ exports.logout = catchAsync(async (req, res, next) => {
 @returns {Promise<void>} Sends a JSON response with a success or failure message.
 */
 exports.forgotPassword = catchAsync(async (req, res, next) => {
+  console.log('Entered forgot password route');
   // 1) Get user based on posted email
   const { email } = req.body;
   if (!(email && validator.isEmail(email))) {
@@ -392,13 +397,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       message,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       message: 'Token sent to email!',
     });
   } catch (err) {
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    await EmailConfirm.findOneAndDelete({ userID: user._id });
     await user.save({ validateBeforeSave: false });
 
     return next(

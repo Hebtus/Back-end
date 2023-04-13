@@ -35,9 +35,13 @@ app.enable('trust proxy');
 // };
 const cookieCorsOptions = {
   origin: [
+    'http://16.170.37.222/',
     'http://16.170.37.222',
     'http://localhost:62383',
+    'http://localhost:62967',
     'http://localhost:5173',
+    'http://localhost:51535',
+    'http://localhost:3000',
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, *, Cookie, jwt',

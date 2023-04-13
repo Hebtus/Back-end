@@ -43,7 +43,7 @@ const promoCodeSchema = new mongoose.Schema({
     // Refrence ID that refers to the ticket type which it belongs to
     type: mongoose.Schema.ObjectId,
     ref: 'Ticket',
-    required: [true, 'The booked ticket  must belong to an event'],
+    required: [true, 'The promo code must belong to specific ticket type'],
   },
 });
 

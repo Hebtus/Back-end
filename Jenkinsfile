@@ -23,7 +23,7 @@ pipeline {
                     -v ${CONFIG_PATH}:/app/config.env ${IMAGE_NAME}"
                 
                 
-                sh "docker logs ${CONTAINER_NAME} > container_logs.txt"
+                sh "docker logs ${CONTAINER_NAME} &> container_logs.txt"
             }
         }
     }

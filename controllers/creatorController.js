@@ -89,11 +89,29 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     //   message: 'CSV file sent',
     // });
   }
-
-  const eventsData = await Event.find({ creatorID: req.user._id })
-    .select(['-creatorID'])
-    .skip(skip)
-    .limit(limit);
+  let eventsData;
+  if (req.query.time === 'past') {
+    eventsData = await Event.find({
+      creatorID: req.user._id,
+      endDate: { $lt: Date.now() },
+    })
+      .select(['-creatorID'])
+      .skip(skip)
+      .limit(limit);
+  } else if (req.query.time === 'future') {
+    eventsData = await Event.find({
+      creatorID: req.user._id,
+      startDate: { $gt: Date.now() },
+    })
+      .select(['-creatorID'])
+      .skip(skip)
+      .limit(limit);
+  } else {
+    eventsData = await Event.find({ creatorID: req.user._id })
+      .select(['-creatorID'])
+      .skip(skip)
+      .limit(limit);
+  }
 
   res.status(200).json({
     status: 'success',

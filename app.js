@@ -42,6 +42,7 @@ const cookieCorsOptions = {
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, *, Cookie, jwt',
+  exposedHeaders: ['set-cookie'],
   credentials: false,
   // preflightContinue: true,
   optionsSuccessStatus: 204,

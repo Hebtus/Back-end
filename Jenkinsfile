@@ -22,8 +22,6 @@ pipeline {
                 sh "docker run -d --name ${CONTAINER_NAME} -p 3001:3001 \
                     -v ${CONFIG_PATH}:/app/config.env ${IMAGE_NAME}"
                 
-                
-                sh "docker logs ${CONTAINER_NAME}"
             }
         }
     }

@@ -385,11 +385,10 @@ exports.editEvent = async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.getEventSales = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
   if (req.query.netsales === '1') {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 10;
-    const skip = (page - 1) * limit;
-
     const event = await Event.findOne({
       _id: req.params.id,
       creatorID: req.user._id,
@@ -441,7 +440,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     const totalNetSales = total - total * 0.225;
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: {
         totalGrossSales: total,
@@ -449,34 +448,30 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
         salesByType,
       },
     });
-  } else {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 20;
-    const skip = (page - 1) * limit;
+  }
 
-    const event = await Event.findOne({
-      _id: req.params.id,
-      creatorID: req.user._id,
-    });
+  const event = await Event.findOne({
+    _id: req.params.id,
+    creatorID: req.user._id,
+  });
 
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Invalid event or creator',
-      });
-    }
-
-    const tickets2 = await Ticket.find({ eventID: req.params.id })
-      .skip(skip)
-      .limit(limit);
-
-    let salesByType = [];
-    salesByType = tickets2;
-    res.status(200).json({
-      status: 'success',
-      data: {
-        salesByType,
-      },
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid event or creator',
     });
   }
+
+  const tickets2 = await Ticket.find({ eventID: req.params.id })
+    .skip(skip)
+    .limit(limit);
+
+  let salesByType = [];
+  salesByType = tickets2;
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      salesByType,
+    },
+  });
 });

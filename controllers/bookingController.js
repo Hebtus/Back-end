@@ -28,14 +28,15 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
         data: attendee,
       })
     )
-    .catch((err) => {
+    .catch((err) =>
       //Send error response if any error is encountered
       res.status(404).json({
         status: 'failed',
         message: err.message,
-      });
-    });
+      })
+    );
 });
+
 exports.createBookings = catchAsync(async (req, res, next) => {
   //TODO: Handle promocodes
   const { bookings } = req.body;
@@ -52,18 +53,18 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   console.log(bookings);
   // const docs = await Promise.all(bookings)
   await Booking.create(bookings)
-    .then(() => {
+    .then(() =>
       res.status('200').json({
         // Send successful response
         status: 'success',
         data: bookings,
-      });
-    })
-    .catch((err) => {
+      })
+    )
+    .catch((err) =>
       //Send error response if any error is encountered
       res.status(404).json({
         status: 'failed',
         message: err.message,
-      });
-    });
+      })
+    );
 });

@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "server:${BUILD_NUMBER}"
         CONTAINER_NAME = "server"
-        CONFIG_PATH = "/app/config.env"
+        CONFIG_PATH = "/home/azureuser/data/config.env"
     }
 
     stages {

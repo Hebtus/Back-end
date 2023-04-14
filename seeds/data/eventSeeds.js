@@ -10,8 +10,7 @@ module.exports = (userIDs) => {
       startDate: faker.date.past(),
       endDate: faker.date.future(),
       location: {
-        lat: faker.address.latitude(),
-        lng: faker.address.longitude(),
+        coordinates: [faker.address.latitude(), faker.address.longitude()],
       },
       locationName: faker.address.streetAddress(),
       category: ['Music', 'Food & Drink', 'Charity & Causes'][i % 3],

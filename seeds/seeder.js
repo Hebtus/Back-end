@@ -7,11 +7,10 @@ const eventSeeds = require('./data/eventSeeds');
 const User = require('../models/userModel');
 const Event = require('../models/eventModel');
 
-module.exports = async function Seed() {
-  console.log('loool');
+module.exports = async function Seed(DbString) {
   //Database connection
   mongoose
-    .connect(process.env.DATABASE_LOCAL, {
+    .connect(DbString, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })

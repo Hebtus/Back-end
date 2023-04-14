@@ -126,6 +126,7 @@ const SendConfirmationEmail = async (user, req, res, next) => {
       'host'
     )}/api/v1/signup-confirm/${confirmToken}`;
   } else if (process.env.NODE_ENV === 'production') {
+    console.log('sending link email in production');
     confirmURL = `${process.env.BACKEND_URL}/signup-confirm/${confirmToken}`;
   }
   const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;

@@ -19,6 +19,7 @@ pipeline {
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm -f ${CONTAINER_NAME} || true"
                 sh "docker run -p 3001:3001 -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                sh "docker logs ${CONTAINER_NAME} > container_logs.txt"
             }
         }
     }

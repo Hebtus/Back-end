@@ -352,6 +352,14 @@ exports.editEvent = async (req, res, next) => {
     data: updatedEvent,
   });
 };
+/**
+ * @function
+ * @description -called to get the event sales through the booked tickets for each event and calculating the sales given the event id in parameters check the event existence and user authroity to check then existence of booked tickets
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
     if (req.query.netsales === '1') {

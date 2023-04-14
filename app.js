@@ -38,6 +38,7 @@ const cookieCorsOptions = {
     'http://16.170.37.222',
     'http://localhost:62383',
     'http://localhost:5173',
+    'http://localhost:52805', //cross: da 5alas b2a mtsabbet according to aya
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, *, Cookie, jwt',

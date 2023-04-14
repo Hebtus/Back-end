@@ -69,7 +69,7 @@ app.use(cookieParser());
 //   }
 // });
 app.use('/api/v1', (req, res, next) => {
-  console.log('hello');
+  console.log('hello from Major App Middleware');
   next();
 });
 app.use('/api/v1/events', eventRouter);

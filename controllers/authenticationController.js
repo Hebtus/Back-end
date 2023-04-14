@@ -1,3 +1,4 @@
+const dotenv = require('dotenv');
 const crypto = require('crypto');
 //const passport = require('passport');
 const jwt = require('jsonwebtoken');
@@ -9,6 +10,9 @@ const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 const EmailConfirm = require('../models/emailConfirmModel');
 const PasswordReset = require('../models/passwordResetModel');
+
+dotenv.config({ path: '.config.env' });
+
 /**
  * The Controller responsible for handling authentication Requests
  * @module Controllers/authenticationController
@@ -55,7 +59,7 @@ const createSendToken = (user, statusCode, res) => {
  */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
-  console.log('entered here');
+  console.log('entered protection');
   let token;
   if (
     req.headers.authorization &&
@@ -66,17 +70,12 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (req.body.token) token = req.body.token;
   if (req.headers.token) token = req.headers.token;
 
-  console.log('token is ', token);
-  // console.log('reqhead auth is ', req.headers.authorization);
-
   if (!token) {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401)
     );
   }
   // 2) Verification token
-
-  // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
 
   //still needs to handle invalid token error tho I think
   const decoded = await promisify(jwt.verify)(
@@ -86,8 +85,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     next(new AppError('Could not decode token.', 401));
     // Handle the error.
   });
-  // const decoded = await promisify(jwt.verify, (result, lol) => {
-  //   next(new AppError('Could not decode token.', 401));
+
   // })(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -109,7 +107,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
-  console.log('curr user ', currentUser);
   next();
 });
 
@@ -123,10 +120,14 @@ exports.protect = catchAsync(async (req, res, next) => {
 const SendConfirmationEmail = async (user, req, res, next) => {
   //generate confirm token first
   const confirmToken = await EmailConfirm.createEmailConfirmToken(user._id);
-  const confirmURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/signup-confirm/${confirmToken}`;
-
+  let confirmURL;
+  if (process.env.NODE_ENV === 'development') {
+    confirmURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/signup-confirm/${confirmToken}`;
+  } else if (process.env.NODE_ENV === 'production') {
+    confirmURL = `${process.env.BACKEND_URL}/signup-confirm/${confirmToken}`;
+  }
   const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
 
   try {
@@ -213,7 +214,6 @@ exports.signup = catchAsync(async (req, res, next) => {
       status: 'fail',
       message: 'Password and confirm Passwords do not match!',
     });
-    // console.log('lolxd');
   }
 
   //create user
@@ -236,7 +236,7 @@ exports.signup = catchAsync(async (req, res, next) => {
  */
 exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
-  // console.log('Entered Confirm email route');
+  console.log('reached confirm email route');
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.confirmationToken)
@@ -272,14 +272,10 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.login = catchAsync(async (req, res, next) => {
-  console.log('Entered login route');
   const { email, password } = req.body;
-  // console.log(req);
-  // console.log(req.body);
-  // console.log(email, password);
+
   // 1) Check if email and password exist
   if (!email || !password) {
-    // console.log('Wlahy 7aram');
     return res.status(401).json({
       status: 'fail',
       message: 'Please provide email and password!',
@@ -305,7 +301,6 @@ exports.login = catchAsync(async (req, res, next) => {
     // next();
   }
 
-  // console.log('user is ', user);
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
   // 4) If everything ok, send token to client

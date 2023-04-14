@@ -122,11 +122,11 @@ eventSchema.pre('save', function (next) {
     };
   }
 
-  if (this.privacy) {
-    if (!this.password) {
-      return next(new Error('Password is required if event is private'));
-    }
-  }
+  // if (this.privacy) {
+  //   if (!this.password) { //No longer required as event may be privite just to be accessible with the link
+  //     return next(new Error('Password is required if event is private'));
+  //   }
+  // }
   return next();
 });
 

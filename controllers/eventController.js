@@ -281,7 +281,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
     // find requests will deselect the same fields ex: get event by creator will retrieve all fields
     creatorID: 0,
     ticketsSold: 0,
-    password: 0,
+    //password: 0,
     draft: 0,
     goPublicDate: 0,
   });
@@ -291,12 +291,13 @@ exports.getEvent = catchAsync(async (req, res, next) => {
       message: 'No such event found with id ',
     });
   }
-  if (!event.privacy) {
-    const eventObj = event.toObject(); // To delete privacy field
-    delete eventObj.privacy;
-    return es.status(200).json({
+  if (!event.privacy || (event.privacy && !event.password)) {
+    // To delete privacy field
+    const { privacy, password, ...eventWithoutPrivateData } = event.toObject();
+
+    res.status(200).json({
       status: 'success',
-      data: eventObj,
+      data: eventWithoutPrivateData,
     });
   }
 

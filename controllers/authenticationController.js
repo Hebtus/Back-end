@@ -31,8 +31,9 @@ const createToken = (user, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    // httpOnly: true,
-    sameSite: true,
+    secure: false,
+    sameSite: false,
+    httpOnly: false,
   };
   //only for deployment
   // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
@@ -339,8 +340,9 @@ exports.logout = catchAsync(async (req, res, next) => {
   res.cookie('jwt', 'loggedout', {
     // expires: new Date(Date.now() + 500),
     expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
-    // httpOnly: true
-    sameSite: true,
+    secure: false,
+    sameSite: false,
+    httpOnly: false,
   });
   res
     .status(200)

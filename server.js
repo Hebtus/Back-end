@@ -51,6 +51,31 @@ mongoose
   .then(async () => {
     console.log('DB is connected successfuly!');
 
+    ////event testing/////
+    // const name = 'test event';
+    // const privacy = 'false';
+    // const password = null;
+    // const category = 'Music';
+    // const startDate = new Date(Date.now());
+    // const endDate = new Date(Date.now() + 100000000);
+    // const locationName = 'Faculty of Engineering, Cairo University';
+    // const locationcoordinates = [30.0444, 31.2357];
+    // const tags = null;
+
+    // await Event.create({
+    //   name,
+    //   privacy,
+    //   password,
+    //   category,
+    //   creatorID: '642fda162c9619b9850f70f1',
+    //   img_url: null || '',
+    //   startDate,
+    //   endDate,
+    //   locationName,
+    //   tags,
+    //   location: { coordinates: locationcoordinates },
+    // });
+
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();
@@ -105,7 +130,7 @@ mongoose
     //   sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
     //   sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
     // });
-/*
+    /*
     const testBooking = new Booking({
       name: { firstName: 'lol', lastName: 'attendeelastname' },
       gender: 'Male',

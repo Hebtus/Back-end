@@ -55,12 +55,6 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Last Changed at is required'],
     default: Date.now(),
   },
-
-  // eventID: {
-  //   //check this with Joseph
-  //   type: mongoose.Schema.ObjectId,
-  //   ref: 'Event',
-  // },
 });
 
 //All find querries

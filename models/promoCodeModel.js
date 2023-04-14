@@ -39,11 +39,10 @@ const promoCodeSchema = new mongoose.Schema({
     required: [true, 'You must define is the promoCode discount or percentage'],
     type: Boolean,
   },
-  ticketID: {
-    // Refrence ID that refers to the ticket type which it belongs to
+  eventID: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Ticket',
-    required: [true, 'The promo code must belong to specific ticket type'],
+    ref: 'Event',
+    required: [true, 'PromoCode must belong to an event.'],
   },
 });
 

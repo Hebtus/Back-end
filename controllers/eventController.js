@@ -206,44 +206,68 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  if (req.file === undefined) {
-    return res.status(400).send('Please upload an image file!');
-  }
   const imageFile = req.file;
 
   const {
     name,
-    privacy,
-    password,
     startDate,
     endDate,
     locationName,
+    category,
+    privacy,
+    password,
     tags,
-    ticketsSold,
   } = req.body;
-
-  const cloudUploadStream = cloudinary.uploader.upload_stream(
-    { folder: 'events' },
-    async (error, result) => {
-      await Event.create({
-        name,
-        privacy,
-        password,
-        creatorID: req.user.id,
-        img_url: result.secure_url,
-        startDate,
-        endDate,
-        locationName,
-        tags,
-        ticketsSold,
-      });
-      res.status(200).json({
-        status: 'success',
-        message: 'event created successfully',
-      });
-    }
-  );
-  streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
+  const location = req.body.location;
+  const locationCoordinates = location != null ? location.split(',') : null;
+  const tagsArr = tags != null ? tags.split(',') : null;
+  console.log('tags', tags);
+  if (imageFile) {
+    console.log('should upload image');
+    const cloudUploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'events' },
+      async (error, result) => {
+        await Event.create({
+          name,
+          privacy,
+          password,
+          category,
+          creatorID: req.user.id,
+          img_url: result.secure_url,
+          startDate,
+          endDate,
+          locationName,
+          tags: tagsArr,
+          location: { coordinates: locationCoordinates },
+        });
+        res.status(200).json({
+          status: 'success',
+          message: 'event created successfully',
+        });
+      }
+    );
+    console.log(cloudUploadStream);
+    streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
+  } else {
+    console.log('shouldnt  upload image');
+    await Event.create({
+      name,
+      privacy,
+      password,
+      category,
+      creatorID: req.user.id,
+      img_url: '',
+      startDate,
+      endDate,
+      locationName,
+      tags,
+      location: { coordinates: locationCoordinates },
+    });
+    return res.status(200).json({
+      status: 'success',
+      message: 'event created successfully',
+    });
+  }
 });
 
 //TODO: Add URL here
@@ -275,12 +299,12 @@ exports.getEvent = catchAsync(async (req, res, next) => {
       status: 'success',
       data: eventWithoutPrivateData,
     });
-  } else
-    res.status(401).json({
-      status: 'Unauthorized',
-      message: 'You must enter the event password',
-    });
-  next();
+  }
+
+  return res.status(401).json({
+    status: 'Unauthorized',
+    message: 'You must enter the event password',
+  });
 });
 
 exports.getEventwithPassword = catchAsync(async (req, res, next) => {
@@ -353,12 +377,19 @@ exports.editEvent = async (req, res, next) => {
     data: updatedEvent,
   });
 };
+/**
+ * @function
+ * @description -called to get the event sales through the booked tickets for each event and calculating the sales given the event id in parameters check the event existence and user authroity to check then existence of booked tickets
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.getEventSales = catchAsync(async (req, res, next) => {
-  try {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 20;
-    const skip = (page - 1) * limit;
-
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+  if (req.query.netsales === '1') {
     const event = await Event.findOne({
       _id: req.params.id,
       creatorID: req.user._id,
@@ -371,7 +402,9 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
       });
     }
 
-    const tickets = await Ticket.find({ eventID: req.params.id })
+    const tickets = await Ticket.find({ eventID: req.params.id });
+
+    const tickets2 = await Ticket.find({ eventID: req.params.id })
       .skip(skip)
       .limit(limit);
 
@@ -383,14 +416,15 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
     }
 
     let total = 0;
-    const salesByType = [];
-    
+    let salesByType = [];
+    salesByType = tickets2;
+
     // Aggregate bookings data for each ticket
     for (let i = 0; i < tickets.length; i++) {
       const ticket = tickets[i];
       console.log(ticket._id);
       const bookings = await Booking.find({
-        ticketID:ticket._id,
+        ticketID: ticket._id,
       });
 
       if (bookings.length > 0) {
@@ -402,22 +436,12 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
           subtotal += booking.price * booking.quantity;
         }
         total += subtotal;
-
-        // Add the sales data for the ticket to the salesByType array
-        salesByType.push({
-          ticketID: ticket._id,
-          ticketName: ticket.name,
-          ticketType: ticket.type,
-          price: ticket.price,
-          sold: ticket.currentReservations,
-          capacity: ticket.capacity,
-        });
       }
     }
 
     const totalNetSales = total - total * 0.225;
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: {
         totalGrossSales: total,
@@ -425,8 +449,30 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
         salesByType,
       },
     });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
   }
+
+  const event = await Event.findOne({
+    _id: req.params.id,
+    creatorID: req.user._id,
+  });
+
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid event or creator',
+    });
+  }
+
+  const tickets2 = await Ticket.find({ eventID: req.params.id })
+    .skip(skip)
+    .limit(limit);
+
+  let salesByType = [];
+  salesByType = tickets2;
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      salesByType,
+    },
+  });
 });

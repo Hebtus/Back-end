@@ -174,43 +174,40 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
   next();
 });
 
-//now i have some inquires , is there a better way to check the association betwen this creator and the ticket ? the loop bacl from ticket to event to creator?
-//also the comaprsion while i can get in return many tickets and many events how is it gonna go ?
-exports.getEventTicketByCreator = catchAsync(async (req, res, next) => {
+/**
+ * @function
+ * @description -called to get the event tickets by the event creator himself not just for display so we drop the timing limits and all , by giving the event id and checking the creator authority
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
+exports.getEventTicketsByCreator = catchAsync(async (req, res, next) => {
   //const userID = req.user._id;
-  const page = req.query.page * 1 || 5;
+  const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
-  try {
-    const ticket = await Ticket.find({ eventID: req.params.id });
-    const event = await Event.findOne({ creatorID: req.user._id });
-    //commented till we figure out the user change of login id
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'invalid creator',
-      });
-    }
-    if (!event._id.equals(req.params.id)) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'this ticket event is not associated with this creator',
-      });
-    }
-    if (!ticket) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'invalid eventID',
-      });
-    }
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tickets: ticket,
-      },
+  const ticket = await Ticket.find({ eventID: req.params.id })
+    .skip(skip)
+    .limit(limit);
+  const event = await Event.findOne({ _id: req.params.id });
+  //commented till we figure out the user change of login id
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'invalid event',
     });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
   }
+  if (!event.creatorID.equals(req.user._id)) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'this ticket event is not associated with this creator',
+    });
+  }
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      tickets: ticket,
+    },
+  });
 });

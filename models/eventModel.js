@@ -5,10 +5,10 @@ const locationSchema = require('./shared/locationModel');
 // const bcrypt = require('bcryptjs');
 
 const eventSchema = new mongoose.Schema({
+  //////////////////*** Basic Info ***/////////////////////////
   name: {
     type: String,
     required: [true, 'An event must have a name.'],
-    unique: true,
     trim: true,
     maxlength: [40, 'An event must have less or more than 40 characters'],
     minlength: [10, 'An event must have less or equal than 10 characters'],
@@ -24,14 +24,6 @@ const eventSchema = new mongoose.Schema({
     validate: [validator.isDate, 'Must be right date format.'],
   },
   img_url: {
-    // public_id: {
-    //   type: String,
-    //   required: true,
-    // },
-    // url: {
-    //   type: String,
-    //   required: true,
-    // },
     type: String,
     default: '',
     validate: [
@@ -55,18 +47,28 @@ const eventSchema = new mongoose.Schema({
     maxlength: [100, 'An event must have no more than 100 characters'],
     default: 'Faculty of Engineering, Cairo University',
   },
+  category: {
+    type: String,
+    enum: {
+      values: ['Music', 'Food & Drink', 'Charity & Causes'],
+      message: '{VALUE} is not supported in event categories',
+    },
+    required: [true, 'An event must have a category.'],
+  },
+  //////////////////////end of Basic Info/////////////////////////
   description: {
     type: String,
     trim: true,
     maxlength: 400,
   },
-  tags: [String],
-  category: {
-    type: String,
-    enum: {
-      // TODO: Add validators on tag length
-      values: ['Music', 'Food & Drink', 'Charity & Causes'],
-      message: '{VALUE} is not supported in event categories',
+  // TODO: Add validators on tag length
+  tags: {
+    type: [String],
+    default: [],
+    validator: function (array) {
+      return array.every(
+        (v) => typeof v === 'string' && v.length > 0 && v.length < 80
+      );
     },
   },
   online: {
@@ -84,12 +86,7 @@ const eventSchema = new mongoose.Schema({
   password: {
     type: String,
     minlength: 8,
-    // required: { It did not work properly , I did it in middleware instead
-    //   function() {
-    //     return this.privacy;
-    //   },
-    //   message: 'Password is required if privacy is true',
-    // },
+    default: null,
   },
   privacy: {
     type: Boolean,

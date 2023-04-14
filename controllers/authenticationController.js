@@ -65,21 +65,16 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   console.log('entered here');
   let token;
-  // if (
-  //   req.headers.authorization &&
-  //   req.headers.authorization.startsWith('Bearer')
-  // ) {
-  //   token = req.headers.authorization.split(' ')[1];
-  // } else
-  // console.log('my cookieee is ', req.cookies.jwt);
-
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else console.log('my cookieee is ', req.cookies.jwt);
+  if (req.headers.token) token = req.headers.token;
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
-  // console.log('req.cookies ', req);
-  // console.log('req.cookies ', req.cookies);
-  console.log('token is ', token);
-  // console.log('reqhead auth is ', req.headers.authorization);
 
   if (!token) {
     return next(
@@ -121,7 +116,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
-  console.log('curr user ', currentUser);
   next();
 });
 

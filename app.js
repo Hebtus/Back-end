@@ -33,6 +33,7 @@ app.enable('trust proxy');
 //   preflightContinue: true,
 //   optionsSuccessStatus: 204,
 // };
+
 const cookieCorsOptions = {
   origin: [
     'http://16.170.37.222',
@@ -47,7 +48,13 @@ const cookieCorsOptions = {
 };
 
 // app.use('*', cors(corsOptions));
-app.use(cors(cookieCorsOptions));
+app.use(
+  // For front-end
+  cors({
+    origin: '*',
+  })
+);
+//app.use(cors(cookieCorsOptions));
 // app.options('*', cors());
 app.use(helmet());
 

@@ -15,6 +15,8 @@ const router = express.Router();
 // router.route('/:id').get(bookingController.getBooking);
 
 // //add attendee
+router.use(authController.protect);
 router.post('/add-attendee/', bookingController.addAttendee);
+router.post('/', bookingController.createBookings);
 
 module.exports = router;

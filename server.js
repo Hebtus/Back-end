@@ -17,6 +17,7 @@ const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
+// Seeder();
 // const corsOptions = {
 //   origin: ['http://localhost:62383'],
 //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -75,7 +76,7 @@ mongoose
     //   tags,
     //   location: { coordinates: locationcoordinates },
     // });
-
+    // await Event.deleteMany({ name: 'test event' });
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();

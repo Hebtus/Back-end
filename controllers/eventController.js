@@ -275,12 +275,12 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   if (!event.privacy) {
     const eventObj = event.toObject(); // To delete privacy field
     delete eventObj.privacy;
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: eventObj,
     });
   } else
-    res.status(401).json({
+    return res.status(401).json({
       status: 'Unauthorized',
       message: 'You must enter the event password',
     });

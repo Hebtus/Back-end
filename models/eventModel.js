@@ -5,6 +5,7 @@ const locationSchema = require('./shared/locationModel');
 // const bcrypt = require('bcryptjs');
 
 const eventSchema = new mongoose.Schema({
+  //////****Basic info****////////
   name: {
     type: String,
     required: [true, 'An event must have a name.'],
@@ -24,14 +25,6 @@ const eventSchema = new mongoose.Schema({
     validate: [validator.isDate, 'Must be right date format.'],
   },
   img_url: {
-    // public_id: {
-    //   type: String,
-    //   required: true,
-    // },
-    // url: {
-    //   type: String,
-    //   required: true,
-    // },
     type: String,
     default: '',
     validate: [
@@ -55,20 +48,22 @@ const eventSchema = new mongoose.Schema({
     maxlength: [100, 'An event must have no more than 100 characters'],
     default: 'Faculty of Engineering, Cairo University',
   },
-  description: {
-    type: String,
-    trim: true,
-    maxlength: 400,
-  },
-  tags: [String],
   category: {
     type: String,
+    required: [true, 'An event must have a category.'],
     enum: {
       // TODO: Add validators on tag length
       values: ['Music', 'Food & Drink', 'Charity & Causes'],
       message: '{VALUE} is not supported in event categories',
     },
   },
+  ////////////////End of basic info/////////////////////
+  description: {
+    type: String,
+    trim: true,
+    maxlength: 400,
+  },
+  tags: [String],
   online: {
     type: Boolean,
   },

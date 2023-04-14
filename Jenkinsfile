@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "server:${BUILD_NUMBER}"
         CONTAINER_NAME = "server"
+        CONFIG_PATH = "/app/config.env"
     }
 
     stages {
@@ -18,12 +19,8 @@ pipeline {
             steps {
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm -f ${CONTAINER_NAME} || true"
-                //sh "docker run -p 3001:3001 -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
-                //path the env variables stored on the server
-                 docker run -p 3001:3001 -d --name ${CONTAINER_NAME} \
-                 -v /home/azureuser/data/config.env:/app/config.env \
-                 ${IMAGE_NAME}
-
+                sh "docker run -d --name ${CONTAINER_NAME} -p 3001:3001 \
+                    -v ${CONFIG_PATH}:/app/config.env ${IMAGE_NAME}"
             }
         }
     }

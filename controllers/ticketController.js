@@ -47,6 +47,7 @@ exports.getEventTickets = async (req, res) => {
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
 
+  //check on 2 things for ticket availability: 1. time 2. capacity
   const ticket = await Ticket.find({
     eventID: eventId,
     $and: [
@@ -55,6 +56,7 @@ exports.getEventTickets = async (req, res) => {
         sellingEndTime: { $gt: Date.now() },
       },
     ],
+    $expr: { $lt: ['$currentReservations', '$capacity'] },
   })
     .skip(skip)
     .limit(limit);

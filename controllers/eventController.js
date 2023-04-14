@@ -354,81 +354,107 @@ exports.editEvent = async (req, res, next) => {
 };
 exports.getEventSales = catchAsync(async (req, res, next) => {
   try {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 20;
-    const skip = (page - 1) * limit;
+    if (req.query.netsales === '1') {
+      const page = req.query.page * 1 || 1;
+      const limit = req.query.limit * 1 || 20;
+      const skip = (page - 1) * limit;
 
-    const event = await Event.findOne({
-      _id: req.params.id,
-      creatorID: req.user._id,
-    });
-
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Invalid event or creator',
-      });
-    }
-
-    const tickets = await Ticket.find({ eventID: req.params.id });
-
-    const tickets2 = await Ticket.find({ eventID: req.params.id })
-      .skip(skip)
-      .limit(limit);
-
-    if (!tickets.length) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'No tickets found for this event',
-      });
-    }
-
-    let total = 0;
-    const salesByType = [];
-    for (let i = 0; i < tickets2.length; i++) {
-      const ticket = tickets2[i];
-
-      // Add the sales data for the ticket to the salesByType array
-      salesByType.push({
-        ticketID: ticket._id,
-        ticketName: ticket.name,
-        ticketType: ticket.type,
-        price: ticket.price,
-        sold: ticket.currentReservations,
-        capacity: ticket.capacity,
-      });
-    }
-
-    // Aggregate bookings data for each ticket
-    for (let i = 0; i < tickets.length; i++) {
-      const ticket = tickets[i];
-      console.log(ticket._id);
-      const bookings = await Booking.find({
-        ticketID: ticket._id,
+      const event = await Event.findOne({
+        _id: req.params.id,
+        creatorID: req.user._id,
       });
 
-      if (bookings.length > 0) {
-        let subtotal = 0;
-
-        // Calculate the total sales and seats sold for the ticket
-        for (let j = 0; j < bookings.length; j++) {
-          const booking = bookings[j];
-          subtotal += booking.price * booking.quantity;
-        }
-        total += subtotal;
+      if (!event) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'Invalid event or creator',
+        });
       }
+
+      const tickets = await Ticket.find({ eventID: req.params.id });
+
+      const tickets2 = await Ticket.find({ eventID: req.params.id })
+        .skip(skip)
+        .limit(limit);
+
+      if (!tickets.length) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'No tickets found for this event',
+        });
+      }
+
+      let total = 0;
+      let salesByType = [];
+      salesByType = tickets2;
+
+      // Aggregate bookings data for each ticket
+      for (let i = 0; i < tickets.length; i++) {
+        const ticket = tickets[i];
+        console.log(ticket._id);
+        const bookings = await Booking.find({
+          ticketID: ticket._id,
+        });
+
+        if (bookings.length > 0) {
+          let subtotal = 0;
+
+          // Calculate the total sales and seats sold for the ticket
+          for (let j = 0; j < bookings.length; j++) {
+            const booking = bookings[j];
+            subtotal += booking.price * booking.quantity;
+          }
+          total += subtotal;
+        }
+      }
+
+      const totalNetSales = total - total * 0.225;
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          totalGrossSales: total,
+          totalNetSales,
+          salesByType,
+        },
+      });
+    } else {
+      const page = req.query.page * 1 || 1;
+      const limit = req.query.limit * 1 || 20;
+      const skip = (page - 1) * limit;
+
+      const event = await Event.findOne({
+        _id: req.params.id,
+        creatorID: req.user._id,
+      });
+
+      if (!event) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'Invalid event or creator',
+        });
+      }
+
+      const tickets2 = await Ticket.find({ eventID: req.params.id })
+        .skip(skip)
+        .limit(limit);
+
+      if (!tickets2.length) {
+        return res.status(404).json({
+          status: 'fail',
+          message: 'No tickets found for this event',
+        });
+      }
+
+      let salesByType = [];
+      salesByType = tickets2;
+      res.status(200).json({
+        status: 'success',
+        data: {
+          salesByType,
+        },
+      });
     }
-
-    const totalNetSales = total - total * 0.225;
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        totalGrossSales: total,
-        totalNetSales,
-        salesByType,
-      },
-    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: 'Something went wrong' });

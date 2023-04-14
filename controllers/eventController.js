@@ -370,7 +370,9 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
       });
     }
 
-    const tickets = await Ticket.find({ eventID: req.params.id })
+    const tickets = await Ticket.find({ eventID: req.params.id });
+
+    const tickets2 = await Ticket.find({ eventID: req.params.id })
       .skip(skip)
       .limit(limit);
 
@@ -383,13 +385,26 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     let total = 0;
     const salesByType = [];
-    
+    for (let i = 0; i < tickets2.length; i++) {
+      const ticket = tickets2[i];
+
+      // Add the sales data for the ticket to the salesByType array
+      salesByType.push({
+        ticketID: ticket._id,
+        ticketName: ticket.name,
+        ticketType: ticket.type,
+        price: ticket.price,
+        sold: ticket.currentReservations,
+        capacity: ticket.capacity,
+      });
+    }
+
     // Aggregate bookings data for each ticket
     for (let i = 0; i < tickets.length; i++) {
       const ticket = tickets[i];
       console.log(ticket._id);
       const bookings = await Booking.find({
-        ticketID:ticket._id,
+        ticketID: ticket._id,
       });
 
       if (bookings.length > 0) {
@@ -401,16 +416,6 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
           subtotal += booking.price * booking.quantity;
         }
         total += subtotal;
-
-        // Add the sales data for the ticket to the salesByType array
-        salesByType.push({
-          ticketID: ticket._id,
-          ticketName: ticket.name,
-          ticketType: ticket.type,
-          price: ticket.price,
-          sold: ticket.currentReservations,
-          capacity: ticket.capacity,
-        });
       }
     }
 

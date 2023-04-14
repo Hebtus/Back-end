@@ -181,9 +181,9 @@ exports.getEventTicketsByCreator = catchAsync(async (req, res, next) => {
   const page = req.query.page * 1 || 5;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
-  const ticket = await Ticket.find({ eventID: req.params.id })
-    .skip(skip)
-    .limit(limit);
+  const ticket = await Ticket.find({ eventID: req.params.id });
+  //.skip(skip)
+  // .limit(limit);
   const event = await Event.findOne({ _id: req.params.id });
   //commented till we figure out the user change of login id
   if (!event) {

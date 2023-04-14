@@ -27,19 +27,7 @@ const signToken = (id) =>
 //creates token and attaches it to cookie.
 const createToken = (user, res) => {
   const token = signToken(user._id);
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    secure: false,
-    sameSite: false,
-    httpOnly: false,
-  };
-  //only for deployment
-  // if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-
-  res.cookie('jwt', token, cookieOptions);
-  console.log(res);
+  res.token = token;
 };
 
 //creates token, attaches it to cookie and sends it as a standard responsee
@@ -52,6 +40,7 @@ const createSendToken = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: 'success',
+    token: res.token,
     data: {
       user,
     },
@@ -68,19 +57,15 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
   console.log('entered here');
   let token;
-  // if (
-  //   req.headers.authorization &&
-  //   req.headers.authorization.startsWith('Bearer')
-  // ) {
-  //   token = req.headers.authorization.split(' ')[1];
-  // } else
-  // console.log('my cookieee is ', req.cookies.jwt);
-
-  if (req.cookies.jwt) {
-    token = req.cookies.jwt;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
   }
-  // console.log('req.cookies ', req);
-  // console.log('req.cookies ', req.cookies);
+  if (req.body.token) token = req.body.token;
+  if (req.headers.token) token = req.headers.token;
+
   console.log('token is ', token);
   // console.log('reqhead auth is ', req.headers.authorization);
 
@@ -336,14 +321,6 @@ exports.login = catchAsync(async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.logout = catchAsync(async (req, res, next) => {
-  //overwrite cookie at client side and set it to expire
-  res.cookie('jwt', 'loggedout', {
-    // expires: new Date(Date.now() + 500),
-    expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
-    secure: false,
-    sameSite: false,
-    httpOnly: false,
-  });
   res
     .status(200)
     .json({ status: 'success', message: 'Successfully logged out' });

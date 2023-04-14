@@ -22,7 +22,6 @@ pipeline {
                 //path the env variables stored on the server
                 docker run -p 3001:3001 -d --name ${CONTAINER_NAME} \
                 -v /home/azureuser/data/config.env:/app/config.env \
-                -e NODE_ENV=production \
                 ${IMAGE_NAME}
 
             }

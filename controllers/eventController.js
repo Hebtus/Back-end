@@ -192,7 +192,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .limit(limit);
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     data: { events: eventsData },
   });
@@ -295,7 +295,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
     // To delete privacy field
     const { privacy, password, ...eventWithoutPrivateData } = event.toObject();
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: eventWithoutPrivateData,
     });
@@ -328,7 +328,7 @@ exports.getEventwithPassword = catchAsync(async (req, res, next) => {
       message: 'Invalid password',
     });
   }
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     data: event,
   });
@@ -353,12 +353,13 @@ exports.editEvent = async (req, res, next) => {
   );
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'No event found with this id ',
     });
-  } else if (!updatedEvent.creatorID.equals(req.user._id)) {
-    res.status(404).json({
+  }
+  if (!updatedEvent.creatorID.equals(req.user._id)) {
+    return res.status(404).json({
       status: 'fail',
       message: 'You cannot edit events that are not yours ',
     });
@@ -386,7 +387,7 @@ exports.editEvent = async (req, res, next) => {
   //remove unnecessary fields
   updatedEvent._v = undefined;
   updatedEvent._id = undefined;
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     data: updatedEvent,
   });

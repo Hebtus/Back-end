@@ -206,9 +206,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  // if (req.file === undefined) {
-  //   return res.status(400).send('Please upload an image file!');
-  // }
   const imageFile = req.file;
 
   const {
@@ -225,31 +222,34 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   const locationCoordinates = location != null ? location.split(',') : null;
   const tagsArr = tags != null ? tags.split(',') : null;
   console.log('tags', tags);
-  const cloudUploadStream = cloudinary.uploader.upload_stream(
-    { folder: 'events' },
-    async (error, result) => {
-      await Event.create({
-        name,
-        privacy,
-        password,
-        category,
-        creatorID: req.user.id,
-        img_url: result.secure_url,
-        startDate,
-        endDate,
-        locationName,
-        tags: tagsArr,
-        location: { coordinates: locationCoordinates },
-      });
-      res.status(200).json({
-        status: 'success',
-        message: 'event created successfully',
-      });
-    }
-  );
-  if (imageFile)
+  if (imageFile) {
+    console.log('should upload image');
+    const cloudUploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'events' },
+      async (error, result) => {
+        await Event.create({
+          name,
+          privacy,
+          password,
+          category,
+          creatorID: req.user.id,
+          img_url: result.secure_url,
+          startDate,
+          endDate,
+          locationName,
+          tags: tagsArr,
+          location: { coordinates: locationCoordinates },
+        });
+        res.status(200).json({
+          status: 'success',
+          message: 'event created successfully',
+        });
+      }
+    );
+    console.log(cloudUploadStream);
     streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
-  else {
+  } else {
+    console.log('shouldnt  upload image');
     await Event.create({
       name,
       privacy,

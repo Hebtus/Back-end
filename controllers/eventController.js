@@ -206,22 +206,25 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  if (req.file === undefined) {
-    return res.status(400).send('Please upload an image file!');
-  }
+  // if (req.file === undefined) {
+  //   return res.status(400).send('Please upload an image file!');
+  // }
   const imageFile = req.file;
 
   const {
     name,
-    privacy,
-    password,
     startDate,
     endDate,
     locationName,
+    category,
+    privacy,
+    password,
     tags,
-    ticketsSold,
   } = req.body;
-
+  const location = req.body.location;
+  const locationCoordinates = location != null ? location.split(',') : null;
+  const tagsArr = tags != null ? tags.split(',') : null;
+  console.log('tags', tags);
   const cloudUploadStream = cloudinary.uploader.upload_stream(
     { folder: 'events' },
     async (error, result) => {
@@ -229,13 +232,14 @@ exports.createEvent = catchAsync(async (req, res, next) => {
         name,
         privacy,
         password,
+        category,
         creatorID: req.user.id,
         img_url: result.secure_url,
         startDate,
         endDate,
         locationName,
-        tags,
-        ticketsSold,
+        tags: tagsArr,
+        location: { coordinates: locationCoordinates },
       });
       res.status(200).json({
         status: 'success',
@@ -243,7 +247,27 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       });
     }
   );
-  streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
+  if (imageFile)
+    streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
+  else {
+    await Event.create({
+      name,
+      privacy,
+      password,
+      category,
+      creatorID: req.user.id,
+      img_url: '',
+      startDate,
+      endDate,
+      locationName,
+      tags,
+      location: { coordinates: locationCoordinates },
+    });
+    return res.status(200).json({
+      status: 'success',
+      message: 'event created successfully',
+    });
+  }
 });
 
 //TODO: Add URL here
@@ -270,16 +294,16 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   if (!event.privacy) {
     const eventObj = event.toObject(); // To delete privacy field
     delete eventObj.privacy;
-    res.status(200).json({
+    return es.status(200).json({
       status: 'success',
       data: eventObj,
     });
-  } else
-    res.status(401).json({
-      status: 'Unauthorized',
-      message: 'You must enter the event password',
-    });
-  next();
+  }
+
+  return res.status(401).json({
+    status: 'Unauthorized',
+    message: 'You must enter the event password',
+  });
 });
 
 exports.getEventwithPassword = catchAsync(async (req, res, next) => {
@@ -353,110 +377,98 @@ exports.editEvent = async (req, res, next) => {
   });
 };
 exports.getEventSales = catchAsync(async (req, res, next) => {
-  try {
-    if (req.query.netsales === '1') {
-      const page = req.query.page * 1 || 1;
-      const limit = req.query.limit * 1 || 20;
-      const skip = (page - 1) * limit;
+  if (req.query.netsales === '1') {
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit;
 
-      const event = await Event.findOne({
-        _id: req.params.id,
-        creatorID: req.user._id,
-      });
+    const event = await Event.findOne({
+      _id: req.params.id,
+      creatorID: req.user._id,
+    });
 
-      if (!event) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Invalid event or creator',
-        });
-      }
-
-      const tickets = await Ticket.find({ eventID: req.params.id });
-
-      const tickets2 = await Ticket.find({ eventID: req.params.id })
-        .skip(skip)
-        .limit(limit);
-
-      if (!tickets.length) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'No tickets found for this event',
-        });
-      }
-
-      let total = 0;
-      let salesByType = [];
-      salesByType = tickets2;
-
-      // Aggregate bookings data for each ticket
-      for (let i = 0; i < tickets.length; i++) {
-        const ticket = tickets[i];
-        console.log(ticket._id);
-        const bookings = await Booking.find({
-          ticketID: ticket._id,
-        });
-
-        if (bookings.length > 0) {
-          let subtotal = 0;
-
-          // Calculate the total sales and seats sold for the ticket
-          for (let j = 0; j < bookings.length; j++) {
-            const booking = bookings[j];
-            subtotal += booking.price * booking.quantity;
-          }
-          total += subtotal;
-        }
-      }
-
-      const totalNetSales = total - total * 0.225;
-
-      res.status(200).json({
-        status: 'success',
-        data: {
-          totalGrossSales: total,
-          totalNetSales,
-          salesByType,
-        },
-      });
-    } else {
-      const page = req.query.page * 1 || 1;
-      const limit = req.query.limit * 1 || 20;
-      const skip = (page - 1) * limit;
-
-      const event = await Event.findOne({
-        _id: req.params.id,
-        creatorID: req.user._id,
-      });
-
-      if (!event) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'Invalid event or creator',
-        });
-      }
-
-      const tickets2 = await Ticket.find({ eventID: req.params.id })
-        .skip(skip)
-        .limit(limit);
-
-      if (!tickets2.length) {
-        return res.status(404).json({
-          status: 'fail',
-          message: 'No tickets found for this event',
-        });
-      }
-
-      let salesByType = [];
-      salesByType = tickets2;
-      res.status(200).json({
-        status: 'success',
-        data: {
-          salesByType,
-        },
+    if (!event) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Invalid event or creator',
       });
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
+
+    const tickets = await Ticket.find({ eventID: req.params.id });
+
+    const tickets2 = await Ticket.find({ eventID: req.params.id })
+      .skip(skip)
+      .limit(limit);
+
+    if (!tickets.length) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No tickets found for this event',
+      });
+    }
+
+    let total = 0;
+    let salesByType = [];
+    salesByType = tickets2;
+
+    // Aggregate bookings data for each ticket
+    for (let i = 0; i < tickets.length; i++) {
+      const ticket = tickets[i];
+      console.log(ticket._id);
+      const bookings = await Booking.find({
+        ticketID: ticket._id,
+      });
+
+      if (bookings.length > 0) {
+        let subtotal = 0;
+
+        // Calculate the total sales and seats sold for the ticket
+        for (let j = 0; j < bookings.length; j++) {
+          const booking = bookings[j];
+          subtotal += booking.price * booking.quantity;
+        }
+        total += subtotal;
+      }
+    }
+
+    const totalNetSales = total - total * 0.225;
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        totalGrossSales: total,
+        totalNetSales,
+        salesByType,
+      },
+    });
+  } else {
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 20;
+    const skip = (page - 1) * limit;
+
+    const event = await Event.findOne({
+      _id: req.params.id,
+      creatorID: req.user._id,
+    });
+
+    if (!event) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Invalid event or creator',
+      });
+    }
+
+    const tickets2 = await Ticket.find({ eventID: req.params.id })
+      .skip(skip)
+      .limit(limit);
+
+    let salesByType = [];
+    salesByType = tickets2;
+    res.status(200).json({
+      status: 'success',
+      data: {
+        salesByType,
+      },
+    });
   }
 });

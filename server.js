@@ -17,6 +17,7 @@ const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
+// Seeder();
 // const corsOptions = {
 //   origin: ['http://localhost:62383'],
 //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

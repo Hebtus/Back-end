@@ -75,7 +75,7 @@ mongoose
     //   tags,
     //   location: { coordinates: locationcoordinates },
     // });
-
+    // await Event.deleteMany({ name: 'test event' });
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();

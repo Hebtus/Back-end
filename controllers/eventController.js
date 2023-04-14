@@ -207,7 +207,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 
 exports.createEvent = catchAsync(async (req, res, next) => {
   const imageFile = req.file;
-
+  // console.log('imageFile', imageFile);
+  // console.log('req image', req.image);
   const {
     name,
     startDate,
@@ -223,7 +224,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   const tagsArr = tags != null ? tags.split(',') : null;
   console.log('tags', tags);
   if (imageFile) {
-    console.log('should upload image');
+    // console.log('should upload image');
     const cloudUploadStream = cloudinary.uploader.upload_stream(
       { folder: 'events' },
       async (error, result) => {
@@ -246,7 +247,6 @@ exports.createEvent = catchAsync(async (req, res, next) => {
         });
       }
     );
-    console.log(cloudUploadStream);
     streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
   } else {
     console.log('shouldnt  upload image');
@@ -260,7 +260,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       startDate,
       endDate,
       locationName,
-      tags,
+      tags: tagsArr,
       location: { coordinates: locationCoordinates },
     });
     return res.status(200).json({

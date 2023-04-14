@@ -10,8 +10,8 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: [true, 'An event must have a name.'],
     trim: true,
-    maxlength: [40, 'An event must have less or more than 40 characters'],
-    minlength: [10, 'An event must have less or equal than 10 characters'],
+    maxlength: [40, 'An event name must must be at most 40 characters'],
+    minlength: [1, 'An event name must must be at least 1 character'],
   },
   startDate: {
     type: Date,
@@ -34,7 +34,7 @@ const eventSchema = new mongoose.Schema({
           return 1;
         }
       },
-      'The URL must be valid.',
+      'The image URL must be valid.',
     ],
   },
   location: {
@@ -44,7 +44,11 @@ const eventSchema = new mongoose.Schema({
     //TODO: add validators here
     type: String,
     required: true,
-    maxlength: [100, 'An event must have no more than 100 characters'],
+    maxlength: [100, 'A location name must have no more than 100 characters'],
+    minlength: [
+      1,
+      'A location name must have less or equal than 10 characters',
+    ],
     default: 'Faculty of Engineering, Cairo University',
   },
   category: {
@@ -59,7 +63,11 @@ const eventSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
-    maxlength: 400,
+    minlength: [1, 'An event description must must be at least 1 character'],
+    maxlength: [
+      400,
+      'An event description must must be at most 400 characters',
+    ],
   },
   // TODO: Add validators on tag length
   tags: {

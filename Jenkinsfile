@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "test:${BUILD_NUMBER}"
-        CONTAINER_NAME = "test"
+        IMAGE_NAME = "Server:${BUILD_NUMBER}"
+        CONTAINER_NAME = "Server"
     }
 
     stages {

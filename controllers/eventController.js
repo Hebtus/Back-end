@@ -347,10 +347,10 @@ exports.editEvent = async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'description',
-    'category',
     'tags',
     'privacy',
-    'goPublicDate'
+    'goPublicDate',
+    'draft'
   );
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
@@ -364,14 +364,29 @@ exports.editEvent = async (req, res, next) => {
       message: 'You cannot edit events that are not yours ',
     });
   }
+  if (filteredBody.draft != null && filteredBody.draft === false) {
+    eventTicket = await Ticket.find({ eventID: req.params.id });
+    if (eventTicket.length > 0) {
+      updatedEvent.draft = false;
+      console.log('trying to publish and undraft event');
+    } else {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'You cannot publish an event if it has no tickets ',
+      });
+    }
+  }
+
   if (filteredBody.description)
     updatedEvent.description = filteredBody.description;
-  if (filteredBody.category) updatedEvent.category = filteredBody.category;
   if (filteredBody.tags) updatedEvent.tags = filteredBody.tags;
   if (filteredBody.privacy) updatedEvent.privacy = filteredBody.privacy;
   if (filteredBody.goPublicDate)
     updatedEvent.goPublicDate = filteredBody.goPublicDate;
   await updatedEvent.save();
+  //remove unnecessary fields
+  updatedEvent._v = undefined;
+  updatedEvent._id = undefined;
   res.status(200).json({
     status: 'success',
     data: updatedEvent,

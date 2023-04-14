@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
@@ -49,6 +50,31 @@ mongoose
   })
   .then(async () => {
     console.log('DB is connected successfuly!');
+
+    ////event testing/////
+    // const name = 'test event';
+    // const privacy = 'false';
+    // const password = null;
+    // const category = 'Music';
+    // const startDate = new Date(Date.now());
+    // const endDate = new Date(Date.now() + 100000000);
+    // const locationName = 'Faculty of Engineering, Cairo University';
+    // const locationcoordinates = [30.0444, 31.2357];
+    // const tags = null;
+
+    // await Event.create({
+    //   name,
+    //   privacy,
+    //   password,
+    //   category,
+    //   creatorID: '642fda162c9619b9850f70f1',
+    //   img_url: null || '',
+    //   startDate,
+    //   endDate,
+    //   locationName,
+    //   tags,
+    //   location: { coordinates: locationcoordinates },
+    // });
 
     //for testing and saving email creditsssssss
     //if no user create confirmed user
@@ -104,22 +130,24 @@ mongoose
     //   sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
     //   sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
     // });
-
-    // const testBooking = new Booking({
-    //   name: { firstName: 'lol', lastName: 'attendeelastname' },
-    //   gender: 'Male',
-    //   phoneNumber: 12345678910,
-    //   guestEmail: 'irushbullet@google.com',
-    //   price: 100,
-    //   quantity: 2,
-    //   purchasedOn: Date.now(),
-    // });
+    /*
+    const testBooking = new Booking({
+      name: { firstName: 'lol', lastName: 'attendeelastname' },
+      gender: 'Male',
+      phoneNumber: 12345678910,
+      guestEmail: 'irushbullet@google.com',
+      userID:'642e4b8a1ba39c145cf15843',
+      ticketID: '64349f5f23a2b28029e0443b',
+      price: 100,
+      quantity: 2,
+      purchasedOn: Date.now(),
+    });
     // await testEvent2.save();
     // await testEvent.save().then(async () => {
     //   testTickets.eventID = testEvent._id;
     //   await testTickets.save().then(() => {
     //     testBooking.ticketID = testTickets._id;
-    //     testBooking.save();
+    testBooking.save();*/
     //   });
     // });
   });

@@ -13,6 +13,14 @@ const filterObj = (obj, ...allowedFields) => {
   });
   return newObj;
 };
+/**
+ * @function
+ * @description -called to create a new ticket object for a specific event given that event id through parameteres and ticket info through the body
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.createTicket = catchAsync(async (req, res, next) => {
   // I changed it to be suitable for error handling and to be more short -Hussein
   const newTicket = await Ticket.create({
@@ -40,42 +48,42 @@ exports.createTicket = catchAsync(async (req, res, next) => {
       });
     });
 });
-
+/**
+ * @function
+ * @description -called to get the event tickets given the event id in the parameters and make sure the ticket is available and on display through the date
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @returns {object} - Returns the response object
+ */
 exports.getEventTickets = async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
-  try {
-    const ticket = await Ticket.find({ eventID: eventId })
-      .skip(skip)
-      .limit(limit);
-    if (!ticket) {
-      return res
-        .status(404)
-        .json({ status: 'fail', message: 'invalid eventID' });
-    }
-    if (
-      !(
-        Date.now() >= ticket.sellingStartTime &&
-        Date.now() < ticket.sellingStartTime
-      )
-    ) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'ticket not available in the mean time',
-      });
-    }
-    res.status(200).json({
-      status: 'success',
-      data: {
-        ticket,
+
+  //check on 2 things for ticket availability: 1. time 2. capacity
+  const ticket = await Ticket.find({
+    eventID: eventId,
+    $and: [
+      {
+        sellingStartTime: { $lte: Date.now() },
+        sellingEndTime: { $gt: Date.now() },
       },
-    });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: 'Something went wrong' });
+    ],
+    $expr: { $lt: ['$currentReservations', '$capacity'] },
+  })
+    .skip(skip)
+    .limit(limit);
+  if (!ticket) {
+    return res.status(404).json({ status: 'fail', message: 'invalid eventID' });
   }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      ticket,
+    },
+  });
 };
 
 exports.editTicket = catchAsync(async (req, res, next) => {

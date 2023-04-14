@@ -5,7 +5,7 @@ const locationSchema = require('./shared/locationModel');
 // const bcrypt = require('bcryptjs');
 
 const eventSchema = new mongoose.Schema({
-  //////****Basic info****////////
+  ////////////////////////////****Basic info****/////////////////////
   name: {
     type: String,
     required: [true, 'An event must have a name.'],
@@ -50,13 +50,28 @@ const eventSchema = new mongoose.Schema({
   category: {
     type: String,
     enum: {
-      // TODO: Add validators on tag length
       values: ['Music', 'Food & Drink', 'Charity & Causes'],
       message: '{VALUE} is not supported in event categories',
     },
     required: [true, 'An event must have a category.'],
   },
-  ////////////////End of basic info/////////////////////
+  //////////////////////end of Basic Info/////////////////////////
+  description: {
+    type: String,
+    trim: true,
+    maxlength: 400,
+  },
+  // TODO: Add validators on tag length
+  tags: {
+    type: [String],
+    default: [],
+    validator: function (array) {
+      return array.every(
+        (v) => typeof v === 'string' && v.length > 0 && v.length < 80
+      );
+    },
+    required: [true, 'An event must have a category.'],
+  },
   description: {
     type: String,
     trim: true,
@@ -86,12 +101,7 @@ const eventSchema = new mongoose.Schema({
   password: {
     type: String,
     minlength: 8,
-    // required: { It did not work properly , I did it in middleware instead
-    //   function() {
-    //     return this.privacy;
-    //   },
-    //   message: 'Password is required if privacy is true',
-    // },
+    default: null,
   },
   privacy: {
     type: Boolean,

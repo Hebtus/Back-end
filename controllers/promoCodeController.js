@@ -47,24 +47,23 @@ exports.uploadCSV = multer({
 exports.createPromoCode = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
 
-  let ticket;
+  let event;
   try {
-    ticket = await Ticket.findOne({ _id: req.params.id });
+    event = await Event.findOne({ _id: req.params.id });
   } catch (err) {
     return res.status(400).json({
       status: 'fail',
-      message: 'No ticket found with this id ',
+      message: 'No event found with this id ',
     });
   }
 
-  if (!ticket) {
+  if (!event) {
     return res.status(400).json({
       status: 'fail',
-      message: 'No ticket found with this id ',
+      message: 'No event found with this id ',
     });
   }
 
-  const event = await Event.findOne({ _id: ticket.eventID });
   if (!event.creatorID.equals(req.user._id)) {
     return res.status(404).json({
       status: 'fail',
@@ -92,13 +91,13 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
         message: 'Discount is required in case of discountorPercentage = 1',
       });
     }
-    //check that the discount is not greater than the ticket price
-    if (req.body.discount > ticket.price) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Discount cannot be greater than the ticket price ',
-      });
-    }
+    // //check that the discount is not greater than the ticket price
+    // if (req.body.discount > ticket.price) {
+    //   return res.status(400).json({
+    //     status: 'fail',
+    //     message: 'Discount cannot be greater than the ticket price ',
+    //   });
+    // }
     await promoCode.create({
       codeName: req.body.codeName,
       limits: req.body.limits,
@@ -170,24 +169,16 @@ async function parseCSV(readable, csvData, csvHeaders) {
  */
 exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
-  let ticket;
+  let event;
   try {
-    ticket = await Ticket.findOne({ _id: req.params.id });
+    event = await Event.findOne({ _id: req.params.id });
   } catch (err) {
     return res.status(400).json({
       status: 'fail',
-      message: 'No ticket found with this id ',
+      message: 'No event found with this id ',
     });
   }
 
-  if (!ticket) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'No ticket found with this id ',
-    });
-  }
-
-  const event = await Event.findOne({ _id: ticket.eventID });
   if (!event.creatorID.equals(req.user._id)) {
     return res.status(404).json({
       status: 'fail',
@@ -233,7 +224,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
         limits: csvLimits,
         discountAmount: csvDiscount,
         discountOrPercentage: csvDiscountOrPercentage,
-        ticketID: req.params.id,
+        eventID: req.params.id,
       });
     } else {
       const csvPercentage = data[2];
@@ -242,115 +233,116 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
         limits: csvLimits,
         percentage: csvPercentage,
         discountOrPercentage: 0,
-        ticketID: req.params.id,
+        eventID: req.params.id,
       });
     }
   }
-  //#region
-  // await stream
-  //   .pipe(parse({ headers: true }))
-  //   .on('data', async (promoCoderow) => {
-  //     console.log('row is ', promoCoderow);
-  //     promoCodes += promoCoderow;
-  //start applying promoCode logic here including validation and etc
-  // if (
-  //   !promoCoderow.codeName ||
-  //   !promoCoderow.discountOrPercentage ||
-  //   !promoCoderow.limits
-  // ) {
-  //   console.log('bsra7a lol gedannn');
-  //   // res.status(400).json({
-  //   //   status: 'fail',
-  //   //   message:
-  //   //     'Promocode codeName, discountOrPercentage and limits are required',
-  //   // });
-  //   // stream.destroy(
-  //   //   'Promocode codeName, discountOrPercentage and limits are required'
-  //   // );
-  //   // stream.destroy(
-  //   //   new AppError(
-  //   //     'Promocode codeName, discountOrPercentage and limits are required',
-  //   //     400
-  //   //   )
-  //   // );
-  //   // return new AppError(
-  //   //   'Promocode codeName, discountOrPercentage and limits are required',
-  //   //   400
-  //   // );
-  // }
-
-  // if (promoCoderow.discountOrPercentage === 1) {
-  //   //   //discount
-  //   //   if (!req.body.discount) {
-  //   //     return res.status(400).json({
-  //   //       status: 'fail',
-  //   //       message: 'Discount is required in case of discountorPercentage = 1',
-  //   //     });
-  //   //   }
-  //   //   //check that the discount is not greater than the ticket price
-  //   //   // if (promoCoderow.discount > ticket.price) {
-  //   //   //   return res.status(400).json({
-  //   //   //     status: 'fail',
-  //   //   //     message: 'Discount cannot be greater than the ticket price ',
-  //   //   //   });
-  //   //   }
-  //   await promoCode
-  //     .create({
-  //       codeName: promoCoderow.codeName,
-  //       limits: promoCoderow.limits,
-  //       discountAmount: promoCoderow.discount,
-  //       discountOrPercentage: 1,
-  //       ticketID: req.params.id,
-  //     })
-  //     .catch((err) => {
-  //       return next(err);
-  //     });
-  // } else {
-  //   //percentage
-  //   // if (!promoCoderow.percentage) {
-  //   //   return res.status(400).json({
-  //   //     status: 'fail',
-  //   //     message:
-  //   //       'Percentage is required in case of discountorPercentage = 0',
-  //   //   });
-  //   console.log('perc is', req.body);
-  //   // console.log('perc is', req.body.percentage);
-  //   await promoCode
-  //     .create({
-  //       codeName: promoCoderow.codeName,
-  //       limits: promoCoderow.limits,
-  //       percentage: promoCoderow.percentage,
-  //       discountOrPercentage: 0,
-  //       ticketID: req.params.id,
-  //     })
-  //     .catch((err) => {
-  //       return next(err);
-  //     });
-  // }
-  //   })
-  //   .on('error', (err) => {
-  //     // return next(err);
-  //     console.log('entered here bardo w bamassy');
-  //     errorflag = 1;
-  //   });
-  // console.log('promoCodes is', promoCodes);
-  // for (const pc of promoCodes) {
-  //   console.log(pc);
-  // }
-  // promoCodes.for((pc) => {
-  //   console.log(pc);
-  // });
-
-  // if (errorflag === 1) {
-  //   console.log('Entered here w bamassy');
-  //   return new AppError('Error in CSV file', 400);
-  // }
-
-  //endregion
-
-  // console.log('promoCodes is', promoCodes);
   res.status(200).json({
     status: 'success',
     message: 'PromoCode created Successfully.',
   });
 });
+
+//#region
+// await stream
+//   .pipe(parse({ headers: true }))
+//   .on('data', async (promoCoderow) => {
+//     console.log('row is ', promoCoderow);
+//     promoCodes += promoCoderow;
+//start applying promoCode logic here including validation and etc
+// if (
+//   !promoCoderow.codeName ||
+//   !promoCoderow.discountOrPercentage ||
+//   !promoCoderow.limits
+// ) {
+//   console.log('bsra7a lol gedannn');
+//   // res.status(400).json({
+//   //   status: 'fail',
+//   //   message:
+//   //     'Promocode codeName, discountOrPercentage and limits are required',
+//   // });
+//   // stream.destroy(
+//   //   'Promocode codeName, discountOrPercentage and limits are required'
+//   // );
+//   // stream.destroy(
+//   //   new AppError(
+//   //     'Promocode codeName, discountOrPercentage and limits are required',
+//   //     400
+//   //   )
+//   // );
+//   // return new AppError(
+//   //   'Promocode codeName, discountOrPercentage and limits are required',
+//   //   400
+//   // );
+// }
+
+// if (promoCoderow.discountOrPercentage === 1) {
+//   //   //discount
+//   //   if (!req.body.discount) {
+//   //     return res.status(400).json({
+//   //       status: 'fail',
+//   //       message: 'Discount is required in case of discountorPercentage = 1',
+//   //     });
+//   //   }
+//   //   //check that the discount is not greater than the ticket price
+//   //   // if (promoCoderow.discount > ticket.price) {
+//   //   //   return res.status(400).json({
+//   //   //     status: 'fail',
+//   //   //     message: 'Discount cannot be greater than the ticket price ',
+//   //   //   });
+//   //   }
+//   await promoCode
+//     .create({
+//       codeName: promoCoderow.codeName,
+//       limits: promoCoderow.limits,
+//       discountAmount: promoCoderow.discount,
+//       discountOrPercentage: 1,
+//       ticketID: req.params.id,
+//     })
+//     .catch((err) => {
+//       return next(err);
+//     });
+// } else {
+//   //percentage
+//   // if (!promoCoderow.percentage) {
+//   //   return res.status(400).json({
+//   //     status: 'fail',
+//   //     message:
+//   //       'Percentage is required in case of discountorPercentage = 0',
+//   //   });
+//   console.log('perc is', req.body);
+//   // console.log('perc is', req.body.percentage);
+//   await promoCode
+//     .create({
+//       codeName: promoCoderow.codeName,
+//       limits: promoCoderow.limits,
+//       percentage: promoCoderow.percentage,
+//       discountOrPercentage: 0,
+//       ticketID: req.params.id,
+//     })
+//     .catch((err) => {
+//       return next(err);
+//     });
+// }
+//   })
+//   .on('error', (err) => {
+//     // return next(err);
+//     console.log('entered here bardo w bamassy');
+//     errorflag = 1;
+//   });
+// console.log('promoCodes is', promoCodes);
+// for (const pc of promoCodes) {
+//   console.log(pc);
+// }
+// promoCodes.for((pc) => {
+//   console.log(pc);
+// });
+
+// if (errorflag === 1) {
+//   console.log('Entered here w bamassy');
+//   return new AppError('Error in CSV file', 400);
+// }
+
+//endregion
+
+// console.log('promoCodes is', promoCodes);

@@ -274,7 +274,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
  */
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-
   // 1) Check if email and password exist
   if (!email || !password) {
     return res.status(401).json({

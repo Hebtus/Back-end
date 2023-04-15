@@ -206,11 +206,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 // });
 
 exports.createEvent = catchAsync(async (req, res, next) => {
-  // if (req.file === undefined) {
-  //   return res.status(400).send('Please upload an image file!');
-  // }
   const imageFile = req.file;
-
+  // console.log('imageFile', imageFile);
+  // console.log('req image', req.image);
   const {
     name,
     startDate,
@@ -225,31 +223,33 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   const locationCoordinates = location != null ? location.split(',') : null;
   const tagsArr = tags != null ? tags.split(',') : null;
   console.log('tags', tags);
-  const cloudUploadStream = cloudinary.uploader.upload_stream(
-    { folder: 'events' },
-    async (error, result) => {
-      await Event.create({
-        name,
-        privacy,
-        password,
-        category,
-        creatorID: req.user.id,
-        img_url: result.secure_url,
-        startDate,
-        endDate,
-        locationName,
-        tags: tagsArr,
-        location: { coordinates: locationCoordinates },
-      });
-      res.status(200).json({
-        status: 'success',
-        message: 'event created successfully',
-      });
-    }
-  );
-  if (imageFile)
+  if (imageFile) {
+    // console.log('should upload image');
+    const cloudUploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'events' },
+      async (error, result) => {
+        await Event.create({
+          name,
+          privacy,
+          password,
+          category,
+          creatorID: req.user.id,
+          img_url: result.secure_url,
+          startDate,
+          endDate,
+          locationName,
+          tags: tagsArr,
+          location: { coordinates: locationCoordinates },
+        });
+        res.status(200).json({
+          status: 'success',
+          message: 'event created successfully',
+        });
+      }
+    );
     streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
-  else {
+  } else {
+    console.log('shouldnt  upload image');
     await Event.create({
       name,
       privacy,
@@ -260,7 +260,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       startDate,
       endDate,
       locationName,
-      tags,
+      tags: tagsArr,
       location: { coordinates: locationCoordinates },
     });
     return res.status(200).json({
@@ -281,7 +281,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
     // find requests will deselect the same fields ex: get event by creator will retrieve all fields
     creatorID: 0,
     ticketsSold: 0,
-    password: 0,
+    //password: 0,
     draft: 0,
     goPublicDate: 0,
   });
@@ -291,12 +291,13 @@ exports.getEvent = catchAsync(async (req, res, next) => {
       message: 'No such event found with id ',
     });
   }
-  if (!event.privacy) {
-    const eventObj = event.toObject(); // To delete privacy field
-    delete eventObj.privacy;
-    return es.status(200).json({
+  if (!event.privacy || (event.privacy && !event.password)) {
+    // To delete privacy field
+    const { privacy, password, ...eventWithoutPrivateData } = event.toObject();
+
+    res.status(200).json({
       status: 'success',
-      data: eventObj,
+      data: eventWithoutPrivateData,
     });
   }
 
@@ -346,10 +347,10 @@ exports.editEvent = async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'description',
-    'category',
     'tags',
     'privacy',
-    'goPublicDate'
+    'goPublicDate',
+    'draft'
   );
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
@@ -363,14 +364,29 @@ exports.editEvent = async (req, res, next) => {
       message: 'You cannot edit events that are not yours ',
     });
   }
+  if (filteredBody.draft != null && filteredBody.draft === false) {
+    eventTicket = await Ticket.find({ eventID: req.params.id });
+    if (eventTicket.length > 0) {
+      updatedEvent.draft = false;
+      console.log('trying to publish and undraft event');
+    } else {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'You cannot publish an event if it has no tickets ',
+      });
+    }
+  }
+
   if (filteredBody.description)
     updatedEvent.description = filteredBody.description;
-  if (filteredBody.category) updatedEvent.category = filteredBody.category;
   if (filteredBody.tags) updatedEvent.tags = filteredBody.tags;
   if (filteredBody.privacy) updatedEvent.privacy = filteredBody.privacy;
   if (filteredBody.goPublicDate)
     updatedEvent.goPublicDate = filteredBody.goPublicDate;
   await updatedEvent.save();
+  //remove unnecessary fields
+  updatedEvent._v = undefined;
+  updatedEvent._id = undefined;
   res.status(200).json({
     status: 'success',
     data: updatedEvent,
@@ -385,11 +401,10 @@ exports.editEvent = async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.getEventSales = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
   if (req.query.netsales === '1') {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 10;
-    const skip = (page - 1) * limit;
-
     const event = await Event.findOne({
       _id: req.params.id,
       creatorID: req.user._id,
@@ -441,7 +456,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
 
     const totalNetSales = total - total * 0.225;
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: {
         totalGrossSales: total,
@@ -449,34 +464,30 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
         salesByType,
       },
     });
-  } else {
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 20;
-    const skip = (page - 1) * limit;
+  }
 
-    const event = await Event.findOne({
-      _id: req.params.id,
-      creatorID: req.user._id,
-    });
+  const event = await Event.findOne({
+    _id: req.params.id,
+    creatorID: req.user._id,
+  });
 
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Invalid event or creator',
-      });
-    }
-
-    const tickets2 = await Ticket.find({ eventID: req.params.id })
-      .skip(skip)
-      .limit(limit);
-
-    let salesByType = [];
-    salesByType = tickets2;
-    res.status(200).json({
-      status: 'success',
-      data: {
-        salesByType,
-      },
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid event or creator',
     });
   }
+
+  const tickets2 = await Ticket.find({ eventID: req.params.id })
+    .skip(skip)
+    .limit(limit);
+
+  let salesByType = [];
+  salesByType = tickets2;
+  return res.status(200).json({
+    status: 'success',
+    data: {
+      salesByType,
+    },
+  });
 });

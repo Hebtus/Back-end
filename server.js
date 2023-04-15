@@ -17,6 +17,7 @@ const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
+// Seeder();
 // const corsOptions = {
 //   origin: ['http://localhost:62383'],
 //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -52,30 +53,30 @@ mongoose
     console.log('DB is connected successfuly!');
 /*
     ////event testing/////
-    const name = 'test event';
-    const privacy = 'false';
-    const password = null;
-    const category = 'Music';
-    const startDate = new Date(Date.now());
-    const endDate = new Date(Date.now() + 100000000);
-    const locationName = 'Faculty of Engineering, Cairo University';
-    const locationcoordinates = [30.0444, 31.2357];
-    const tags = null;
+    // const name = 'test event';
+    // const privacy = 'false';
+    // const password = null;
+    // const category = 'Music';
+    // const startDate = new Date(Date.now());
+    // const endDate = new Date(Date.now() + 100000000);
+    // const locationName = 'Faculty of Engineering, Cairo University';
+    // const locationcoordinates = [30.0444, 31.2357];
+    // const tags = null;
 
-    await Event.create({
-      name,
-      privacy,
-      password,
-      category,
-      creatorID: '642fda162c9619b9850f70f1',
-      img_url: null || '',
-      startDate,
-      endDate,
-      locationName,
-      tags,
-      location: { coordinates: locationcoordinates },
-    });
-*/
+    // await Event.create({
+    //   name,
+    //   privacy,
+    //   password,
+    //   category,
+    //   creatorID: '642fda162c9619b9850f70f1',
+    //   img_url: null || '',
+    //   startDate,
+    //   endDate,
+    //   locationName,
+    //   tags,
+    //   location: { coordinates: locationcoordinates },
+    // });
+    // await Event.deleteMany({ name: 'test event' });
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();

@@ -8,8 +8,6 @@ module.exports = () => {
       name: { firstName: `user${i}`, lastName: `user${i}tany` },
       email: `user${i}@fake.com`,
       password: 'password',
-      image: faker.image.avatar(),
-      username: `user${i}`,
       accountConfirmation: true,
     };
     userObjects.push(userObject);

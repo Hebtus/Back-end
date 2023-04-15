@@ -224,7 +224,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   const tagsArr = tags != null ? tags.split(',') : null;
   console.log('tags', tags);
   if (imageFile) {
-    // console.log('should upload image');
+    console.log('should upload image');
     const cloudUploadStream = cloudinary.uploader.upload_stream(
       { folder: 'events' },
       async (error, result) => {

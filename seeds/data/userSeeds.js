@@ -9,6 +9,7 @@ module.exports = () => {
       email: `user${i}@fake.com`,
       password: 'password',
       accountConfirmation: true,
+      fake: 1,
     };
     userObjects.push(userObject);
   }

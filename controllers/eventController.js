@@ -1,6 +1,6 @@
+/* eslint-disable no-plusplus */
 const multer = require('multer');
 //const fs = require('fs');
-const { promisify } = require('util');
 const crypto = require('crypto');
 const streamifier = require('streamifier');
 const Event = require('../models/eventModel');
@@ -16,7 +16,6 @@ const makeprivateEventsPublic = async () => {
     { privacy: true, goPublicDate: { $lte: Date.now() } },
     { privacy: false }
   );
-  console.log('Private Events were ', privateEvents);
 };
 
 //Multer
@@ -72,8 +71,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     longitude = locationValues[0] * 1; //times 1 to convert them into numbers
     latitude = locationValues[1] * 1;
   } else {
-    longitude = 31.2584644;
-    latitude = 30.0594885;
+    longitude = 31.2107164;
+    latitude = 30.0246686;
   }
   //TODO: Implement Pagination and limits
   //TODO: add the GeoJSON logic to all of the queries
@@ -100,11 +99,15 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   if (req.query.startDate && req.query.endDate && goQuery) {
     // The query works fine with both ISO format and UTC format
     // Other timezones and formats are not checked.
-
     eventsData = await Event.find({
       $or: [
+        //
         { startDate: { $gte: req.query.startDate, $lte: req.query.endDate } },
         { endDate: { $gte: req.query.startDate, $lte: req.query.endDate } },
+        {
+          //query lies within event limits of time
+          endDate: { $gte: req.query.endDate },
+        },
       ],
       privacy: 0,
       draft: 0,
@@ -205,6 +208,14 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 //   });
 // });
 
+/**
+ * @function
+ * @description -The Creator calls this function to create a new event by writing the basic info of the event and use cloudinary to upload the image of the event(if available) on the cloud and save the url of the image and the rest of the data in the db
+ * @param {object} req -the request object
+ * @param {object} res -the response object
+ * @param {object} next -the next object for express middleware
+ * @returns {object} -returns the res object
+ */
 exports.createEvent = catchAsync(async (req, res, next) => {
   const imageFile = req.file;
   // console.log('imageFile', imageFile);
@@ -219,7 +230,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
     password,
     tags,
   } = req.body;
-  const location = req.body.location;
+  const { location } = req.body;
   const locationCoordinates = location != null ? location.split(',') : null;
   const tagsArr = tags != null ? tags.split(',') : null;
   console.log('tags', tags);
@@ -341,7 +352,13 @@ const filterObj = (obj, ...allowedFields) => {
   });
   return newObj;
 };
-
+/**
+ * @description -this function allows the event creator only to edit his event and edit specific fileds only that are filtered by the filter utility function
+ * @param {object} req -The request object
+ * @param {object} res -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} -returns the response object
+ */
 exports.editEvent = async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
@@ -365,7 +382,7 @@ exports.editEvent = async (req, res, next) => {
     });
   }
   if (filteredBody.draft != null && filteredBody.draft === false) {
-    eventTicket = await Ticket.find({ eventID: req.params.id });
+    const eventTicket = await Ticket.find({ eventID: req.params.id });
     if (eventTicket.length > 0) {
       updatedEvent.draft = false;
       console.log('trying to publish and undraft event');
@@ -438,6 +455,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
     for (let i = 0; i < tickets.length; i++) {
       const ticket = tickets[i];
       console.log(ticket._id);
+      // eslint-disable-next-line no-await-in-loop
       const bookings = await Booking.find({
         ticketID: ticket._id,
       });

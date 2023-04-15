@@ -119,8 +119,15 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * @description -Returns one event by its id form the creators events
+ * @param {object} req -the request object
+ * @param {object} res -the response object
+ * @param {object} next -the next object for express middleware
+ * @returns {object} -returns the res object
+ */
 exports.getEvent = catchAsync(async (req, res, next) => {
-  console.log(req.user);
+  //console.log(req.user);
   const event = await Event.findOne({ _id: req.params.id });
   if (!event) {
     res.status(404).json({

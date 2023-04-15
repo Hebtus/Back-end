@@ -9,6 +9,7 @@ const eventRouter = require('./routes/eventRoute');
 const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
 const bookingRouter = require('./routes/bookingRoute');
+const promoCodeRouter = require('./routes/promoCodeRoute');
 
 const ticketRouter = require('./routes/ticketRoute');
 const globalErrorHandler = require('./controllers/errorController');
@@ -48,6 +49,7 @@ app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/tickets', ticketRouter);
 app.use('/api/v1/creators/events', creatorRouter);
 app.use('/api/v1/bookings', bookingRouter); //TODO: base route to be discussed later
+app.use('/api/v1/promocodes', promoCodeRouter);
 app.use('/api/v1', authenticationRouter);
 
 app.all('*', (req, res, next) => {

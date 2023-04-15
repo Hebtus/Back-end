@@ -91,12 +91,13 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
+  //TODO: send email to the user with the booking details and QR code
 });
 /** 
 @function
 @description the function creates bookings and saves them to the database
 @async
-@name acreateBookings
+@name createBookings
 @param {object} req - Express request object.
 @param {object} res - Express response object.
 @param {function} next - Express next middleware function.
@@ -139,4 +140,5 @@ exports.createBookings = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
+  //TODO: send email to the user with the booking details and QR code
 });

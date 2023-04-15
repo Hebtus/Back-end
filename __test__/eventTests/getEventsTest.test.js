@@ -78,10 +78,7 @@ test('Check StartDate Works Correctly: Events Not Within  Date  ', async () => {
 
 test('Check StartDate Works Correctly: Events Within  Date  ', async () => {
   const startDate = new Date('2023-05-2');
-  console.log('startDate', startDate);
-  // const endDate = new Date('2023-05-13T10:16:10.467z').toISOString();
   const endDate = new Date('2023-05-13');
-  console.log('startDate', endDate);
   const testEvents = testEventSeeder.eventsWithinDateRange(
     [userID],
     startDate,
@@ -95,6 +92,29 @@ test('Check StartDate Works Correctly: Events Within  Date  ', async () => {
     .send()
     .expect(200);
   expect(res.body.data.events.length).toEqual(10);
+  console.log('res', res.body);
+  await Event.deleteMany();
+});
+
+test('Check Location Querying Works Correctly  ', async () => {
+  const newEvent = {
+    name: `event${1}`,
+    location: {
+      coordinates: [80, 30],
+    },
+    category: ['Music', 'Food & Drink', 'Charity & Causes'][0],
+    creatorID: userID,
+    draft: false,
+    privacy: false,
+    startDate: new Date('2023-05-2'),
+    endDate: new Date('2023-05-13'),
+  };
+  await Event.create(newEvent);
+  const res = await request(app)
+    .get('/api/v1/events/?location=80,30')
+    .send()
+    .expect(200);
+  expect(res.body.data.events.length).toEqual(1);
   console.log('res', res.body);
 });
 

@@ -15,7 +15,7 @@ const promoCodeSchema = new mongoose.Schema({
     //capacity of promoCode
     type: Number,
     required: [true, 'Please sepcify the promocode limits'],
-    min: [1, 'Minimum limit cannot be less than 0'],
+    min: [1, 'Minimum limit cannot be less than 1'],
     max: [10000000, 'Maximum Conceivable capacity reached'],
     default: 1,
   },

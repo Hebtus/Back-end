@@ -49,7 +49,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
   let event;
   try {
-    event = await Event.findOne({ _id: req.params.id });
+    event = await Event.findOne({ _id: req.body.eventID });
   } catch (err) {
     return res.status(400).json({
       status: 'fail',
@@ -73,8 +73,8 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
   if (
     !req.body.codeName ||
-    !req.body.discountOrPercentage ||
-    !req.body.limits
+    req.body.discountOrPercentage == null || // can be 0
+    req.body.limits == null
   ) {
     return res.status(400).json({
       status: 'fail',
@@ -103,7 +103,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
       limits: req.body.limits,
       discountAmount: req.body.discount,
       discountOrPercentage: 1,
-      ticketID: req.params.id,
+      eventID: req.body.eventID,
     });
   } else {
     //percentage
@@ -121,7 +121,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
       limits: req.body.limits,
       percentage: req.body.percentage,
       discountOrPercentage: 0,
-      ticketID: req.params.id,
+      eventID: req.body.eventID,
     });
   }
 
@@ -243,6 +243,12 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getAllPromoCodes = catchAsync(async (req, res, next) =>
+  res.status(200).json({
+    status: 'success',
+    message: 'PromoCode Delivered Successfully.',
+  })
+);
 //#region
 // await stream
 //   .pipe(parse({ headers: true }))

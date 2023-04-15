@@ -50,7 +50,7 @@ mongoose
   })
   .then(async () => {
     console.log('DB is connected successfuly!');
-
+/*
     ////event testing/////
     const name = 'test event';
     const privacy = 'false';
@@ -75,7 +75,7 @@ mongoose
       tags,
       location: { coordinates: locationcoordinates },
     });
-
+*/
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();

@@ -15,6 +15,26 @@ const DBstring = process.env.TEST_DATABASE;
 
 beforeAll(async () => {
   // await User.deleteMany();
+  const testUser = new User({
+    name: {
+      firstName: 'loler',
+      lastName: 'Ameer',
+    },
+    email: 'lol@lol.com',
+    location: { coordinates: [-91.32, 1.32] },
+    password: '123456789',
+    passwordChangedAt: '1987-09-28 20:01:07',
+  });
+
+  const testEvent = new Event({
+    name: 'loleventxd',
+    startDate: Date.now() - 1000 * 60 * 60 * 24 * 10,
+    endDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
+    privacy: false,
+    draft: false,
+    category: 'Music',
+    creatorID: testUser._id,
+  });
   console.log('testDb is ', process.env.TEST_DATABASE);
   await mongoose
     .connect(DBstring, {
@@ -46,7 +66,7 @@ test('check ticket created succsessfuly', async () => {
   const res = await request(app)
     .post('/api/v1/tickets')
     .send({
-      eventID: '6432a915e24e5e5cf2781183',
+      eventID: testEvent._id,
       name: 'msh premium awi',
       type: 'Regular',
       price: 100,

@@ -14,6 +14,7 @@ dotenv.config({ path: './config.env' });
 const DBstring = process.env.TEST_DATABASE;
 
 beforeAll(async () => {
+  // await User.deleteMany();
   const testUser = new User({
     name: {
       firstName: 'loler',
@@ -34,7 +35,6 @@ beforeAll(async () => {
     category: 'Music',
     creatorID: testUser._id,
   });
-  // await User.deleteMany();
   console.log('testDb is ', process.env.TEST_DATABASE);
   await mongoose
     .connect(DBstring, {
@@ -47,18 +47,20 @@ beforeAll(async () => {
   // await mongoose.connection.collection('users').deleteMany({});
   await mongoose.connection.db.dropDatabase();
 });
-test('Check invalid event', async () => {
-  const res = await request(app).get('/api/v1/events/6432a915e24e555cf2781183/sales').expect(404);
-  expect(res.body.message).toMatch('Invalid event or creator');
+test('Check invalid eventid parameter', async () => {
+  const res = await request(app)
+    .get('/api/v1/creators/events/6432a915e24e555cf2781183/tickets')
+    .expect(404);
+  expect(res.body.message).toMatch('invalid event');
 });
 
-test('Check invalid event', async () => {
-  const res = await request(app).get('/api/v1/events/'+testEvent._id+'/sales').expect(200);
+test('Check correct get tickets by creator', async () => {
+  const res = await request(app)
+    .get(`/api/v1/creators/events/${testEvent._id}/tickets`)
+    .expect(200);
   expect(res.body.status).toMatch('success');
 });
-
 
 afterAll(async () => {
   mongoose.disconnect();
 });
-

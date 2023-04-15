@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const { faker } = require('@faker-js/faker');
 
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
@@ -17,7 +18,6 @@ const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
-// Seeder();
 // const corsOptions = {
 //   origin: ['http://localhost:62383'],
 //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -43,6 +43,8 @@ const DBstring =
     ? process.env.DATABASE_LOCAL
     : process.env.DATABASE_DEPLOY;
 
+// Seeder(DBstring);
+
 console.log('connecting to ', DBstring);
 mongoose
   .connect(DBstring, {
@@ -51,7 +53,27 @@ mongoose
   })
   .then(async () => {
     console.log('DB is connected successfuly!');
-/*
+
+    await Event.create({
+      name: 'test event',
+      privacy: 'false',
+      password: null,
+      category: 'Music',
+      creatorID: '642fda162c9619b9850f70f1',
+      img_url: null || '',
+      startDate: new Date(Date.now()),
+      endDate: new Date(Date.now() + 100000000),
+      locationName: 'Faculty of Engineering, Cairo University',
+      tags: null,
+      location: {
+        coordinates: [
+          faker.address.latitude(31.214039, 31.203095),
+          faker.address.longitude(30.118752, 29.97293), //max min
+        ],
+      },
+    });
+
+    //region Tester
     ////event testing/////
     // const name = 'test event';
     // const privacy = 'false';
@@ -80,14 +102,14 @@ mongoose
     //for testing and saving email creditsssssss
     //if no user create confirmed user
     // await User.deleteMany();
-    const anyuser = await User.find();
+    // const anyuser = await User.find();
     // console.log(anyuser);
-    let user1;
-    let user2;
-    if (anyuser.length === 0) {
-      //user1 = await test.createTestUser();
-      //user2 = await test.createTestUser2();
-    }
+    // let user1;
+    // let user2;
+    // if (anyuser.length === 0) {
+    //user1 = await test.createTestUser();
+    //user2 = await test.createTestUser2();
+    // }
     // const allbookings = await Booking.find();
     // console.log('allbookings is ', allbookings);
 
@@ -151,6 +173,7 @@ mongoose
     testBooking.save();*/
     //   });
     // });
+    //#endregion
   });
 
 // console.log(Date.now());

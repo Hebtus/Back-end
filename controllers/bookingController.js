@@ -111,7 +111,26 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   ); // Calling  applyPromocode to update bookings costs with the promocode
   if (!bookings) {
     // If bookings is false that means promocode not found
-    return next(new AppError('Invalid promo code provided'), 404);
+    // return next(new AppError('Invalid promo code provided'), 404);
+    let totalprice = 0;
+
+    req.body.bookings.forEach((booking) => {
+      booking.name = req.body.name;
+      booking.userID = req.body.userID;
+      booking.guestEmail = req.body.guestEmail;
+      booking.gender = req.body.gender;
+      booking.phoneNumber = req.body.phoneNumber;
+      booking.eventID = req.body.eventID;
+      totalprice += booking.price;
+    });
+    await Booking.create(req.body.bookings);
+
+    return res.status('200').json({
+      // Send successful response
+      status: 'success',
+      totalPrice,
+      data: bookings,
+    });
   }
   // construct bookings by adding attendee information to every booking
   bookings.forEach((booking) => {

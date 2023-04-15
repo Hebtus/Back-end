@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const Event = require('../models/eventModel');
 const auth = require('./authenticationController');
 const User = require('../models/userModel');
@@ -112,10 +113,89 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .skip(skip)
       .limit(limit);
   }
+  let ticketsAvailablearr = [];
+  let totalpricearr = [];
+  eventsData.forEach(async (event) => {
+    const ticketQuery = await Ticket.aggregate([
+      { $match: { eventID: event._id } },
+      {
+        $group: {
+          _id: null,
+          ticketsAvailable: { $sum: '$capacity' },
+        },
+      },
+    ]);
+    // reutrns [ { _id: null, totalprice: 200 } ]
+    // eslint-disable-next-line no-await-in-loop
+    const bookingQuery = await Booking.aggregate([
+      { $match: { eventID: event._id } },
+      {
+        $group: {
+          _id: null,
+          totalprice: { $sum: '$price' },
+        },
+      },
+    ]);
+    ticketsAvailablearr.push(
+      ticketQuery.length > 1 ? ticketQuery[0].ticketsAvailable : 0
+    );
+    totalpricearr.push(
+      bookingQuery.length > 1 ? bookingQuery[0].totalprice : 0
+    );
+
+    // console.log(ticketQuery);
+    // event.totalprice =
+    //   bookingQuery.length > 1 ? bookingQuery[0].ticketsAvailable : 0;
+    // console.log(event.ticketsAvailable);
+    // console.log(event.totalprice);
+  });
+  // console.log(eventsData);
+  console.log(ticketsAvailablearr);
+  console.log(totalpricearr);
+  let neweventsData = [];
+  // for (i = 0; i < eventsData.length; i++) {
+  //   //returns [ { _id: null, ticketsAvailable: 20 } ]
+  //   // eslint-disable-next-line no-await-in-loop
+  //   let event = eventsData[i];
+  //   const ticketQuery = await Ticket.aggregate([
+  //     { $match: { eventID: event._id } },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         ticketsAvailable: { $sum: '$capacity' },
+  //       },
+  //     },
+  //   ]);
+  //   // reutrns [ { _id: null, totalprice: 200 } ]
+  //   // eslint-disable-next-line no-await-in-loop
+  //   const bookingQuery = await Booking.aggregate([
+  //     { $match: { eventID: event._id } },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         totalprice: { $sum: '$price' },
+  //       },
+  //     },
+  //   ]);
+  //   event.ticketsAvailable =
+  //     ticketQuery.length > 1 ? ticketQuery[0].ticketsAvailable : 0;
+  //   event.totalprice =
+  //     bookingQuery.length > 1 ? bookingQuery[0].ticketsAvailable : 0;
+  //   neweventsData.push(event);
+  //   // console.log(ticketQuery[0]);
+  //   // console.log(event.ticketsAvailable);
+  //   // console.log(bookingQuery[0].ticketsAvailable);
+  //   // console.log(event.totalprice);
+  // }
+
+  // for (i = 0; i < neweventsData.length; i++) {
+  //   event = neweventsData[i];
+  //   console.log(event);
+  // }
 
   res.status(200).json({
     status: 'success',
-    data: { events: eventsData },
+    data: { events: neweventsData },
   });
 });
 

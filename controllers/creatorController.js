@@ -1,14 +1,97 @@
+/* eslint-disable no-restricted-syntax */
 const Event = require('../models/eventModel');
 const auth = require('./authenticationController');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
+const { constants } = require('crypto');
 
 /**
  * The Controller responsible for handling requests made by Creator to Manipulate Tickets and Events
  * @module Controllers/creatorController
  */
+
+const getSoldandAvailable = async (eventsdData) => {
+  // eventsdData.map(async (event) => {
+  //   const ticketQuery = await Ticket.aggregate([
+  //     { $match: { eventID: event._id } },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         ticketsAvailable: { $sum: '$capacity' },
+  //       },
+  //     },
+  //   ]);
+  //   // reutrns [ { _id: null, totalprice: 200 } ]
+  //   // eslint-disable-next-line no-await-in-loop
+  //   const bookingQuery = await Booking.aggregate([
+  //     { $match: { eventID: event._id } },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         totalprice: { $sum: '$price' },
+  //       },
+  //     },
+  //   ]);
+  //   event.ticketsAvailable = 'lol';
+  //   console.log('before event is ', typeof event);
+  //   console.log('ticketsav now is ', event.ticketsAvailable);
+  //   event.ticketsAvailable =
+  //     ticketQuery.length > 0 ? ticketQuery[0].ticketsAvailable : 0;
+  //   event.totalprice =
+  //     bookingQuery.length > 0 ? bookingQuery[0].ticketsAvailable : 0;
+  //   // console.log(ticketQuery[0]);
+  //   // console.log(event.ticketsAvailable);
+  //   // console.log(bookingQuery[0].ticketsAvailable);
+  //   // console.log(event.totalprice);
+  //   console.log('now event is ', event);
+  // });
+  const newEventData = [];
+  for (const event of eventsdData) {
+    //returns [ { _id: null, ticketsAvailable: 20 } ]
+    const temp = JSON.stringify(event);
+    const newevent = JSON.parse(temp);
+    // eslint-disable-next-line no-await-in-loop
+    const ticket = await Ticket.find({
+      eventID: event._id,
+      $and: [
+        {
+          sellingStartTime: { $lte: Date.now() },
+          sellingEndTime: { $gt: Date.now() },
+        },
+      ],
+      $expr: { $lt: ['$currentReservations', '$capacity'] },
+    });
+    // reutrns [ { _id: null, totalprice: 200 } ]
+    // eslint-disable-next-line no-await-in-loop
+    const bookingQuery = await Booking.aggregate([
+      { $match: { eventID: event._id } },
+      {
+        $group: {
+          _id: null,
+          totalprice: { $sum: '$price' },
+        },
+      },
+    ]);
+    // newevent.ticketsAvailable =
+    //   ticketQuery.length > 0 ? ticketQuery[0].ticketsAvailable : 0;
+    if (ticket.length > 0) {
+      newevent.ticketsAvailable = '1';
+    } else {
+      newevent.ticketsAvailable = '0';
+    }
+    if (bookingQuery.length > 0) {
+      newevent.totalprice = bookingQuery[0].totalprice;
+    } else {
+      newevent.totalprice = 0;
+    }
+
+    newEventData.push(newevent);
+  }
+
+  return newEventData;
+};
 
 /**
  * @function
@@ -112,11 +195,12 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .skip(skip)
       .limit(limit);
   }
-
+  let newEventData = await getSoldandAvailable(eventsData);
   res.status(200).json({
     status: 'success',
-    data: { events: eventsData },
+    data: { events: newEventData },
   });
+  console.log('not workedd ');
 });
 
 /**

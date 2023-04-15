@@ -67,7 +67,7 @@ exports.eventsNotWithinRange = (userIDs) => {
 exports.eventsWithinDateRange = (userIDs, startDateIn, endDateIn) => {
   const eventObjects = [];
 
-  for (let i = 0; i < 20; i += 1) {
+  for (let i = 0; i < 10; i += 1) {
     const eventObject = {
       name: `event${i}`,
       img_url: faker.image.imageUrl(),
@@ -77,8 +77,8 @@ exports.eventsWithinDateRange = (userIDs, startDateIn, endDateIn) => {
       endDate: endDateIn,
       location: {
         coordinates: [
-          faker.address.latitude(80, 52),
-          faker.address.longitude(90, 40),
+          faker.address.latitude(31.214039, 31.203095),
+          faker.address.longitude(30.118752, 29.97293), //max min
         ],
       },
       locationName: faker.address.streetAddress(),

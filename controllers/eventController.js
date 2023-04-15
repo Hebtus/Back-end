@@ -99,6 +99,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   if (req.query.startDate && req.query.endDate && goQuery) {
     // The query works fine with both ISO format and UTC format
     // Other timezones and formats are not checked.
+    // console.log('start date is ', req.query.startDate);
+    // console.log('end date is ', req.query.endDate);
     eventsData = await Event.find({
       $or: [
         //
@@ -109,8 +111,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           endDate: { $gte: req.query.endDate },
         },
       ],
-      privacy: 0,
-      draft: 0,
+      privacy: false,
+      draft: false,
       location: {
         $near: {
           $geometry: { type: 'Point', coordinates: [longitude, latitude] },

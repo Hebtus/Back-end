@@ -89,12 +89,12 @@ const bookingsSchema = new mongoose.Schema({
     required: [true, 'The booked seat  must belong to a ticket'],
   },
 
-  // eventID: {
-  //   // Refrence ID that refers to the event
-  //   type: mongoose.Schema.ObjectId,
-  //   ref: 'Event',
-  //   required: [true, 'The booked ticket  must belong to an event'],
-  // },
+  eventID: {
+    // Refrence ID that refers to the event
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
+    required: [true, 'The booked ticket  must belong to an event'],
+  },
 });
 
 //automatically adds 1 to currentReservations in its respective ticket

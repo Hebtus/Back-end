@@ -85,7 +85,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     next(new AppError('Could not decode token.', 401));
     // Handle the error.
   });
-
   // })(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);

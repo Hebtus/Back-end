@@ -35,24 +35,24 @@ mongoose
   .then(async () => {
     console.log('DB is connected successfuly!');
 
-    await Event.create({
-      name: 'test event',
-      privacy: 'false',
-      password: null,
-      category: 'Music',
-      creatorID: '642fda162c9619b9850f70f1',
-      img_url: null || '',
-      startDate: new Date(Date.now()),
-      endDate: new Date(Date.now() + 100000000),
-      locationName: 'Faculty of Engineering, Cairo University',
-      tags: null,
-      location: {
-        coordinates: [
-          faker.address.latitude(31.214039, 31.203095),
-          faker.address.longitude(30.118752, 29.97293), //max min
-        ],
-      },
-    });
+    // await Event.create({
+    //   name: 'test event',
+    //   privacy: 'false',
+    //   password: null,
+    //   category: 'Music',
+    //   creatorID: '642fda162c9619b9850f70f1',
+    //   img_url: null || '',
+    //   startDate: new Date(Date.now()),
+    //   endDate: new Date(Date.now() + 100000000),
+    //   locationName: 'Faculty of Engineering, Cairo University',
+    //   tags: null,
+    //   location: {
+    //     coordinates: [
+    //       faker.address.latitude(31.214039, 31.203095),
+    //       faker.address.longitude(30.118752, 29.97293), //max min
+    //     ],
+    //   },
+    // });
 
     //region Tester
     ////event testing/////

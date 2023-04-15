@@ -27,9 +27,8 @@ const AppError = require('../utils/appError');
 @async
 @returns {int , array} // {total cost , updated bookings}
 @name acreateBookings
-@param {object} req - Express request object.
-@param {object} res - Express response object.
-@param {function} next - Express next middleware function.
+@param {string} promocodeName - Promocode name.
+@param {object} bookings - array of bookings
 @throws {AppError} If promocode does exist or invalid
 */
 
@@ -63,6 +62,7 @@ const applyPromocode = async (promocodeName, bookings) => {
   await promoCode.save(); // Update the promocode number of uses
   return { totalPrice, bookings }; // Return the final total price and the updated bookings
 };
+exports.applyPromocode = applyPromocode;
 /** 
 @function
 @description the function add attendee to the event by the creator of the event
@@ -121,7 +121,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     booking.phoneNumber = req.body.phoneNumber;
   });
 
-  console.log(bookings);
+  //console.log(bookings);
   //Save bookings to database
   await Booking.create(bookings)
     .then(() =>

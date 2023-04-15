@@ -47,11 +47,18 @@ beforeAll(async () => {
   await testEvent.save();
 });
 
-test('Check invalid eventid parameter', async () => {
+test('Check invalid event parameter', async () => {
   const res = await request(app)
-    .get(`/api/v1/events/${testEvent._id}/tickets`)
+    .get('/api/v1/creators/events/6432a915e24e555cf2781183/tickets')
     .expect(404);
-  expect(res.body.message).toMatch('No tickets found for the specified event ID.');
+  expect(res.body.message).toMatch('Invalid event or creator.');
+});
+
+test('Check valid event parameter', async () => {
+  const res = await request(app)
+    .get(`/api/v1/creators/events/${testEvent._id}/tickets`)
+    .expect(200);
+  expect(res.body.status).toMatch('success');
 });
 
 afterAll(async () => {

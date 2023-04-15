@@ -205,6 +205,14 @@ exports.getEvents = catchAsync(async (req, res, next) => {
 //   });
 // });
 
+/**
+ * @function
+ * @description -The Creator calls this function to create a new event by writing the basic info of the event and use cloudinary to upload the image of the event(if available) on the cloud and save the url of the image and the rest of the data in the db
+ * @param {object} req -the request object
+ * @param {object} res -the response object
+ * @param {object} next -the next object for express middleware
+ * @returns {object} -returns the res object
+ */
 exports.createEvent = catchAsync(async (req, res, next) => {
   const imageFile = req.file;
   // console.log('imageFile', imageFile);
@@ -342,7 +350,13 @@ const filterObj = (obj, ...allowedFields) => {
   });
   return newObj;
 };
-
+/**
+ * @description -this function allows the event creator only to edit his event and edit specific fileds only that are filtered by the filter utility function
+ * @param {object} req -The request object
+ * @param {object} res -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} -returns the response object
+ */
 exports.editEvent = async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,

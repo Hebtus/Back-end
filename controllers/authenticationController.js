@@ -27,16 +27,7 @@ const signToken = (id) =>
 //creates token and attaches it to cookie.
 const createToken = (user, res) => {
   const token = signToken(user._id);
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-  };
-  //only for deployment
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-
-  res.cookie('jwt', token, cookieOptions);
+  res.token = token;
 };
 
 //creates token, attaches it to cookie and sends it as a standard responsee
@@ -49,6 +40,7 @@ const createSendToken = (user, statusCode, res) => {
 
   res.status(statusCode).json({
     status: 'success',
+    token: res.token,
     data: {
       user,
     },
@@ -63,14 +55,13 @@ const createSendToken = (user, statusCode, res) => {
  */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
-  console.log('entered here');
   let token;
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-  } else console.log('my cookieee is ', req.cookies.jwt);
+  }
   if (req.headers.token) token = req.headers.token;
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
@@ -83,9 +74,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // 2) Verification token
 
-  // 5 HOURS OF JOSEPH'S LIFE LESSON: DON'T PUT TRY CATCH HERE
-
-  //still needs to handle invalid token error tho I think
   const decoded = await promisify(jwt.verify)(
     token,
     process.env.JWT_SECRET
@@ -93,8 +81,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     next(new AppError('Could not decode token.', 401));
     // Handle the error.
   });
-  // const decoded = await promisify(jwt.verify, (result, lol) => {
-  //   next(new AppError('Could not decode token.', 401));
   // })(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -129,9 +115,15 @@ exports.protect = catchAsync(async (req, res, next) => {
 const SendConfirmationEmail = async (user, req, res, next) => {
   //generate confirm token first
   const confirmToken = await EmailConfirm.createEmailConfirmToken(user._id);
-  const confirmURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/signup-confirm/${confirmToken}`;
+  let confirmURL;
+  if (process.env.NODE_ENV === 'development') {
+    confirmURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/signup-confirm/${confirmToken}`;
+  } else if (process.env.NODE_ENV === 'production') {
+    console.log('sending link email in production');
+    confirmURL = `${process.env.BACKEND_URL}/signup-confirm/${confirmToken}`;
+  }
 
   const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
 

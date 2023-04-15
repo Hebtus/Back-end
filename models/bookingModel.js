@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const nameSchema = require('./shared/nameModel');
 const Ticket = require('./ticketModel');
+const Event = require('./eventModel');
 const AppError = require('../utils/appError');
 
 const bookingsSchema = new mongoose.Schema({
@@ -89,12 +90,12 @@ const bookingsSchema = new mongoose.Schema({
     required: [true, 'The booked seat  must belong to a ticket'],
   },
 
-  // eventID: {
-  //   // Refrence ID that refers to the event
-  //   type: mongoose.Schema.ObjectId,
-  //   ref: 'Event',
-  //   required: [true, 'The booked ticket  must belong to an event'],
-  // },
+  eventID: {
+    // Refrence ID that refers to the event
+    type: mongoose.Schema.ObjectId,
+    ref: 'Event',
+    required: [true, 'The booked ticket  must belong to an event'],
+  },
 });
 
 //automatically adds 1 to currentReservations in its respective ticket
@@ -102,17 +103,11 @@ bookingsSchema.pre('save', async function (next) {
   // I have altered to find/save  to run capacity validatios
   const updatedTicket = await Ticket.findById(this.ticketID);
   updatedTicket.currentReservations += this.quantity;
-  await updatedTicket
-    .save()
-    .then()
-    .catch((err) =>
-      next(
-        new AppError(
-          'The number of seats you want to book exceeds the full capacity of this event for this ticket type.',
-          404
-        )
-      )
-    );
+  await updatedTicket.save();
+  await Event.findOneAndUpdate(
+    { _id: this.eventID },
+    { $inc: { ticketsSold: this.quantity } }
+  );
 });
 
 //All find querries

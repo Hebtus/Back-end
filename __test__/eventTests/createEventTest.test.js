@@ -4,23 +4,26 @@ const mongoose = require('mongoose');
 const User = require('../../models/userModel');
 const app = require('../../app');
 const Event = require('../../models/eventModel');
-const Ticket = require('../../models/ticketModel');
-const Booking = require('../../models/bookingModel');
 
 dotenv.config({ path: './config.env' });
 
 const DBstring = process.env.TEST_DATABASE;
-
+// Define variables for the test objects
 let testUser;
 let testEvent;
 
 beforeAll(async () => {
-  // Connect to the test database
-  await mongoose.connect(DBstring, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
-
+  // await User.deleteMany();
+  console.log('testDb is ', process.env.TEST_DATABASE);
+  await mongoose
+    .connect(DBstring, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => {
+      console.log('TestDB is connected successfuly!');
+    });
+  await mongoose.connection.db.dropDatabase();
   // Create a test user and save to the database
   testUser = new User({
     name: {
@@ -46,21 +49,27 @@ beforeAll(async () => {
   });
   await testEvent.save();
 });
-
-test('Check invalid eventid parameter', async () => {
+test('Check created successfully', async () => {
   const res = await request(app)
-    .get(`/api/v1/events/${testEvent._id}/tickets`)
-    .expect(404);
-  expect(res.body.message).toMatch(
-    'No tickets found for the specified event ID.'
-  );
+    .post('/api/v1/events')
+    .send({
+      name: 'Atlanta Party',
+      type: 'Regular',
+      creatorID: testUser._id,
+      startDate: '2023-11-4 1:04:00',
+      endDate: '2024-02-22 12:00:00',
+      locationName: 'Cairo University',
+      category: 'Music',
+      privacy: false,
+      tags: ['lol', 'loler', 'hehe'],
+    })
+    .expect(200);
+  expect(res.body.message).toMatch('event created successfully');
 });
 
 afterAll(async () => {
   // Delete all test data and close the database connection
-  await User.deleteMany();
-  await Event.deleteMany();
-  await Ticket.deleteMany();
-  await Booking.deleteMany();
+  //await User.deleteMany();
+  //await Event.deleteMany();
   await mongoose.connection.close();
 });

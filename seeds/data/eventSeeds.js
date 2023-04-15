@@ -10,15 +10,17 @@ module.exports = (userIDs) => {
       startDate: faker.date.past(),
       endDate: faker.date.future(),
       location: {
-        lat: faker.address.latitude(),
-        lng: faker.address.longitude(),
+        coordinates: [faker.address.longitude(), faker.address.latitude()],
+        // lat: faker.address.latitude(),
+        // lng: faker.address.longitude(),
       },
       locationName: faker.address.streetAddress(),
       category: ['Music', 'Food & Drink', 'Charity & Causes'][i % 3],
-      description: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(2),
       creatorID: userIDs[i % 5],
       draft: false,
       privacy: false,
+      fake: 1,
     };
     eventObjects.push(eventObject);
   }

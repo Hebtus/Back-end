@@ -9,6 +9,7 @@ const eventRouter = require('./routes/eventRoute');
 const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
 const bookingRouter = require('./routes/bookingRoute');
+const promoCodeRouter = require('./routes/promoCodeRoute');
 
 const ticketRouter = require('./routes/ticketRoute');
 const globalErrorHandler = require('./controllers/errorController');
@@ -21,41 +22,7 @@ dotenv.config({ path: './config.env' });
 const app = express();
 app.enable('trust proxy');
 
-//////////////////el bta3a dee btbwz login for some reason
-// preflightContinue: true,
-///////////////////////
-// const corsOptions = {
-//   origin: '*', //['http://localhost:62383', 'http://localhost:5173'],
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-//   allowedHeaders:
-//     'Token,Content-Type,Authorization,X-Forwarded-For,Access-Control-Allow-Origin,Access-Control-Allow-Headers,Access-Control-Allow-Methods,Access-Control-Allow-Credentials,ngrok-skip-browser-warning',
-//   credentials: true,
-//   preflightContinue: true,
-//   optionsSuccessStatus: 204,
-// };
-
-const cookieCorsOptions = {
-  origin: [
-    'http://16.170.37.222',
-    'http://localhost:62383',
-    'http://localhost:5173',
-  ],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type, *, Cookie, jwt',
-  credentials: false,
-  // preflightContinue: true,
-  optionsSuccessStatus: 204,
-};
-
-// app.use('*', cors(corsOptions));
-app.use(
-  // For front-end
-  cors({
-    origin: '*',
-  })
-);
-//app.use(cors(cookieCorsOptions));
-// app.options('*', cors());
+app.use(cors());
 app.use(helmet());
 
 app.use(express.json());
@@ -82,6 +49,7 @@ app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/tickets', ticketRouter);
 app.use('/api/v1/creators/events', creatorRouter);
 app.use('/api/v1/bookings', bookingRouter); //TODO: base route to be discussed later
+app.use('/api/v1/promocodes', promoCodeRouter);
 app.use('/api/v1', authenticationRouter);
 
 app.all('*', (req, res, next) => {

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest --runInBand --detectOpenHandles",
-    "stest": "jest ./__test__/DBTests signupTest.test.js",
+    "stest": "jest  ./__test__/eventTests/getEventsTest.test.js",
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",

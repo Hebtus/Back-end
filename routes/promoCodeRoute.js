@@ -10,3 +10,11 @@ router
   .route('/')
   .get(promoCodeController.getAllPromoCodes)
   .post(promoCodeController.createPromoCode);
+
+router.post(
+  '/csv',
+  promoCodeController.uploadCSV.single('csvFile'), //name of field that will be expected from client
+  promoCodeController.createPromoCodeCSV
+);
+
+module.exports = router;

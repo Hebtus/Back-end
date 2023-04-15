@@ -18,7 +18,7 @@ const { parse } = require('fast-csv');
 
 const multerTempStorage = multer.memoryStorage();
 //Limit the file size to 5MB
-const multerLimits = { filesize: 5 * 10 ** 6, fields: 0, files: 1 };
+const multerLimits = { filesize: 5 * 10 ** 6, fields: 1, files: 1 }; // 1 field (eventID)and 1 file
 
 const csvFilter = (_req, file, cb) => {
   // console.log('Reading file in middleware', file.originalname);
@@ -49,7 +49,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
   let event;
   try {
-    event = await Event.findOne({ _id: req.params.id });
+    event = await Event.findOne({ _id: req.body.eventID });
   } catch (err) {
     return res.status(400).json({
       status: 'fail',
@@ -73,8 +73,8 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
   if (
     !req.body.codeName ||
-    !req.body.discountOrPercentage ||
-    !req.body.limits
+    req.body.discountOrPercentage == null || // can be 0
+    req.body.limits == null
   ) {
     return res.status(400).json({
       status: 'fail',
@@ -103,7 +103,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
       limits: req.body.limits,
       discountAmount: req.body.discount,
       discountOrPercentage: 1,
-      ticketID: req.params.id,
+      eventID: req.body.eventID,
     });
   } else {
     //percentage
@@ -121,7 +121,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
       limits: req.body.limits,
       percentage: req.body.percentage,
       discountOrPercentage: 0,
-      ticketID: req.params.id,
+      eventID: req.body.eventID,
     });
   }
 
@@ -171,7 +171,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
   let event;
   try {
-    event = await Event.findOne({ _id: req.params.id });
+    event = await Event.findOne({ _id: req.body.eventID });
   } catch (err) {
     return res.status(400).json({
       status: 'fail',
@@ -210,21 +210,26 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   console.log('csvHeaders is', csvHeaders);
   console.log('csvData is', csvData);
 
-  //assumed format
-  //codeName discountOrPercentage discount/percentage limits
   // eslint-disable-next-line node/no-unsupported-features/es-syntax
   for await (const data of csvData) {
+    //assumed format
+    //codeName discountOrPercentage discount/percentage limits
     const csvCodeName = data[0];
     const csvDiscountOrPercentage = data[1];
+    console.log(
+      'csvDiscountOrPercentage is',
+      csvDiscountOrPercentage,
+      typeof csvDiscountOrPercentage
+    );
     const csvLimits = data[3];
-    if (csvDiscountOrPercentage === 1) {
+    if (csvDiscountOrPercentage === '1') {
       const csvDiscount = data[2];
       await promoCode.create({
         codeName: csvCodeName,
         limits: csvLimits,
         discountAmount: csvDiscount,
-        discountOrPercentage: csvDiscountOrPercentage,
-        eventID: req.params.id,
+        discountOrPercentage: true,
+        eventID: req.body.eventID,
       });
     } else {
       const csvPercentage = data[2];
@@ -233,7 +238,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
         limits: csvLimits,
         percentage: csvPercentage,
         discountOrPercentage: 0,
-        eventID: req.params.id,
+        eventID: req.body.eventID,
       });
     }
   }
@@ -243,6 +248,12 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.getAllPromoCodes = catchAsync(async (req, res, next) =>
+  res.status(200).json({
+    status: 'success',
+    message: 'PromoCode Delivered Successfully.',
+  })
+);
 //#region
 // await stream
 //   .pipe(parse({ headers: true }))

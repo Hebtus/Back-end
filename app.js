@@ -33,23 +33,25 @@ app.enable('trust proxy');
 //   preflightContinue: true,
 //   optionsSuccessStatus: 204,
 // };
-const cookieCorsOptions = {
-  origin: [
-    'http://16.170.37.222',
-    'http://localhost:62383',
-    'http://localhost:5173',
-    'http://localhost:52805', //cross: da 5alas b2a mtsabbet according to aya
-  ],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: 'Content-Type, *, Cookie, jwt',
-  exposedHeaders: ['set-cookie'],
-  credentials: false,
-  // preflightContinue: true,
-  optionsSuccessStatus: 204,
-};
+// const cookieCorsOptions = {
+//   origin: [
+//     // 'http://16.170.37.222',
+//     // 'http://localhost:62383',
+//     // 'http://localhost:5173',
+//     // 'http://localhost:52805', //cross: da 5alas b2a mtsabbet according to aya
+//     '*', //should accept everything now
+//   ],
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+//   allowedHeaders: 'Content-Type, *, Cookie, jwt',
+//   exposedHeaders: ['set-cookie'],
+//   credentials: false,
+//   // preflightContinue: true,
+//   optionsSuccessStatus: 204,
+// };
 
 // app.use('*', cors(corsOptions));
-app.use(cors(cookieCorsOptions));
+// app.use(cors(cookieCorsOptions));
+app.use(cors());
 // app.options('*', cors());
 app.use(helmet());
 

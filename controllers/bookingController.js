@@ -114,7 +114,11 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   ); // Calling  applyPromocode to update bookings costs with the promocode
   if (!bookings) {
     // If bookings is false that means promocode not found
-    return next(new AppError('Invalid promo code provided'), 404);
+    //return next(new AppError('Invalid promo code provided!', 404));
+    return res.status(404).json({
+      status: 'failed',
+      message: 'Invalid promo code provided!',
+    });
   }
   // construct bookings by adding attendee information to every booking
   bookings.forEach((booking) => {
@@ -125,7 +129,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     booking.phoneNumber = req.body.phoneNumber;
     booking.eventID = req.body.eventID;
   });
-  console.log(bookings);
+  //console.log(bookings);
   //console.log(bookings);
   //Save bookings to database
   await Booking.create(bookings)

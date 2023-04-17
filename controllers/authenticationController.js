@@ -258,7 +258,9 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   await EmailConfirm.deleteOne(emailConfirmationDoc);
   // // 4) Log the user in, send JWT
   // createSendToken(user, 200, req, res);
-  createSendToken(user, 200, res);
+  // createSendToken(user, 200, res);
+  const redirectURL = `${process.env.FRONTEND_URL}/login#`;
+  res.redirect(redirectURL);
 });
 
 /**

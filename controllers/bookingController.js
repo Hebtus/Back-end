@@ -27,42 +27,45 @@ const AppError = require('../utils/appError');
 @async
 @returns {int , array} // {total cost , updated bookings}
 @name acreateBookings
-@param {object} req - Express request object.
-@param {object} res - Express response object.
-@param {function} next - Express next middleware function.
+@param {string} promocodeName - Promocode name.
+@param {object} bookings - array of bookings
 @throws {AppError} If promocode does exist or invalid
 */
 
 const applyPromocode = async (promocodeName, bookings) => {
-  const promoCode = await PromoCode.findOne({ codeName: promocodeName });
-  // Search for the promocode by code name
-  if (!promoCode) return 0; // If promocode does not exist in the database returns 0
   // Calculate  the total prices of bookings before applying promocode
   let totalPrice = bookings.reduce((sum, booking) => sum + booking.price, 0);
-  // check if the promo code is percentage
-  if (promoCode.percentage) {
-    //applying the percentage discount for each bookings price
-    bookings.forEach((booking) => {
-      booking.price -= booking.price * (promoCode.percentage / 100); // Update the price
-    });
-    totalPrice -= totalPrice * (promoCode.percentage / 100); // Update the total price
-  } else {
-    // If the promo code is amount discount
+  if (promocodeName) {
+    const promoCode = await PromoCode.findOne({ codeName: promocodeName });
+    // Search for the promocode by code name
+    if (!promoCode) return 0; // If promocode does not exist in the database returns 0
 
-    const newPrice = totalPrice - promoCode.discountAmount; // Update the total price with the discount
-    bookings.forEach((booking) => {
-      // Update the prices for each booking price
-      booking.price = (booking.price / totalPrice) * newPrice;
-    });
-    totalPrice = newPrice;
+    // check if the promo code is percentage
+    if (promoCode.percentage) {
+      //applying the percentage discount for each bookings price
+      bookings.forEach((booking) => {
+        booking.price -= booking.price * (promoCode.percentage / 100); // Update the price
+      });
+      totalPrice -= totalPrice * (promoCode.percentage / 100); // Update the total price
+    } else {
+      // If the promo code is amount discount
+
+      const newPrice = totalPrice - promoCode.discountAmount; // Update the total price with the discount
+      bookings.forEach((booking) => {
+        // Update the prices for each booking price
+        booking.price = (booking.price / totalPrice) * newPrice;
+      });
+      totalPrice = newPrice;
+    }
+
+    totalPrice = totalPrice > 0 ? totalPrice : 0; // To ensure that prices will be positive after applying the promocode
+
+    promoCode.uses++;
+    await promoCode.save(); // Update the promocode number of uses
   }
-
-  totalPrice = totalPrice > 0 ? totalPrice : 0; // To ensure that prices will be positive after applying the promocode
-
-  promoCode.uses++;
-  await promoCode.save(); // Update the promocode number of uses
   return { totalPrice, bookings }; // Return the final total price and the updated bookings
 };
+exports.applyPromocode = applyPromocode;
 /** 
 @function
 @description the function add attendee to the event by the creator of the event
@@ -111,25 +114,10 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   ); // Calling  applyPromocode to update bookings costs with the promocode
   if (!bookings) {
     // If bookings is false that means promocode not found
-    // return next(new AppError('Invalid promo code provided'), 404);
-    let totalprice = 0;
-
-    req.body.bookings.forEach((booking) => {
-      booking.name = req.body.name;
-      booking.userID = req.body.userID;
-      booking.guestEmail = req.body.guestEmail;
-      booking.gender = req.body.gender;
-      booking.phoneNumber = req.body.phoneNumber;
-      booking.eventID = req.body.eventID;
-      totalprice += booking.price;
-    });
-    await Booking.create(req.body.bookings);
-
-    return res.status('200').json({
-      // Send successful response
-      status: 'success',
-      totalPrice,
-      data: bookings,
+    //return next(new AppError('Invalid promo code provided!', 404));
+    return res.status(404).json({
+      status: 'failed',
+      message: 'Invalid promo code provided!',
     });
   }
   // construct bookings by adding attendee information to every booking
@@ -139,9 +127,10 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     booking.guestEmail = req.body.guestEmail;
     booking.gender = req.body.gender;
     booking.phoneNumber = req.body.phoneNumber;
+    booking.eventID = req.body.eventID;
   });
-
-  console.log(bookings);
+  //console.log(bookings);
+  //console.log(bookings);
   //Save bookings to database
   await Booking.create(bookings)
     .then(() =>
@@ -154,7 +143,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     )
     .catch((err) =>
       //Send error response if any error is encountered
-      res.status(404).json({
+      res.status(400).json({
         status: 'failed',
         message: err.message,
       })

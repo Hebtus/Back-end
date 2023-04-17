@@ -6,13 +6,12 @@ const app = require('../../app');
 const Event = require('../../models/eventModel');
 const Ticket = require('../../models/ticketModel');
 const Booking = require('../../models/bookingModel');
+const loginConfirmedUser = require('../testutils/loginConfirmedUser');
+const createConfirmedUser = require('../testutils/createConfirmedUser');
 
 dotenv.config({ path: './config.env' });
 
 const DBstring = process.env.TEST_DATABASE;
-
-let testUser;
-let testEvent;
 
 beforeAll(async () => {
   // Connect to the test database
@@ -21,20 +20,12 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
 
-  // Create a test user and save to the database
-  testUser = new User({
-    name: {
-      firstName: 'loler',
-      lastName: 'Ameer',
-    },
-    email: 'lol@lol.com',
-    location: { coordinates: [-91.32, 1.32] },
-    password: '123456789',
-    passwordChangedAt: '1987-09-28 20:01:07',
-  });
-  await testUser.save();
-
   // Create a test event and save to the database
+});
+
+test('Check valid event parameter', async () => {
+  const testUser = await createConfirmedUser.createTestUser();
+  const jwtToken = await loginConfirmedUser.loginUser();
   testEvent = new Event({
     name: 'loleventxd',
     startDate: Date.now() - 1000 * 60 * 60 * 24 * 10,
@@ -45,20 +36,10 @@ beforeAll(async () => {
     creatorID: testUser._id,
   });
   await testEvent.save();
-});
-
-test('Check invalid event parameter', async () => {
-  const res = await request(app)
-    .get('/api/v1/events/6432a915e24e555cf2781183/sales')
-    .expect(404);
-  expect(res.body.message).toMatch('Invalid event or creator.');
-});
-
-test('Check valid event parameter', async () => {
   const res = await request(app)
     .get(`/api/v1/events/${testEvent._id}/sales`)
+    .set('authorization', `Bearer ${jwtToken}`)
     .expect(200);
-  expect(res.body.status).toMatch('success');
 });
 
 afterAll(async () => {

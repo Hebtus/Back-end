@@ -11,12 +11,6 @@ exports.loginUser = async () => {
       password: '123456789',
     })
     .expect(200);
-  expect(auxres.headers['set-cookie']).toBeDefined();
-  let jwtToken = auxres.headers['set-cookie'];
-  let TokenArr = String(jwtToken).split(';');
-  // let oldDate = TokenArr[2];
-  // console.log(oldDate);
-  jwtToken = String(jwtToken).split(';')[0].slice(4);
-  // console.log(jwtToken);
+  let jwtToken = auxres.body.token;
   return jwtToken;
 };

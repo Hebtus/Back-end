@@ -1,6 +1,6 @@
 /**
  * @class App Error
- * @description Generates App Error //lmaza?
+ * @description Generates App Error so that the global error handler can handle it
  * @memberof module:Utils
  */
 class AppError extends Error {

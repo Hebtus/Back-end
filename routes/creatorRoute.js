@@ -5,6 +5,11 @@ const authController = require('../controllers/authenticationController');
 
 const router = express.Router();
 
+/** Express router providing user related routes
+ * @module Routers/creatorRouter
+ * @requires express
+ */
+
 // router.route('/').get(creatorController.getAllEvents);
 router.use(authController.protect);
 router.get('/', creatorController.getEvents);

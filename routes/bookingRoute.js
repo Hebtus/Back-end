@@ -3,6 +3,11 @@ const authController = require('../controllers/authenticationController');
 const bookingController = require('../controllers/bookingController');
 
 const router = express.Router();
+/** Express router providing user related routes
+ * @module Routers/bookingRouter
+ * @requires express
+ */
+
 // //allows nested routing
 // //and lets the controller get access to previous parameters
 // const router = express.Router({ mergeParams: true });

@@ -4,6 +4,11 @@ const promoCodeController = require('../controllers/promoCodeController');
 
 const router = express.Router();
 
+/** Express router providing user related routes
+ * @module Routers/promoCodeRouter
+ * @requires express
+ */
+
 //Restrict to creators
 router.use(authController.protect);
 router

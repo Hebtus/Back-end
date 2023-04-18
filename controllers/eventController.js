@@ -10,6 +10,11 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const cloudinary = require('../utils/cloudinary');
 
+/**
+ * The Controller responsible for handling authentication Requests
+ * @module Controllers/eventController
+ */
+
 // takes any
 const makeprivateEventsPublic = async () => {
   const privateEvents = await Event.updateMany(

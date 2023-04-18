@@ -1,5 +1,5 @@
 /** Express router providing user related routes
- * @module Routers/authernticationRouter
+ * @module Routers/authenticationRouter
  * @requires express
  */
 // const dotenv = require('dotenv');
@@ -14,7 +14,7 @@ const authController = require('../controllers/authenticationController');
  * Express router to mount user related functions on.
  * @type {object}
  * @const
- * @namespace authernticationRouter
+ * @namespace authenticationRouter
  */
 const router = express.Router();
 
@@ -22,7 +22,7 @@ const router = express.Router();
  * Route serving signup form.
  * @name post/signup
  * @function
- * @memberof module:routers/authernticationRouter
+ * @memberof module:Routers/authenticationRouter
  * @inner
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
@@ -32,7 +32,7 @@ router.post('/signup', authController.signup);
  * Route serving signup confirm.
  * @name get/signup
  * @function
- * @memberof module:routers/authernticationRouter
+ * @memberof module:Routers/authenticationRouter
  * @inner
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
@@ -43,7 +43,7 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
  * Route serving login form.
  * @name post/login
  * @function
- * @memberof module:routers/authernticationRouter
+ * @memberof module:Routers/authenticationRouter
  * @inner
  * @param {string} path - Express path
  * @param {callback} middleware - Express middleware.
@@ -52,7 +52,7 @@ router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
 
 //from here down add requests that are available after you are logged in only
-//remeber to add the berarer token to the autherization in postman
+//remeber to add the berarer token to the authorization in postman
 router.use(authController.protect);
 
 //#endregion

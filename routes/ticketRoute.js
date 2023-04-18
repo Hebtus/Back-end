@@ -1,5 +1,5 @@
 /** Express router providing user related routes
- * @module Routers/authernticationRouter
+ * @module Routers/ticketRouter
  * @requires express
  */
 // const dotenv = require('dotenv');
@@ -14,7 +14,7 @@ const tickController = require('../controllers/ticketController');
  * Express router to mount user related functions on.
  * @type {object}
  * @const
- * @namespace authernticationRouter
+ * @namespace ticketRouter
  */
 const router = express.Router();
 

@@ -275,11 +275,21 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       locationName,
       tags: tagsArr,
       location: { coordinates: locationCoordinates },
-    });
-    return res.status(200).json({
-      status: 'success',
-      message: 'event created successfully',
-    });
+    })
+      .then(() =>
+        res.status(200).json({
+          status: 'success',
+          message: 'event created successfully',
+        })
+      )
+      //return
+      .catch((err) =>
+        //Send error response if any error is encountered
+        res.status(400).json({
+          status: 'failed',
+          message: err.message,
+        })
+      );
   }
 });
 
@@ -373,12 +383,13 @@ exports.editEvent = async (req, res, next) => {
   );
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'No event found with this id ',
     });
-  } else if (!updatedEvent.creatorID.equals(req.user._id)) {
-    res.status(404).json({
+  }
+  if (!updatedEvent.creatorID.equals(req.user._id)) {
+    return res.status(404).json({
       status: 'fail',
       message: 'You cannot edit events that are not yours ',
     });

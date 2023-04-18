@@ -7,6 +7,11 @@ const bookingRouter = require('./bookingRoute');
 
 const router = express.Router();
 
+/** Express router providing user related routes
+ * @module Routers/eventRouter
+ * @requires express
+ */
+
 //redirects URL's in form of /events/{event_id}/tickets/
 // router.use('/:eventID/tickets', ticketRouter);
 // router.use('/:eventID/bookings', bookingRouter);

@@ -316,7 +316,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   if (!event) {
     return res.status(404).json({
       status: 'fail',
-      message: 'No such event found with id ',
+      message: 'No such event found with id',
     });
   }
   if (!event.privacy || (event.privacy && !event.password)) {

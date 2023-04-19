@@ -58,7 +58,7 @@ const bookingsSchema = new mongoose.Schema({
   price: {
     // The event ticket price
     type: Number,
-    required: [true, 'Ticket must have a price'],
+    required: [true, 'Booking must have a price'],
     min: 0,
   },
 
@@ -71,7 +71,7 @@ const bookingsSchema = new mongoose.Schema({
   },
   quantity: {
     type: Number,
-    required: [true, 'Ticket must have a quantity'],
+    required: [true, 'Booking must have a quantity'],
     default: 1,
     min: [1, 'Cannot have quantity less than 1'],
   },

@@ -13,40 +13,6 @@ const { constants } = require('crypto');
  */
 
 const getSoldandAvailable = async (eventsdData) => {
-  // eventsdData.map(async (event) => {
-  //   const ticketQuery = await Ticket.aggregate([
-  //     { $match: { eventID: event._id } },
-  //     {
-  //       $group: {
-  //         _id: null,
-  //         ticketsAvailable: { $sum: '$capacity' },
-  //       },
-  //     },
-  //   ]);
-  //   // reutrns [ { _id: null, totalprice: 200 } ]
-  //   // eslint-disable-next-line no-await-in-loop
-  //   const bookingQuery = await Booking.aggregate([
-  //     { $match: { eventID: event._id } },
-  //     {
-  //       $group: {
-  //         _id: null,
-  //         totalprice: { $sum: '$price' },
-  //       },
-  //     },
-  //   ]);
-  //   event.ticketsAvailable = 'lol';
-  //   console.log('before event is ', typeof event);
-  //   console.log('ticketsav now is ', event.ticketsAvailable);
-  //   event.ticketsAvailable =
-  //     ticketQuery.length > 0 ? ticketQuery[0].ticketsAvailable : 0;
-  //   event.totalprice =
-  //     bookingQuery.length > 0 ? bookingQuery[0].ticketsAvailable : 0;
-  //   // console.log(ticketQuery[0]);
-  //   // console.log(event.ticketsAvailable);
-  //   // console.log(bookingQuery[0].ticketsAvailable);
-  //   // console.log(event.totalprice);
-  //   console.log('now event is ', event);
-  // });
   const newEventData = [];
   for (const event of eventsdData) {
     //returns [ { _id: null, ticketsAvailable: 20 } ]
@@ -196,11 +162,10 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .limit(limit);
   }
   let newEventData = await getSoldandAvailable(eventsData);
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     data: { events: newEventData },
   });
-  console.log('not workedd ');
 });
 
 /**

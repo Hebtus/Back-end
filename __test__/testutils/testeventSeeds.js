@@ -93,3 +93,33 @@ exports.eventsWithinDateRange = (userIDs, startDateIn, endDateIn) => {
 
   return eventObjects;
 };
+
+exports.eventsWithGivenDateRange = (userIDs, startDateIn, endDateIn) => {
+  const eventObjects = [];
+
+  for (let i = 0; i < 10; i += 1) {
+    const eventObject = {
+      name: `event${i}`,
+      img_url: faker.image.imageUrl(),
+      // startDate: new Date('2023-05-2T10:16:10.467z').toISOString(),
+      // endDate: new Date('2023-05-13T10:16:10.467z').toISOString(),
+      startDate: startDateIn,
+      endDate: endDateIn,
+      location: {
+        coordinates: [
+          faker.address.latitude(31.214039, 31.203095),
+          faker.address.longitude(30.118752, 29.97293), //max min
+        ],
+      },
+      locationName: faker.address.streetAddress(),
+      category: ['Music', 'Food & Drink', 'Charity & Causes'][i % 3],
+      description: faker.lorem.paragraph(2),
+      creatorID: userIDs[i % 1],
+      draft: false,
+      privacy: false,
+    };
+    eventObjects.push(eventObject);
+  }
+
+  return eventObjects;
+};

@@ -405,10 +405,19 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
  */
 exports.resetPassword = catchAsync(async (req, res, next) => {
   //1) Get user based on token
-  const hashedToken = crypto
-    .createHash('sha256')
-    .update(req.params.token)
-    .digest('hex');
+  let hashedToken;
+  if (process.env.NODE_ENV === 'development') {
+    hashedToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+  } else {
+    //production
+    hashedToken = crypto
+      .createHash('sha256')
+      .update(req.body.resetToken)
+      .digest('hex');
+  }
 
   const passwordResetDoc = await PasswordReset.findOne({
     passwordResetToken: hashedToken,

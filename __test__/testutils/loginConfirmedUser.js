@@ -14,3 +14,15 @@ exports.loginUser = async () => {
   let jwtToken = auxres.body.token;
   return jwtToken;
 };
+
+exports.loginUser2 = async () => {
+  const auxres = await request(app)
+    .post('/api/v1/login')
+    .send({
+      email: 'irushbulleter@gmail.com',
+      password: '123456789',
+    })
+    .expect(200);
+  let jwtToken = auxres.body.token;
+  return jwtToken;
+};

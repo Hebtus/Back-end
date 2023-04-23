@@ -280,11 +280,21 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       locationName,
       tags: tagsArr,
       location: { coordinates: locationCoordinates },
-    });
-    return res.status(200).json({
-      status: 'success',
-      message: 'event created successfully',
-    });
+    })
+      .then(() =>
+        res.status(200).json({
+          status: 'success',
+          message: 'event created successfully',
+        })
+      )
+      //return
+      .catch((err) =>
+        //Send error response if any error is encountered
+        res.status(400).json({
+          status: 'failed',
+          message: err.message,
+        })
+      );
   }
 });
 
@@ -306,7 +316,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
   if (!event) {
     return res.status(404).json({
       status: 'fail',
-      message: 'No such event found with id ',
+      message: 'No such event found with id',
     });
   }
   if (!event.privacy || (event.privacy && !event.password)) {

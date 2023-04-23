@@ -31,7 +31,7 @@ router.get('/:id/sales', eventController.getEventSales);
 router
   .route('/:id')
   .get(eventController.getEvent)
-  .post(eventController.getEventwithPassword) //TODO: Determine if we should make sure that usre is logged in or  can access the event with out logging in
+  .post(eventController.getEventwithPassword)
   .patch(
     //restrict to creators
     eventController.editEvent

@@ -434,8 +434,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     });
   user.password = req.body.password;
   user.passwordChangedAt = Date.now();
-  passwordResetDoc.passwordResetTokenExpiry = undefined;
-  passwordResetDoc.passwordResetToken = undefined;
+  await PasswordReset.deleteOne(passwordResetDoc);
+  // passwordResetDoc.passwordResetTokenExpiry = undefined;
+  // passwordResetDoc.passwordResetToken = undefined;
   await user.save();
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications

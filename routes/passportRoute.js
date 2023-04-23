@@ -44,12 +44,7 @@ router.get(
     session: false,
   }),
   (req, res) => {
-    // Successful authentication, redirect home.
-    //res.redirect('/api/v1/events');
-    res.status(200).json({
-      status: 'success',
-      message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
-    });
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
   }
 );
 
@@ -65,12 +60,7 @@ router.get(
   '/login/google/callback',
   passport.authenticate('google', { failureRedirect: '/', session: false }),
   (req, res) => {
-    console.log('req', req);
-    // res.redirect('/api/v1/events');
-    res.status(200).json({
-      status: 'success',
-      message: 'Gamed Gedan handa5alak ma3ana Hebtus!',
-    });
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
   }
 );
 

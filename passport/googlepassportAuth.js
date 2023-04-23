@@ -19,6 +19,7 @@ exports.googleAuth = function (passport) {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        //the call backURL here is the one that is output in the error message at Access blocked
         callbackURL: '/api/v1/oauth/login/google/callback',
       },
       /**

@@ -97,7 +97,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(Filter)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ endDate: -1 });
     goQuery = false;
   }
 
@@ -127,7 +128,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(Filter)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ endDate: -1 });
 
     goQuery = false;
   }
@@ -146,7 +148,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(Filter)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ endDate: -1 });
+
     const eventIDs = eventsData.map((event) => event._id);
 
     //We first Make sure that these tickets are available to the user
@@ -181,7 +185,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     eventsData = await Event.find({ online: 1, privacy: 0, draft: 0 })
       .select(Filter)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ endDate: -1 });
     goQuery = false;
   }
 
@@ -199,7 +204,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(Filter)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ endDate: -1 });
   }
 
   return res.status(200).json({

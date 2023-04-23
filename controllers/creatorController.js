@@ -79,9 +79,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     //Get all events without pagination
     //for testing
 
-    const eventsData = await Event.find({ creatorID: req.user._id }).select([
-      '-creatorID',
-    ]);
+    const eventsData = await Event.find({ creatorID: req.user._id })
+      .select(['-creatorID'])
+      .sort({ startDate: 1 });
     // write csv headers
     let csvData = [
       'Event',
@@ -146,7 +146,8 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(['-creatorID'])
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ startDate: 1 });
   } else if (req.query.time === 'future') {
     eventsData = await Event.find({
       creatorID: req.user._id,
@@ -154,12 +155,14 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     })
       .select(['-creatorID'])
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ startDate: 1 });
   } else {
     eventsData = await Event.find({ creatorID: req.user._id })
       .select(['-creatorID'])
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .sort({ startDate: 1 });
   }
   let newEventData = await getSoldandAvailable(eventsData);
   return res.status(200).json({

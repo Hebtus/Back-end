@@ -357,7 +357,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 2) Create random reset token
   const resetToken = await PasswordReset.createResetPasswordToken(user._id);
-
   //3) send the reset token to the user email address
   let resetURL;
   if (process.env.NODE_ENV === 'development') {
@@ -368,7 +367,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   }
 
-  const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL} \nIf you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: user.email,
@@ -405,19 +404,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
  */
 exports.resetPassword = catchAsync(async (req, res, next) => {
   //1) Get user based on token
-  let hashedToken;
-  if (process.env.NODE_ENV === 'development') {
-    hashedToken = crypto
-      .createHash('sha256')
-      .update(req.params.token)
-      .digest('hex');
-  } else {
-    //production
-    hashedToken = crypto
-      .createHash('sha256')
-      .update(req.body.resetToken)
-      .digest('hex');
-  }
+  console.log('entered reset pass');
+
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.body.resetToken)
+    .digest('hex');
 
   const passwordResetDoc = await PasswordReset.findOne({
     passwordResetToken: hashedToken,

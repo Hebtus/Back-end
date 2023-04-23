@@ -51,7 +51,7 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
 
-router.patch('/resetpassword/:token', authController.resetPassword);
+router.patch('/resetpassword/', authController.resetPassword);
 //from here down add requests that are available after you are logged in only
 //remeber to add the berarer token to the authorization in postman
 router.use(authController.protect);
@@ -59,8 +59,6 @@ router.use(authController.protect);
 //#endregion
 
 router.get('/logout', authController.logout);
-
-//router.get('/resetpassword/:token', authController.resetPasswordForm);
 
 router.patch('/updatepassword', authController.updatePassword);
 //from here down add whatever requests that are avialble to creators only

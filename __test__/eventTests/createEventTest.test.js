@@ -28,8 +28,12 @@ beforeAll(async () => {
 test('Check created successfully', async () => {
   const user = await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
+
+  const filePath = `${__dirname}/testFiles/testimg.jpg`;
+
   const res = await request(app)
     .post('/api/v1/events')
+    .attach('file', filePath)
     .set('authorization', `Bearer ${jwtToken}`)
     .send({
       name: 'loleventxd',

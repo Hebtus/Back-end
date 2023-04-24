@@ -323,7 +323,7 @@ exports.getEvent = catchAsync(async (req, res, next) => {
     // To delete privacy field
     const { privacy, password, ...eventWithoutPrivateData } = event.toObject();
 
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: eventWithoutPrivateData,
     });

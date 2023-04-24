@@ -103,7 +103,15 @@ bookingsSchema.pre('save', async function (next) {
   // I have altered to find/save  to run capacity validatios
   const updatedTicket = await Ticket.findById(this.ticketID);
   updatedTicket.currentReservations += this.quantity;
-  await updatedTicket.save();
+  if (updatedTicket.currentReservations > updatedTicket.capacity) {
+    return next(
+      new AppError(
+        'Current reservation count exceedes the ticket capacity',
+        404
+      )
+    );
+  }
+  await updatedTicket.save({ validateBeforeSave: false });
   await Event.findOneAndUpdate(
     { _id: this.eventID },
     { $inc: { ticketsSold: this.quantity } }

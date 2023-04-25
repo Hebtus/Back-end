@@ -114,6 +114,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
         { endDate: { $gte: req.query.startDate, $lte: req.query.endDate } },
         {
           //query lies within event limits of time
+          startDate: { $lte: req.query.startDate },
           endDate: { $gte: req.query.endDate },
         },
       ],

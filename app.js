@@ -10,7 +10,7 @@ const creatorRouter = require('./routes/creatorRoute');
 const passportRouter = require('./routes/passportRoute');
 const bookingRouter = require('./routes/bookingRoute');
 const promoCodeRouter = require('./routes/promoCodeRoute');
-
+const notificationRouter = require('./routes/notificationRoute');
 const ticketRouter = require('./routes/ticketRoute');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
@@ -51,7 +51,7 @@ app.use('/api/v1/creators/events', creatorRouter);
 app.use('/api/v1/bookings', bookingRouter); //TODO: base route to be discussed later
 app.use('/api/v1/promocodes', promoCodeRouter);
 app.use('/api/v1', authenticationRouter);
-
+app.use('/api/v1/notifications', notificationRouter);
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });

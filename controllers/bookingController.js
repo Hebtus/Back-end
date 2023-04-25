@@ -150,3 +150,52 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     );
   //TODO: send email to the user with the booking details and QR code
 });
+
+exports.getBookingsCSV = catchAsync(async (req, res, next) => {
+  const bookings = await Booking.find({ eventID: req.params.id });
+  // write csv headers
+  let csvData = [
+    'name',
+    'gender',
+    'phoneNumber',
+    'guestEmail',
+    'homeAdress',
+    'shippingAdress',
+    'price',
+    'purchasedOn',
+    'quantity',
+    'userID',
+    'ticketID',
+    'eventID',
+  ].join(',');
+  csvData += '\n';
+
+  //loop on each event
+  // eslint-disable-next-line no-restricted-syntax
+  for (const booking of bookings) {
+    const newData = [
+      booking.name,
+      booking.gender,
+      booking.phoneNumber,
+      booking.guestEmail,
+      booking.homeAdress,
+      booking.shippingAdress,
+      booking.price,
+      booking.purchasedOn,
+      booking.quantity,
+      booking.userID,
+      booking.ticketID,
+      booking.eventID,
+    ].join(',');
+    csvData += newData;
+    csvData += '\n';
+  }
+
+  return res
+    .set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="YourBookings.csv"`,
+    })
+    .status(200)
+    .send(csvData);
+});

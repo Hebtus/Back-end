@@ -23,5 +23,4 @@ const router = express.Router();
 router.use(authController.protect);
 router.post('/add-attendee/', bookingController.addAttendee);
 router.post('/', bookingController.createBookings);
-
 module.exports = router;

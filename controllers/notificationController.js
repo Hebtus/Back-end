@@ -6,13 +6,15 @@ const catchAsync = require('../utils/catchAsync');
  * @module Controllers/notificationController
  */
 
-/**
- * @function
- * @description -called to get the event tickets given the event id in the parameters and make sure the ticket is available and on display through the date
- * @param {object} req  -The request object
- * @param {object} res  -The response object
- * @returns {object} - Returns the response object
- */
+/** 
+@function
+@description the function gets notifications of a the logged user display them for him then delete them
+@async
+@name getNotification
+@param {object} req - Express request object.
+@param {object} res - Express response object.
+@returns {object} - Returns the response object 
+*/
 exports.getNotification = async (req, res) => {
   //check on 2 things for ticket availability: 1. time 2. capacity
   const notification = await Notification.findOne({ attendeeID: req.user._id });

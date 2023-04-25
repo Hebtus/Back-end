@@ -151,6 +151,16 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   //TODO: send email to the user with the booking details and QR code
 });
 
+/** 
+@function
+@description the function gets Bookings of the event of the id given in the parameters and exports them into CSV fromat 
+@async
+@name getBookingsCSV
+@param {object} req - Express request object.
+@param {object} res - Express response object.
+@param {function} next - Express next middleware function.
+@returns {object} - Returns the response object in CSV fromat
+*/
 exports.getBookingsCSV = catchAsync(async (req, res, next) => {
   const bookings = await Booking.find({ eventID: req.params.id });
   // write csv headers

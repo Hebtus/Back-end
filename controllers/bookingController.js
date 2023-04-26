@@ -1,25 +1,74 @@
 /* eslint-disable no-plusplus */
+const QRCode = require('qrcode');
 const { promisify } = require('util');
 // const crypto = require('crypto');
 // const Event = require('../models/eventModel');
+const util = require('util');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const PromoCode = require('../models/promoCodeModel');
+const Notification = require('../models/notificationModel');
+const Event = require('../models/eventModel');
+const User = require('../models/userModel');
+const sendEmail = require('../utils/emailWithImage');
 const AppError = require('../utils/appError');
 /**
  * The Controller responsible for handling requests regarding Bookings
  * @module Controllers/bookingController
  */
-/** 
-@function
-@description the function add attendee to the event by the creator of the event
-@async
-@name addAttendee
-@param {object} req - Express request object.
-@param {object} res - Express response object.
-@param {function} next - Express next middleware function.
-@throws {AppError} If any of the input body does mot meet the schema validations.
-*/
+
+const createNotification = catchAsync(async ({ ...info }) => {
+  const event = await Event.findById(info.eventID);
+  const creator = await User.findById(event.creatorID);
+  await Notification.create({
+    attendeeID: info.userID,
+    attendeeName: info.name,
+    creatorName: creator.name,
+    eventName: event.name,
+  });
+});
+
+const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
+  const options = {
+    email: bookingEmail,
+    subject: 'Event reservation',
+    html: `<p>You Successfully booked The tickets.</p>
+    <p>To access event page kindly, scan the attached QR code.</p>
+    <p>Here is your QR code:</p><img src="${dataURI}">
+    <p>Thanks.</p>
+    <p>Heptus team.</p>`,
+    // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
+    // image: dataURI,
+  };
+  await sendEmail(options);
+});
+
+const sendEmailWithQRcode = catchAsync(async (eventID, guestEmail) => {
+  let text;
+  if (process.env.NODE_ENV === 'development')
+    text = `${process.env.URL}/api/v1/events/${eventID}`;
+  else text = `www.hebtus.me/events/${eventID}`;
+
+  const options = {
+    errorCorrectionLevel: 'H',
+    type: 'image/jpeg',
+    quality: 0.3,
+    margin: 1,
+  };
+  try {
+    const toDataURL = promisify(QRCode.toDataURL);
+    const dataURI = await QRCode.toDataURL(text, options);
+    // return dataURI; I tried every thing to make them sepereate functions but return always undefined
+    sendBookingMail(guestEmail, dataURI);
+
+    // const dataURI = await QRCode.toDataURL(text, options);
+    // //console.log(`${dataURI} lol`);
+    // return Promise.resolve(dataURI);
+  } catch (err) {
+    console.error(err);
+    throw new Error('Failed to generate QR code');
+  }
+});
 
 /** 
 @function
@@ -31,7 +80,6 @@ const AppError = require('../utils/appError');
 @param {object} bookings - array of bookings
 @throws {AppError} If promocode does exist or invalid
 */
-
 const applyPromocode = async (promocodeName, bookings) => {
   // Calculate  the total prices of bookings before applying promocode
   let totalPrice = bookings.reduce((sum, booking) => sum + booking.price, 0);
@@ -78,15 +126,18 @@ exports.applyPromocode = applyPromocode;
 */
 exports.addAttendee = catchAsync(async (req, res, next) => {
   const attendee = new Booking(req.body); // Create a new attendee object
+
   await attendee
     .save() // Save the attendee object
-    .then(() =>
-      res.status('200').json({
+    .then(() => {
+      const { eventID, name, userID } = req.body;
+      createNotification({ eventID, name, userID });
+      return res.status('200').json({
         // Send successful response
         status: 'success',
         data: attendee,
-      })
-    )
+      });
+    })
     .catch((err) =>
       //Send error response if any error is encountered
       res.status(404).json({
@@ -134,7 +185,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   //Save bookings to database
   await Booking.create(bookings)
     .then(() =>
-      res.status('200').json({
+      res.status(200).json({
         // Send successful response
         status: 'success',
         totalPrice,
@@ -149,6 +200,10 @@ exports.createBookings = catchAsync(async (req, res, next) => {
       })
     );
   //TODO: send email to the user with the booking details and QR code
+  if (res.statusCode === 200) {
+    console.log(req.body.eventID);
+    await sendEmailWithQRcode(req.body.eventID, req.body.guestEmail);
+  }
 });
 
 /** 

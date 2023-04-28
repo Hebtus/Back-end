@@ -20,7 +20,7 @@ pipeline {
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm -f ${CONTAINER_NAME} || true"
                 sh "docker run -d --name ${CONTAINER_NAME} -p 3001:3001 \
-                    -v ${CONFIG_PATH}:/app/config.env ${IMAGE_NAME}"
+                    -v ${CONFIG_PATH}:/app/config.env --restart=always ${IMAGE_NAME}"
                 
             }
         }

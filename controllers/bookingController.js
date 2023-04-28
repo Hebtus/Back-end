@@ -17,6 +17,15 @@ const AppError = require('../utils/appError');
  * @module Controllers/bookingController
  */
 
+/** 
+@function
+@description the function create notification after creator adding new attendee 
+@async
+@returns none 
+@name createNotification
+@param {array} info array  - array of information
+@throws {err} If there is any validation error
+*/
 const createNotification = catchAsync(async ({ ...info }) => {
   const creator = await User.findOne(info.creatorID);
   const attendee = await User.findOne({ email: info.guestEmail });
@@ -35,6 +44,15 @@ const createNotification = catchAsync(async ({ ...info }) => {
   });
 });
 
+/** 
+@function
+@description the function create mail options for mail booking with event QR code 
+@async
+@returns none 
+@name sendBookingMail
+@param {bookingEmail, dataURI} 
+@throws {err} If there is any internal error
+*/
 const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
   const options = {
     email: bookingEmail,
@@ -50,6 +68,15 @@ const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
   await sendEmail(options);
 });
 
+/** 
+@function
+@description the function creates event Qr code and send it to attendee mail 
+@async
+@returns none 
+@name sendBookingMail
+@param {req, eventID, guestEmail} 
+@throws {err} If there is any  error for creating event Qr code 
+*/
 const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
   let text;
   // confirmURL = `${req.protocol}://${req.get(

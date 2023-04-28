@@ -35,8 +35,8 @@ exports.createToken = (user, res) => {
 };
 
 //creates token, attaches it to cookie and sends it as a standard responsee
-const createSendToken = (user, statusCode, res) => {
-  createToken(user, res);
+exports.createSendToken = (user, statusCode, res) => {
+  exports.createToken(user, res);
   // res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
@@ -259,8 +259,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   //delete confirmation (if the code reaches here aslun??? )
   await EmailConfirm.deleteOne(emailConfirmationDoc);
   // // 4) Log the user in, send JWT
-  // createSendToken(user, 200, req, res);
-  // createSendToken(user, 200, res);
   const redirectURL = `${process.env.FRONTEND_URL}/login#`;
   res.redirect(redirectURL);
 });
@@ -305,7 +303,7 @@ exports.login = catchAsync(async (req, res, next) => {
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
   // 4) If everything ok, send token to client
-  createSendToken(user, 200, res);
+  exports.createSendToken(user, 200, res);
 });
 
 /**
@@ -441,7 +439,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications
   //and discussions with Frontend. -Joseph
-  createSendToken(user, 200, res);
+  exports.createSendToken(user, 200, res);
   await passwordResetDoc.save();
 });
 

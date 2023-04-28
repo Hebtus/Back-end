@@ -2,6 +2,7 @@
  * @module Routers/passportRouter
  * @requires express
  */
+const AppError = require('../utils/appError');
 const dotenv = require('dotenv');
 const express = require('express');
 const passport = require('passport');
@@ -13,6 +14,8 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const User = require('../models/userModel');
 const authenticationController = require('../controllers/authenticationController');
 const catchAsync = require('../utils/catchAsync');
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
 
 dotenv.config({ path: './config.env' });
 goolgePassportAuth.googleAuth(passport);
@@ -50,8 +53,15 @@ router.get(
     session: false,
   }),
   catchAsync(async (req, res, next) => {
-    console.log('req.user', req.user);
-    res.redirect(`${process.env.FRONTEND_URL}/login`);
+    //can get req.user here
+    authenticationController.createToken(req.user, res);
+
+    const tempjwttoken = res.token;
+    // https://hebtus.me/google-facebook-token/{token}
+    res.redirect(
+      `${process.env.FRONTEND_URL}/google-facebook-token/${tempjwttoken}`
+    );
+    // res.redirect(`${process.env.FRONTEND_URL}/login`);
   })
 );
 
@@ -67,20 +77,25 @@ router.get(
   '/login/google/callback',
   passport.authenticate('google', { failureRedirect: '/', session: false }),
   catchAsync(async (req, res, next) => {
-    // console.log('req.user', req.user);
     //can get req.user here
     authenticationController.createToken(req.user, res);
 
     const tempjwttoken = res.token;
-
-    res.redirect(`${process.env.FRONTEND_URL}/login`);
+    // https://hebtus.me/google-facebook-token/{token}
+    res.redirect(
+      `${process.env.FRONTEND_URL}/google-facebook-token/${tempjwttoken}`
+    );
+    // res.redirect(`${process.env.FRONTEND_URL}/login`);
   })
 );
 
 //for cross
 const AuthenticateGoogle = catchAsync(async (req, res, next) => {
-  if (!req.body.tokenId)
+  console.log('accessed google auth post route');
+  if (!req.body.tokenId) {
+    console.log('You must provide Google tokenId');
     return res.status(400).send('You must provide Google tokenId');
+  }
   const token = req.body.tokenId;
   const ticket = await client.verifyIdToken({
     idToken: token,
@@ -109,8 +124,20 @@ router.post('/login/google', AuthenticateGoogle);
 router.post(
   '/login/facebook',
   catchAsync(async (req, res, next) => {
-    if (!req.body.email || !req.body.name)
-      return res.status(400).send('request body undefined');
+    if (!req.body.idToken || !req.body.accessToken)
+      return res.status(400).send('request body lacks idToken or accessToken');
+    if (!req.body.email)
+      return res.status(400).send('request body lacks email');
+
+    const facebookVerifyresponse = await fetch(
+      `https://graph.facebook.com/debug token?input_token=${req.body.idToken}&access_token=${req.body.accessToken}`
+    );
+    if (facebookVerifyresponse.error)
+      return res.status(400).send('invalid facebook token');
+
+    if (facebookVerifyresponse.is_valid === false)
+      return res.status(400).send('invalid facebook token');
+
     var user = await User.findOne({ email: req.body.email });
     if (!user) {
       user = new User({
@@ -126,65 +153,50 @@ router.post(
   })
 );
 
-//for Web
+//for Web FE
 
-// const decodeJWT = async (token) => {
-//   const decoded = await promisify(jwt.verify)(
-//     token,
-//     process.env.JWT_SECRET
-//   ).catch((error) => {
-//     next(new AppError('Could not decode token.', 401));
-//     // Handle the error.
-//   });
-//   // })(token, process.env.JWT_SECRET);
-//   // 3) Check if user still exists
-//   const currentUser = await User.findById(decoded.id);
-//   if (!currentUser) {
-//     return next(
-//       new AppError(
-//         'The user belonging to this token does no longer exist.',
-//         401
-//       )
-//     );
-//   }
+const decodeJWT = async (req, res, next) => {
+  const token = req.params.token;
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET
+  ).catch((error) => {
+    next(new AppError('Could not decode token.', 401));
+    // Handle the error.
+  });
+  // })(token, process.env.JWT_SECRET);
+  // 3) Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
 
-//   // 4) Check if user changed password after the token was issued
-//   if (currentUser.changedPasswordAfter(decoded.iat)) {
-//     return next(
-//       new AppError('User recently changed password! Please log in again.', 401)
-//     );
-//   }
-//   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
-//   // GRANT ACCESS TO PROTECTED ROUTE
-//   req.user = currentUser;
-// };
+  // 4) Check if user changed password after the token was issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again.', 401)
+    );
+  }
+  //we'll see if we add changed pass after or just use changed at and compare hashoof kda
+  // GRANT ACCESS TO PROTECTED ROUTE
+  // req.user = currentUser;
+  return currentUser;
+};
 
-// router.post(
-//   '/login/googleverify/:token',
-//   catchAsync(async (req, res, next) => {
-//     const jwtToken = req.params.token;
-//     const decoded = await promisify(jwt.verify)(
-//       jwtToken,
-//       process.env.JWT_SECRET
-//     );
-//   })
-// );
+router.post(
+  '/login/googlefacebookverify/:token',
+  catchAsync(async (req, res, next) => {
+    const user = await decodeJWT(req, res, next);
 
-// router.post('/login/facebookverify/:token', async (req, res) => {
-//   if (!req.body.email || !req.body.name)
-//     return res.status(400).send('request body undefined');
-//   var user = await User.findOne({ email: req.body.email });
-//   if (!user) {
-//     user = new User({
-//       name: req.body.name,
-//       email: req.body.email,
-//       password: Math.random().toString().substr(2, 10),
-//       accountConfirmation: 1,
-//     });
-//     await user.save();
-//   }
+    console.log('user', user);
 
-//   authenticationController.createSendToken(user, 201, res);
-// });
+    authenticationController.createSendToken(user, 200, res);
+  })
+);
 
 module.exports = router;

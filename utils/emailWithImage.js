@@ -41,7 +41,7 @@ const sendEmail = async (options) => {
       from: process.env.SENDGRID_VERIFIED_EMAIL,
       to: options.email,
       subject: options.subject,
-      text: options.message,
+      // text: options.message,
       html: options.html,
     };
     await sgMail.send(mailOptions);

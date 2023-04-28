@@ -29,7 +29,7 @@ const signToken = (id) =>
   });
 
 //creates token and attaches it to cookie.
-const createToken = (user, res) => {
+exports.createToken = (user, res) => {
   const token = signToken(user._id);
   res.token = token;
 };

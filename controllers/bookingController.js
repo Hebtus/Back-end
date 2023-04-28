@@ -3,7 +3,7 @@ const QRCode = require('qrcode');
 const { promisify } = require('util');
 // const crypto = require('crypto');
 // const Event = require('../models/eventModel');
-const util = require('util');
+const streamifier = require('streamifier');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const PromoCode = require('../models/promoCodeModel');
@@ -12,6 +12,8 @@ const Event = require('../models/eventModel');
 const User = require('../models/userModel');
 const sendEmail = require('../utils/emailWithImage');
 const AppError = require('../utils/appError');
+const cloudinary = require('../utils/cloudinary');
+
 /**
  * The Controller responsible for handling requests regarding Bookings
  * @module Controllers/bookingController
@@ -36,19 +38,25 @@ const createNotification = catchAsync(async ({ ...info }) => {
 });
 
 const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
-  const options = {
-    email: bookingEmail,
-    subject: 'Event reservation',
-    html: `<!DOCTYPE html>
-    <p>You Successfully booked the tickets you ordered.</p>
-    <p>To access event page kindly, scan the attached QR code.</p>
-    <p>Here is your QR code:</p><img src="${dataURI}">
-    <p>Thanks.</p>
-    <p>Hebtus team.</p>`,
-    // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
-    // image: dataURI,
-  };
-  await sendEmail(options);
+  const cloudUploadStream = cloudinary.uploader.upload_stream(
+    { folder: 'QRCodes' },
+    async (error, result) => {
+      const options = {
+        email: bookingEmail,
+        subject: 'Event reservation',
+        html: `<!DOCTYPE html>
+        <p>You Successfully booked the tickets you ordered.</p>
+        <p>To access event page kindly, scan the attached QR code.</p>
+        <p>Here is your QR code:</p><img src="${result.secure_url}">
+        <p>Thanks.</p>
+        <p>Hebtus team.</p>`,
+        // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
+        // image: dataURI,
+      };
+      await sendEmail(options);
+    }
+  );
+  streamifier.createReadStream(dataURI).pipe(cloudUploadStream);
 });
 
 const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
@@ -143,6 +151,8 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
   if (event.creatorID.toString() !== req.user._id.toString())
     return next(new AppError('You are not the creator of this event', 403));
   //check if event is published
+  if (event.draft)
+    return next(new AppError('You can not add attendee to draft event', 403));
 
   const attendee = new Booking(req.body); // Create a new attendee object
   attendee.userID = req.user._id; // Add creatorID
@@ -181,8 +191,6 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
 */
 
 exports.createBookings = catchAsync(async (req, res, next) => {
-  //check if event is published and not private!
-
   const { totalPrice, bookings } = await applyPromocode(
     req.body.promoCode,
     req.body.bookings

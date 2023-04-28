@@ -49,9 +49,10 @@ router.get(
     scope: ['profile', 'email'],
     session: false,
   }),
-  (req, res) => {
+  catchAsync(async (req, res, next) => {
+    console.log('req.user', req.user);
     res.redirect(`${process.env.FRONTEND_URL}/login`);
-  }
+  })
 );
 
 router.get(
@@ -65,11 +66,18 @@ router.get(
 router.get(
   '/login/google/callback',
   passport.authenticate('google', { failureRedirect: '/', session: false }),
-  (req, res) => {
+  catchAsync(async (req, res, next) => {
+    // console.log('req.user', req.user);
+    //can get req.user here
+    authenticationController.createToken(req.user, res);
+
+    const tempjwttoken = res.token;
+
     res.redirect(`${process.env.FRONTEND_URL}/login`);
-  }
+  })
 );
 
+//for cross
 const AuthenticateGoogle = catchAsync(async (req, res, next) => {
   if (!req.body.tokenId)
     return res.status(400).send('You must provide Google tokenId');
@@ -98,21 +106,85 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
 
 router.post('/login/google', AuthenticateGoogle);
 
-router.post('/login/facebook', async (req, res) => {
-  if (!req.body.email || !req.body.name)
-    return res.status(400).send('request body undefined');
-  var user = await User.findOne({ email: req.body.email });
-  if (!user) {
-    user = new User({
-      name: req.body.name,
-      email: req.body.email,
-      password: Math.random().toString().substr(2, 10),
-      accountConfirmation: 1,
-    });
-    await user.save();
-  }
+router.post(
+  '/login/facebook',
+  catchAsync(async (req, res, next) => {
+    if (!req.body.email || !req.body.name)
+      return res.status(400).send('request body undefined');
+    var user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      user = new User({
+        name: req.body.name,
+        email: req.body.email,
+        password: Math.random().toString().substr(2, 10),
+        accountConfirmation: 1,
+      });
+      await user.save();
+    }
 
-  authenticationController.createSendToken(user, 201, res);
-});
+    authenticationController.createSendToken(user, 201, res);
+  })
+);
+
+//for Web
+
+// const decodeJWT = async (token) => {
+//   const decoded = await promisify(jwt.verify)(
+//     token,
+//     process.env.JWT_SECRET
+//   ).catch((error) => {
+//     next(new AppError('Could not decode token.', 401));
+//     // Handle the error.
+//   });
+//   // })(token, process.env.JWT_SECRET);
+//   // 3) Check if user still exists
+//   const currentUser = await User.findById(decoded.id);
+//   if (!currentUser) {
+//     return next(
+//       new AppError(
+//         'The user belonging to this token does no longer exist.',
+//         401
+//       )
+//     );
+//   }
+
+//   // 4) Check if user changed password after the token was issued
+//   if (currentUser.changedPasswordAfter(decoded.iat)) {
+//     return next(
+//       new AppError('User recently changed password! Please log in again.', 401)
+//     );
+//   }
+//   //we'll see if we add changed pass after or just use changed at and compare hashoof kda
+//   // GRANT ACCESS TO PROTECTED ROUTE
+//   req.user = currentUser;
+// };
+
+// router.post(
+//   '/login/googleverify/:token',
+//   catchAsync(async (req, res, next) => {
+//     const jwtToken = req.params.token;
+//     const decoded = await promisify(jwt.verify)(
+//       jwtToken,
+//       process.env.JWT_SECRET
+//     );
+//   })
+// );
+
+// router.post('/login/facebookverify/:token', async (req, res) => {
+//   if (!req.body.email || !req.body.name)
+//     return res.status(400).send('request body undefined');
+//   var user = await User.findOne({ email: req.body.email });
+//   if (!user) {
+//     user = new User({
+//       name: req.body.name,
+//       email: req.body.email,
+//       password: Math.random().toString().substr(2, 10),
+//       accountConfirmation: 1,
+//     });
+//     await user.save();
+//   }
+
+//   authenticationController.createSendToken(user, 201, res);
+// });
 
 module.exports = router;

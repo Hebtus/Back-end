@@ -32,7 +32,8 @@ const sendEmail = async (options) => {
     // 3) Actually send the email
     await transporter.sendMail(mailOptions);
   } else if (process.env.NODE_ENV === 'production') {
-    console.log(process.env.SENDGRID_VERIFIED_EMAIL);
+    // console.log(process.env.SENDGRID_VERIFIED_EMAIL);
+    console.log('sending email in production');
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
     // 2) Define the email options
@@ -41,7 +42,7 @@ const sendEmail = async (options) => {
       to: options.email,
       subject: options.subject,
       text: options.message,
-      // html:
+      html: options.html,
     };
     await sgMail.send(mailOptions);
   }

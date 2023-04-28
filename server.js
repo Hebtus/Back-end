@@ -24,9 +24,11 @@ const DBstring =
     ? process.env.DATABASE_LOCAL
     : process.env.DATABASE_DEPLOY;
 
+const DBcheck =
+  process.env.NODE_ENV === 'development' ? 'LOCAL DB' : 'DEPLOYED DB';
 // Seeder(DBstring);
 
-console.log('connecting to ', DBstring);
+console.log('connecting to ', DBcheck);
 mongoose
   .connect(DBstring, {
     useNewUrlParser: true,

@@ -39,7 +39,8 @@ const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
   const options = {
     email: bookingEmail,
     subject: 'Event reservation',
-    html: `<p>You Successfully booked the tickets you ordered.</p>
+    html: `<!DOCTYPE html>
+    <p>You Successfully booked the tickets you ordered.</p>
     <p>To access event page kindly, scan the attached QR code.</p>
     <p>Here is your QR code:</p><img src="${dataURI}">
     <p>Thanks.</p>
@@ -141,6 +142,7 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
   if (!event) return next(new AppError('No event found with that ID', 404));
   if (event.creatorID.toString() !== req.user._id.toString())
     return next(new AppError('You are not the creator of this event', 403));
+  //check if event is published
 
   const attendee = new Booking(req.body); // Create a new attendee object
   attendee.userID = req.user._id; // Add creatorID
@@ -179,6 +181,8 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
 */
 
 exports.createBookings = catchAsync(async (req, res, next) => {
+  //check if event is published and not private!
+
   const { totalPrice, bookings } = await applyPromocode(
     req.body.promoCode,
     req.body.bookings
@@ -221,7 +225,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     );
   //TODO: send email to the user with the booking details and QR code
   if (res.statusCode === 200) {
-    console.log(req.body.eventID);
     await sendEmailWithQRcode(req, req.body.eventID, req.body.guestEmail);
   }
 });

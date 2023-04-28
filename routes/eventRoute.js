@@ -3,6 +3,7 @@ const authController = require('../controllers/authenticationController');
 const eventController = require('../controllers/eventController');
 const tickController = require('../controllers/ticketController');
 const bookingController = require('../controllers/bookingController');
+const promocodesController = require('../controllers/promoCodeController');
 const ticketRouter = require('./ticketRoute');
 const bookingRouter = require('./bookingRoute');
 
@@ -26,9 +27,11 @@ router.route('/').post(
   eventController.uploadEventPhoto,
   eventController.createEvent
 );
-router.get('/:id/bookings/CSV', bookingController.getBookingsCSV);
+router.get('/:id/bookings/csv', bookingController.getBookingsCSV);
+router.get('/:id/bookings', bookingController.getEventBookings);
 router.get('/:id/tickets', tickController.getEventTickets);
 router.get('/:id/sales', eventController.getEventSales);
+router.get('/:id/promocodes', promocodesController.getEventPromocodes);
 router
   .route('/:id')
   .get(eventController.getEvent)

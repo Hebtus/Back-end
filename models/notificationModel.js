@@ -12,10 +12,10 @@ const notificationSchema = new mongoose.Schema({
   eventName: {
     type: String,
     required: [true, 'An event must have a name.'],
-    unique: true,
+    //unique: true,
     trim: true,
     maxlength: [40, 'An event must have less or more than 40 characters'],
-    minlength: [10, 'An event must have less or equal than 10 characters'],
+    minlength: [1, 'An event must have less or equal than 10 characters'],
   },
 });
 

@@ -20,11 +20,6 @@ COPY . .
 EXPOSE 3001
 
 # Start the app using pm2
-CMD [ "pm2-runtime", "npm", "--", "start" ]
-
-
-#using this command instead of npm start
-#the pm2-runtime command is used instead of pm2 start to ensure that logs are displayed in the container output.
-#CMD ["pm2-runtime", "start", "server.js"]
-#To run the app in the background
-#CMD ["pm2-runtime", "start", "server.js", "--name", "my-app", "--no-daemon"]
+#CMD [ "pm2-runtime", "npm", "--", "start" ]
+# Start the app using pm2
+CMD ["pm2-runtime", "start", "server.js", "--watch", "--no-daemon"]

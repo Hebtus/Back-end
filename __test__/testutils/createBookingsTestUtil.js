@@ -76,3 +76,86 @@ exports.requestBody = async () => {
   reqBody2.gender = 'lol';
   return { reqBody1, reqBody2, reqBody3 };
 };
+
+exports.requestBody2 = async (creatorID) => {
+  let eventID;
+  let eventID2;
+  let ticket1ID;
+  let ticket2ID;
+
+  const event1 = await Event.create({
+    name: 'My Event',
+    startDate: '2023-05-01T00:00:00.000Z',
+    endDate: '2023-05-03T00:00:00.000Z',
+    locationName: 'My Event Location',
+    category: 'Music',
+    location: {
+      type: 'Point',
+      coordinates: [-73.935242, 40.73061],
+    },
+    creatorID: creatorID,
+  }).then((doc) => {
+    eventID = doc.id;
+  });
+  const event2 = await Event.create({
+    name: 'My Event 2',
+    startDate: '2023-05-01T00:00:00.000Z',
+    endDate: '2023-05-03T00:00:00.000Z',
+    locationName: 'My Event Location',
+    category: 'Music',
+    location: {
+      type: 'Point',
+      coordinates: [-73.935242, 40.73061],
+    },
+    creatorID: '6448c4c758a9a5b7a81240db',
+  }).then((doc) => {
+    eventID2 = doc.id;
+  });
+  const ticket1 = await Ticket.create({
+    eventID: eventID,
+    name: 'Premium',
+    type: 'VIP',
+    price: 100,
+    capacity: 20,
+    sellingStartTime: '2027-02-21 12:00:00',
+    sellingEndTime: '2028-02-22 12:00:00',
+  }).then((doc) => {
+    //console.log(doc);
+    ticket1ID = doc.id;
+  });
+  const ticket2 = await Ticket.create({
+    eventID: eventID2,
+    name: 'Trash',
+    type: 'VIP',
+    price: 100,
+    capacity: 20,
+    sellingStartTime: '2027-02-21 12:00:00',
+    sellingEndTime: '2028-02-22 12:00:00',
+  }).then((doc) => {
+    //console.log(doc);
+    ticket2ID = doc.id;
+  });
+
+  const reqBody1 = {
+    ticketID: ticket1ID,
+    eventID: eventID,
+    name: {
+      firstName: 'John',
+      lastName: 'Smither',
+    },
+    phoneNumber: '01030486357',
+    gender: 'Male',
+    guestEmail: 'canbeDifferentFromuserEmail@gmail.com',
+    price: 100,
+    quantity: 3,
+  };
+
+  const reqBody2 = { ...reqBody1 };
+
+  reqBody2.eventID = eventID2;
+  reqBody2.ticketID = ticket2ID;
+
+  const reqBody3 = { ...reqBody1 };
+  reqBody3.gender = 'lol';
+  return { reqBody1, reqBody2, reqBody3 };
+};

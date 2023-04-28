@@ -18,13 +18,20 @@ const AppError = require('../utils/appError');
  */
 
 const createNotification = catchAsync(async ({ ...info }) => {
-  const event = await Event.findById(info.eventID);
-  const creator = await User.findById(event.creatorID);
+  const creator = await User.findOne(info.creatorID);
+  const attendee = await User.findOne({ email: info.guestEmail });
+
+  //if there is no attendee with the entered email, then he isn't registered on the site
+  if (!attendee) {
+    console.log('no attendee with this email');
+    return;
+  }
+
   await Notification.create({
-    attendeeID: info.userID,
-    attendeeName: info.name,
+    attendeeID: attendee._id,
+    attendeeName: attendee.name,
     creatorName: creator.name,
-    eventName: event.name,
+    eventName: info.eventName,
   });
 });
 
@@ -125,14 +132,23 @@ exports.applyPromocode = applyPromocode;
 @throws {AppError} If any of the input body does mot meet the schema validations.
 */
 exports.addAttendee = catchAsync(async (req, res, next) => {
-  const attendee = new Booking(req.body); // Create a new attendee object
+  const event = await Event.findById(req.body.eventID);
 
+  if (!event) return next(new AppError('No event found with that ID', 404));
+  if (event.creatorID.toString() !== req.user._id.toString())
+    return next(new AppError('You are not the creator of this event', 403));
+
+  const attendee = new Booking(req.body); // Create a new attendee object
+  attendee.userID = req.user._id; // Add creatorID
   await attendee
     .save() // Save the attendee object
     .then(() => {
-      const { eventID, name, userID } = req.body;
-      createNotification({ eventID, name, userID });
-      return res.status('200').json({
+      const { guestEmail } = req.body;
+      console.log('email is ', guestEmail);
+      const eventName = event.name;
+      const creatorID = req.user._id;
+      createNotification({ eventName, creatorID, guestEmail });
+      return res.status(200).json({
         // Send successful response
         status: 'success',
         data: attendee,
@@ -220,18 +236,18 @@ exports.getBookingsCSV = catchAsync(async (req, res, next) => {
   const bookings = await Booking.find({ eventID: req.params.id });
   // write csv headers
   let csvData = [
-    'name',
-    'gender',
-    'phoneNumber',
-    'guestEmail',
-    'homeAdress',
-    'shippingAdress',
-    'price',
-    'purchasedOn',
-    'quantity',
-    'userID',
-    'ticketID',
-    'eventID',
+    'First Name',
+    'Last Name',
+    'Gender',
+    'PhoneNumber',
+    'GuestEmail',
+    'HomeAdress',
+    'Shipping Adress',
+    'Price',
+    'Purchased On',
+    'Quantity',
+    'UserID',
+    'TicketID',
   ].join(',');
   csvData += '\n';
 
@@ -239,7 +255,8 @@ exports.getBookingsCSV = catchAsync(async (req, res, next) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const booking of bookings) {
     const newData = [
-      booking.name,
+      booking.name.firstName,
+      booking.name.lastName,
       booking.gender,
       booking.phoneNumber,
       booking.guestEmail,
@@ -250,7 +267,6 @@ exports.getBookingsCSV = catchAsync(async (req, res, next) => {
       booking.quantity,
       booking.userID,
       booking.ticketID,
-      booking.eventID,
     ].join(',');
     csvData += newData;
     csvData += '\n';

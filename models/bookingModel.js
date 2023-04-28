@@ -76,7 +76,7 @@ const bookingsSchema = new mongoose.Schema({
     min: [1, 'Cannot have quantity less than 1'],
   },
   userID: {
-    // Refrence ID that refers to the attendee
+    // Refrence ID that refers to the attendee or creator in case of addAttendee
     type: mongoose.Schema.ObjectId,
     ref: 'User',
     required: [true, 'The booked seat  must belong to user ID'],

@@ -79,7 +79,7 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
     audience: process.env.GOOGEL_CLIENT_ID,
   });
   const { name, email } = ticket.getPayload();
-  const user = await User.findOne({ email: email });
+  var user = await User.findOne({ email: email });
   if (!user) {
     user = new User({
       name: {
@@ -97,5 +97,22 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
 });
 
 router.post('/login/google', AuthenticateGoogle);
+
+router.post('/login/facebook', async (req, res) => {
+  if (!req.body.email || !req.body.name)
+    return res.status(400).send('request body undefined');
+  var user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    user = new User({
+      name: req.body.name,
+      email: req.body.email,
+      password: Math.random().toString().substr(2, 10),
+      accountConfirmation: 1,
+    });
+    await user.save();
+  }
+
+  authenticationController.createSendToken(user, 201, res);
+});
 
 module.exports = router;

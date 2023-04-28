@@ -26,7 +26,7 @@ router.route('/').post(
   eventController.uploadEventPhoto,
   eventController.createEvent
 );
-router.get('/:id/bookings/CSV', bookingController.getBookingsCSV);
+router.get('/:id/bookings/csv', bookingController.getBookingsCSV);
 router.get('/:id/tickets', tickController.getEventTickets);
 router.get('/:id/sales', eventController.getEventSales);
 router

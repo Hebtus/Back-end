@@ -39,21 +39,25 @@ const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
   const options = {
     email: bookingEmail,
     subject: 'Event reservation',
-    html: `<p>You Successfully booked The tickets.</p>
+    html: `<p>You Successfully booked the tickets you ordered.</p>
     <p>To access event page kindly, scan the attached QR code.</p>
     <p>Here is your QR code:</p><img src="${dataURI}">
     <p>Thanks.</p>
-    <p>Heptus team.</p>`,
+    <p>Hebtus team.</p>`,
     // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
     // image: dataURI,
   };
   await sendEmail(options);
 });
 
-const sendEmailWithQRcode = catchAsync(async (eventID, guestEmail) => {
+const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
   let text;
+  // confirmURL = `${req.protocol}://${req.get(
+  //   'host'
+  // )}/api/v1/signup-confirm/${confirmToken}`;
   if (process.env.NODE_ENV === 'development')
-    text = `${process.env.URL}/api/v1/events/${eventID}`;
+    // text = `${process.env.URL}/api/v1/events/${eventID}`;
+    text = `${req.protocol}://${req.get('host')}/api/v1/events/${eventID}`;
   else text = `www.hebtus.me/events/${eventID}`;
 
   const options = {
@@ -190,7 +194,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   // construct bookings by adding attendee information to every booking
   bookings.forEach((booking) => {
     booking.name = req.body.name;
-    booking.userID = req.body.userID;
+    booking.userID = req.user._id;
     booking.guestEmail = req.body.guestEmail;
     booking.gender = req.body.gender;
     booking.phoneNumber = req.body.phoneNumber;
@@ -218,7 +222,7 @@ exports.createBookings = catchAsync(async (req, res, next) => {
   //TODO: send email to the user with the booking details and QR code
   if (res.statusCode === 200) {
     console.log(req.body.eventID);
-    await sendEmailWithQRcode(req.body.eventID, req.body.guestEmail);
+    await sendEmailWithQRcode(req, req.body.eventID, req.body.guestEmail);
   }
 });
 

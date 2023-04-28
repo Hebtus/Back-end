@@ -357,3 +357,25 @@ exports.getAllPromoCodes = catchAsync(async (req, res, next) =>
 //endregion
 
 // console.log('promoCodes is', promoCodes);
+
+exports.getEventPromocodes = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 20;
+  const skip = (page - 1) * limit;
+  const eventId = req.params.id;
+
+  const promocodes = await promoCode
+    .find({ eventID: eventId })
+    .skip(skip)
+    .limit(limit);
+  if (!promocodes) {
+    return res.status(404).json({ status: 'fail', message: 'invalid eventID' });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      promocodes,
+    },
+  });
+});

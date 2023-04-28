@@ -284,3 +284,24 @@ exports.getBookingsCSV = catchAsync(async (req, res, next) => {
     .status(200)
     .send(csvData);
 });
+
+exports.getEventBookings = catchAsync(async (req, res, next) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 20;
+  const skip = (page - 1) * limit;
+  const eventId = req.params.id;
+
+  const bookings = await Booking.find({ eventID: eventId })
+    .skip(skip)
+    .limit(limit);
+  if (!bookings) {
+    return res.status(404).json({ status: 'fail', message: 'invalid eventID' });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      bookings,
+    },
+  });
+});

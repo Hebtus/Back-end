@@ -63,7 +63,7 @@ router.use(authController.protect);
 //#endregion
 
 router.get('/logout', authController.logout);
-router.patch('/resetpassword/:token', authController.resetPassword);
+router.patch('/resetpassword/', authController.resetPassword);
 
 //router.get('/resetpassword/:token', authController.resetPasswordForm);
 

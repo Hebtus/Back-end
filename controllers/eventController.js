@@ -231,6 +231,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
  * @returns {object} -returns the res object
  */
 exports.createEvent = catchAsync(async (req, res, next) => {
+  console.log('reached create event route');
   const imageFile = req.file;
   // console.log('imageFile', imageFile);
   // console.log('req image', req.image);

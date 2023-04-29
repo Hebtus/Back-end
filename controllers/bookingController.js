@@ -82,7 +82,6 @@ const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
     sendBookingMail(guestEmail, dataURI);
 
     // const dataURI = await QRCode.toDataURL(text, options);
-    // //console.log(`${dataURI} lol`);
     // return Promise.resolve(dataURI);
   } catch (err) {
     console.error(err);
@@ -160,7 +159,6 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
     .save() // Save the attendee object
     .then(() => {
       const { guestEmail } = req.body;
-      console.log('email is ', guestEmail);
       const eventName = event.name;
       const creatorID = req.user._id;
       createNotification({ eventName, creatorID, guestEmail });
@@ -212,8 +210,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     booking.phoneNumber = req.body.phoneNumber;
     booking.eventID = req.body.eventID;
   });
-  //console.log(bookings);
-  //console.log(bookings);
   //Save bookings to database
   await Booking.create(bookings)
     .then(() =>

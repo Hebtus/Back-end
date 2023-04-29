@@ -291,7 +291,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       .then(() =>
         res.status(200).json({
           status: 'success',
-          message: 'event created successfully',
+          message: 'Event created successfully',
         })
       )
       //return
@@ -305,7 +305,6 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   }
 });
 
-//TODO: Add URL here
 exports.getEvent = catchAsync(async (req, res, next) => {
   //if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
   // Yes, it's a valid ObjectId, proceed with `findById` call.

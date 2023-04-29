@@ -217,7 +217,7 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
       message: 'No event found with this id ',
     });
   } else if (!event.creatorID.equals(req.user._id)) {
-    res.status(404).json({
+    res.status(401).json({
       status: 'fail',
       message: 'You cannot access events that are not yours ',
     });
@@ -245,7 +245,7 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'event deleted successfully',
+      message: 'Event deleted successfully',
     });
   }
   next();

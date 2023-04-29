@@ -244,7 +244,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   }
   res.status(200).json({
     status: 'success',
-    message: 'PromoCode created Successfully.',
+    message: 'PromoCodes created Successfully.',
   });
 });
 

@@ -1,59 +1,59 @@
-// const request = require('supertest');
-// const dotenv = require('dotenv');
-// const mongoose = require('mongoose');
-// const User = require('../../models/userModel');
-// const app = require('../../app');
-// const Event = require('../../models/eventModel');
-// const loginConfirmedUser = require('../testutils/loginConfirmedUser');
-// const createConfirmedUser = require('../testutils/createConfirmedUser');
+const request = require('supertest');
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const User = require('../../models/userModel');
+const app = require('../../app');
+const Event = require('../../models/eventModel');
+const loginConfirmedUser = require('../testutils/loginConfirmedUser');
+const createConfirmedUser = require('../testutils/createConfirmedUser');
 
-test('', () => {});
+// test('', () => {});
 
-// dotenv.config({ path: './config.env' });
+dotenv.config({ path: './config.env' });
 
-// const DBstring = process.env.TEST_DATABASE;
+const DBstring = process.env.TEST_DATABASE;
+jest.setTimeout(20000);
+beforeAll(async () => {
+  // await User.deleteMany();
+  console.log('testDb is ', process.env.TEST_DATABASE);
+  await mongoose
+    .connect(DBstring, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => {
+      console.log('TestDB is connected successfuly!');
+    });
+  await mongoose.connection.db.dropDatabase();
+});
 
-// beforeAll(async () => {
-//   // await User.deleteMany();
-//   console.log('testDb is ', process.env.TEST_DATABASE);
-//   await mongoose
-//     .connect(DBstring, {
-//       useNewUrlParser: true,
-//       useUnifiedTopology: true,
-//     })
-//     .then(() => {
-//       console.log('TestDB is connected successfuly!');
-//     });
-//   await mongoose.connection.db.dropDatabase();
-// });
+test('Check created successfully', async () => {
+  const user = await createConfirmedUser.createTestUser();
+  const jwtToken = await loginConfirmedUser.loginUser();
 
-// test('Check created successfully', async () => {
-//   const user = await createConfirmedUser.createTestUser();
-//   const jwtToken = await loginConfirmedUser.loginUser();
+  const filePath = `${__dirname}/testFiles/testimg.jpg`;
+  console.log('filePath is ', filePath);
+  const res = await request(app)
+    .post('/api/v1/events')
+    // .attach('image', './testFiles/testimg.jpg')
+    .attach('image', filePath)
+    .set('authorization', `Bearer ${jwtToken}`)
+    .field('name', 'loleventxd')
+    .field('startDate', Date.now() + 1000000)
+    .field('endDate', Date.now() + 1500000)
+    .field('privacy', false)
+    // .field('password', '')
+    .field('draft', false)
+    .field('category', 'Music')
+    .field('locationName', 'Cairo University')
+    .field('location', '31.2107164, 30.0246686')
+    .expect(200);
+  //   expect(res.body.message).toMatch('event created successfully');
+});
 
-//   const filePath = `${__dirname}/testFiles/testimg.jpg`;
-
-//   const res = await request(app)
-//     .post('/api/v1/events')
-//     .attach('file', filePath)
-//     .set('authorization', `Bearer ${jwtToken}`)
-//     .send({
-//       name: 'loleventxd',
-//       startDate: '2023-05-01T00:00:00.000Z',
-//       endDate: '2023-05-03T00:00:00.000Z',
-//       privacy: false,
-//       password: '',
-//       draft: false,
-//       category: 'Music',
-//       locationName: 'Cairo University',
-//     })
-//     .expect(200);
-//   expect(res.body.message).toMatch('event created successfully');
-// });
-
-// afterAll(async () => {
-//   // Delete all test data and close the database connection
-//   await User.deleteMany();
-//   await Event.deleteMany();
-//   await mongoose.connection.close();
-// });
+afterAll(async () => {
+  // Delete all test data and close the database connection
+  await User.deleteMany();
+  await Event.deleteMany();
+  await mongoose.connection.close();
+});

@@ -347,22 +347,23 @@ exports.getEventwithPassword = catchAsync(async (req, res, next) => {
     .update(req.body.password)
     .digest('hex');
   //console.log(password);
-  const event = await Event.findOne({ password }).select({
+  const event = await Event.findOne({ _id: req.params.id }).select({
     //Note : I did not put them in the pre find middleware because not all
     // find requests will deselect the same fields ex: get event by crearot will retrieve all fields
     creatorID: 0,
     ticketsSold: 0,
     privacy: 0,
     draft: 0,
-    password: 0,
+    // password: 0,
     goPublicDate: 0,
   });
-  if (!event) {
+  if (event.password !== password) {
     return res.status(404).json({
       status: 'fail',
       message: 'Invalid password',
     });
   }
+  event.password = undefined;
   return res.status(200).json({
     status: 'success',
     data: event,

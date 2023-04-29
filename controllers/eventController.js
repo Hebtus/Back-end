@@ -27,7 +27,10 @@ const makeprivateEventsPublic = async () => {
 const multerTempStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, callback) => {
-  if (file.mimetype.startsWith('image')) {
+  if (
+    file.mimetype.startsWith('image') ||
+    file.mimetype === 'application/octet-stream' //for cross platform compatibility
+  ) {
     callback(null, true);
   } else {
     callback(

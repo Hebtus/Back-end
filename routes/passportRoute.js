@@ -16,6 +16,7 @@ const authenticationController = require('../controllers/authenticationControlle
 const catchAsync = require('../utils/catchAsync');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const fetch = require('node-fetch');
 
 dotenv.config({ path: './config.env' });
 goolgePassportAuth.googleAuth(passport);

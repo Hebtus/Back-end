@@ -50,7 +50,7 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
  */
 router.post('/login', authController.login);
 router.post('/forgotpassword', authController.forgotPassword);
-
+router.patch('/resetpassword/', authController.resetPassword);
 //from here down add requests that are available after you are logged in only
 //remeber to add the berarer token to the autherization in postman
 // router.use((req, res, next) => {
@@ -63,7 +63,6 @@ router.use(authController.protect);
 //#endregion
 
 router.get('/logout', authController.logout);
-router.patch('/resetpassword/', authController.resetPassword);
 
 //router.get('/resetpassword/:token', authController.resetPasswordForm);
 

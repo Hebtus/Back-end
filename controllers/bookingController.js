@@ -3,7 +3,7 @@ const QRCode = require('qrcode');
 const { promisify } = require('util');
 // const crypto = require('crypto');
 // const Event = require('../models/eventModel');
-const util = require('util');
+const streamifier = require('streamifier');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const PromoCode = require('../models/promoCodeModel');
@@ -12,6 +12,8 @@ const Event = require('../models/eventModel');
 const User = require('../models/userModel');
 const sendEmail = require('../utils/emailWithImage');
 const AppError = require('../utils/appError');
+const cloudinary = require('../utils/cloudinary');
+
 /**
  * The Controller responsible for handling requests regarding Bookings
  * @module Controllers/bookingController
@@ -54,18 +56,25 @@ const createNotification = catchAsync(async ({ ...info }) => {
 @throws {err} If there is any internal error
 */
 const sendBookingMail = catchAsync(async (bookingEmail, dataURI) => {
-  const options = {
-    email: bookingEmail,
-    subject: 'Event reservation',
-    html: `<p>You Successfully booked the tickets you ordered.</p>
-    <p>To access event page kindly, scan the attached QR code.</p>
-    <p>Here is your QR code:</p><img src="${dataURI}">
-    <p>Thanks.</p>
-    <p>Hebtus team.</p>`,
-    // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
-    // image: dataURI,
-  };
-  await sendEmail(options);
+  const cloudUploadStream = cloudinary.uploader.upload_stream(
+    { folder: 'QRCodes' },
+    async (error, result) => {
+      const options = {
+        email: bookingEmail,
+        subject: 'Event reservation',
+        html: `<!DOCTYPE html>
+        <p>You Successfully booked the tickets you ordered.</p>
+        <p>To access event page kindly, scan the attached QR code.</p>
+        <p>Here is your QR code:</p><img src="${result.secure_url}">
+        <p>Thanks.</p>
+        <p>Hebtus team.</p>`,
+        // message: `You Successfully booked The tickets. To access event page kindly scan the attached QR code.  \n Thanks. \n Heptus team. `,
+        // image: dataURI,
+      };
+      await sendEmail(options);
+    }
+  );
+  streamifier.createReadStream(dataURI).pipe(cloudUploadStream);
 });
 
 /** 
@@ -100,7 +109,6 @@ const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
     sendBookingMail(guestEmail, dataURI);
 
     // const dataURI = await QRCode.toDataURL(text, options);
-    // //console.log(`${dataURI} lol`);
     // return Promise.resolve(dataURI);
   } catch (err) {
     console.error(err);
@@ -168,6 +176,9 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
   if (!event) return next(new AppError('No event found with that ID', 404));
   if (event.creatorID.toString() !== req.user._id.toString())
     return next(new AppError('You are not the creator of this event', 403));
+  //check if event is published
+  if (event.draft)
+    return next(new AppError('You can not add attendee to draft event', 403));
 
   const attendee = new Booking(req.body); // Create a new attendee object
   attendee.userID = req.user._id; // Add creatorID
@@ -175,7 +186,6 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
     .save() // Save the attendee object
     .then(() => {
       const { guestEmail } = req.body;
-      console.log('email is ', guestEmail);
       const eventName = event.name;
       const creatorID = req.user._id;
       createNotification({ eventName, creatorID, guestEmail });
@@ -227,8 +237,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     booking.phoneNumber = req.body.phoneNumber;
     booking.eventID = req.body.eventID;
   });
-  //console.log(bookings);
-  //console.log(bookings);
   //Save bookings to database
   await Booking.create(bookings)
     .then(() =>
@@ -248,7 +256,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
     );
   //TODO: send email to the user with the booking details and QR code
   if (res.statusCode === 200) {
-    console.log(req.body.eventID);
     await sendEmailWithQRcode(req, req.body.eventID, req.body.guestEmail);
   }
 });

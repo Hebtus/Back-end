@@ -20,6 +20,8 @@ COPY . .
 EXPOSE 3001
 
 # Start the app using pm2
-#CMD [ "pm2-runtime", "npm", "--", "start" ]
+CMD [ "pm2-runtime", "npm", "--", "start", "--watch" ]
 # Start the app using pm2
-CMD ["pm2-runtime", "start", "server.js", "--watch", "--no-daemon"]
+#CMD ["pm2-runtime", "start", "server.js", "--watch", "--no-daemon"]
+
+

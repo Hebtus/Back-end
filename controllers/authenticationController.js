@@ -1,3 +1,4 @@
+const dotenv = require('dotenv');
 const crypto = require('crypto');
 //const passport = require('passport');
 const jwt = require('jsonwebtoken');
@@ -9,6 +10,9 @@ const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
 const EmailConfirm = require('../models/emailConfirmModel');
 const PasswordReset = require('../models/passwordResetModel');
+
+dotenv.config({ path: '.config.env' });
+
 /**
  * The Controller responsible for handling authentication Requests
  * @module Controllers/authenticationController
@@ -25,14 +29,14 @@ const signToken = (id) =>
   });
 
 //creates token and attaches it to cookie.
-const createToken = (user, res) => {
+exports.createToken = (user, res) => {
   const token = signToken(user._id);
   res.token = token;
 };
 
 //creates token, attaches it to cookie and sends it as a standard responsee
-const createSendToken = (user, statusCode, res) => {
-  createToken(user, res);
+exports.createSendToken = (user, statusCode, res) => {
+  exports.createToken(user, res);
   // res.cookie('jwt', token, cookieOptions);
 
   // Remove password from output
@@ -55,6 +59,7 @@ const createSendToken = (user, statusCode, res) => {
  */
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
+  console.log('entered protection');
   let token;
   if (
     req.headers.authorization &&
@@ -62,10 +67,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
+  if (req.body.token) token = req.body.token;
   if (req.headers.token) token = req.headers.token;
-  if (req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
 
   if (!token) {
     return next(
@@ -74,6 +77,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // 2) Verification token
 
+  //still needs to handle invalid token error tho I think
   const decoded = await promisify(jwt.verify)(
     token,
     process.env.JWT_SECRET
@@ -124,9 +128,8 @@ const SendConfirmationEmail = async (user, req, res, next) => {
     console.log('sending link email in production');
     confirmURL = `${process.env.BACKEND_URL}/signup-confirm/${confirmToken}`;
   }
-
-  const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}.\n`;
-
+  const message = `Thank you for signing up! To complete creating your account please verify your email address: ${confirmURL}\n`;
+  console.log('sent message to user is ', message);
   try {
     await sendEmail({
       email: user.email,
@@ -211,7 +214,6 @@ exports.signup = catchAsync(async (req, res, next) => {
       status: 'fail',
       message: 'Password and confirm Passwords do not match!',
     });
-    // console.log('lolxd');
   }
 
   //create user
@@ -234,7 +236,7 @@ exports.signup = catchAsync(async (req, res, next) => {
  */
 exports.confirmEmail = catchAsync(async (req, res, next) => {
   // // 1) Get user based on the token
-  // console.log('Entered Confirm email route');
+  console.log('reached confirm email route');
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.confirmationToken)
@@ -257,8 +259,6 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   //delete confirmation (if the code reaches here aslun??? )
   await EmailConfirm.deleteOne(emailConfirmationDoc);
   // // 4) Log the user in, send JWT
-  // createSendToken(user, 200, req, res);
-  // createSendToken(user, 200, res);
   const redirectURL = `${process.env.FRONTEND_URL}/login#`;
   res.redirect(redirectURL);
 });
@@ -272,14 +272,9 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.login = catchAsync(async (req, res, next) => {
-  console.log('Entered login route');
   const { email, password } = req.body;
-  // console.log(req);
-  // console.log(req.body);
-  // console.log(email, password);
   // 1) Check if email and password exist
   if (!email || !password) {
-    // console.log('Wlahy 7aram');
     return res.status(401).json({
       status: 'fail',
       message: 'Please provide email and password!',
@@ -305,11 +300,10 @@ exports.login = catchAsync(async (req, res, next) => {
     // next();
   }
 
-  // console.log('user is ', user);
   // await user.save({ validateBeforeSave: 0 }); //to handle password changed at
   await user.save(); //to handle password changed at
   // 4) If everything ok, send token to client
-  createSendToken(user, 200, res);
+  exports.createSendToken(user, 200, res);
 });
 
 /**
@@ -321,12 +315,6 @@ exports.login = catchAsync(async (req, res, next) => {
  * @returns {object} - Returns the response object
  */
 exports.logout = catchAsync(async (req, res, next) => {
-  //overwrite cookie at client side and set it to expire
-  res.cookie('jwt', 'loggedout', {
-    // expires: new Date(Date.now() + 500),
-    expires: new Date(Date.now() - 10 * 1000), //set expiry date to time in past
-    httpOnly: true,
-  });
   res
     .status(200)
     .json({ status: 'success', message: 'Successfully logged out' });
@@ -367,7 +355,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 2) Create random reset token
   const resetToken = await PasswordReset.createResetPasswordToken(user._id);
-
   //3) send the reset token to the user email address
   let resetURL;
   if (process.env.NODE_ENV === 'development') {
@@ -378,7 +365,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   }
 
-  const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  const message = `Forgot your password lol ? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL} \nIf you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: user.email,
@@ -415,6 +402,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
  */
 exports.resetPassword = catchAsync(async (req, res, next) => {
   //1) Get user based on token
+  console.log('entered reset pass');
+
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.body.resetToken)
@@ -443,13 +432,14 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     });
   user.password = req.body.password;
   user.passwordChangedAt = Date.now();
-  passwordResetDoc.passwordResetTokenExpiry = undefined;
-  passwordResetDoc.passwordResetToken = undefined;
+  await PasswordReset.deleteOne(passwordResetDoc);
+  // passwordResetDoc.passwordResetTokenExpiry = undefined;
+  // passwordResetDoc.passwordResetToken = undefined;
   await user.save();
   //4) Send JWT to let the user log in
   //A Decision needs to be done here according to complications
   //and discussions with Frontend. -Joseph
-  createSendToken(user, 200, res);
+  exports.createSendToken(user, 200, res);
   await passwordResetDoc.save();
 });
 

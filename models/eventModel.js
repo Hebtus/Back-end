@@ -5,7 +5,7 @@ const locationSchema = require('./shared/locationModel');
 // const bcrypt = require('bcryptjs');
 
 const eventSchema = new mongoose.Schema({
-  //////////////////*** Basic Info ***/////////////////////////
+  ////////////////////////////****Basic info****/////////////////////
   name: {
     type: String,
     required: [true, 'An event must have a name.'],
@@ -70,6 +70,21 @@ const eventSchema = new mongoose.Schema({
     ],
   },
   // TODO: Add validators on tag length
+  tags: {
+    type: [String],
+    default: [],
+    validator: function (array) {
+      return array.every(
+        (v) => typeof v === 'string' && v.length > 0 && v.length < 80
+      );
+    },
+    required: [true, 'An event must have a category.'],
+  },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: 400,
+  },
   tags: {
     type: [String],
     default: [],

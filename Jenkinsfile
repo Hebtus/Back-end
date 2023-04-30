@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "test:${BUILD_NUMBER}"
-        CONTAINER_NAME = "test"
+        IMAGE_NAME = "server:${BUILD_NUMBER}"
+        CONTAINER_NAME = "server"
+        CONFIG_PATH = "/home/azureuser/data/config.env"
     }
 
     stages {
@@ -18,8 +19,9 @@ pipeline {
             steps {
                 sh "docker stop ${CONTAINER_NAME} || true"
                 sh "docker rm -f ${CONTAINER_NAME} || true"
-                sh "docker run -p 3001:3001 -d --name ${CONTAINER_NAME} --restart=always ${IMAGE_NAME}"
-                sh "docker logs ${CONTAINER_NAME} > container_logs.txt"
+                sh "docker run -d --name ${CONTAINER_NAME} -p 3001:3001 \
+                    -v ${CONFIG_PATH}:/app/config.env --restart=always ${IMAGE_NAME}"
+                
             }
         }
     }

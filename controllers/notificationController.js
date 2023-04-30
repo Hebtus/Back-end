@@ -21,12 +21,12 @@ exports.getNotification = async (req, res) => {
   if (!notification) {
     return res
       .status(404)
-      .json({ status: 'fail', message: 'no notifications currently' });
+      .json({ status: 'fail', message: 'No notifications currently' });
   }
   res.status(200).json({
     status: 'success',
     data: {
-      notification,
+      notification: notification,
     },
   });
   await Notification.deleteOne({ attendeeID: req.user._id });

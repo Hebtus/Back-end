@@ -12,40 +12,23 @@ const app = require('./app');
 //Load config
 dotenv.config({ path: '.config.env' });
 const Seeder = require('./seeds/seeder');
-// const cors = require('cors');
 const User = require('./models/userModel');
 const Event = require('./models/eventModel');
 const Tickets = require('./models/ticketModel');
 const Booking = require('./models/bookingModel');
 
-// const corsOptions = {
-//   origin: ['http://localhost:62383'],
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//   // allowedHeaders: 'Token,Content-Type,Authorization,X-Forwarded-For',
-//   credentials: true,
-//   preflightContinue: true,
-//   optionsSuccessStatus: 204,
-// };
-// app.use('*', cors(corsOptions));
-
 //Database connection
-
-// const now = new Date(Date.now());
-// console.log('NowUTC-ed is ', now.toUTCString()); //output : Wed, 05 Apr 2023 15:44:40 GMT
-// console.log('But now is ', now); //output 2023-04-05T15:44:40.984Z (ISO format)
-// const nowUTC = new Date(now.toUTCString());
-// console.log('Now UTC is ', nowUTC); //output 2023-04-05T15:44:40.984Z (ISO format)
-// console.log(typeof now);
-// now = now.toUTCString();
 
 const DBstring =
   process.env.NODE_ENV === 'development'
     ? process.env.DATABASE_LOCAL
     : process.env.DATABASE_DEPLOY;
 
+const DBcheck =
+  process.env.NODE_ENV === 'development' ? 'LOCAL DB' : 'DEPLOYED DB';
 // Seeder(DBstring);
 
-console.log('connecting to ', DBstring);
+console.log('connecting to ', DBcheck);
 mongoose
   .connect(DBstring, {
     useNewUrlParser: true,

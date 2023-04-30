@@ -81,7 +81,7 @@ exports.getEventTickets = async (req, res) => {
   res.status(200).json({
     status: 'success',
     data: {
-      ticket,
+      tickets: ticket,
     },
   });
 };
@@ -129,7 +129,7 @@ exports.editTicket = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: {
-      user: updatedTicket,
+      ticket: updatedTicket,
     },
   });
 });

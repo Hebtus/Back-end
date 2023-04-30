@@ -26,6 +26,7 @@ beforeAll(async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+  await mongoose.connection.db.dropDatabase();
   const testUser = await createConfirmedUser.createTestUser();
   testEvent1 = {
     name: 'loleventxd',

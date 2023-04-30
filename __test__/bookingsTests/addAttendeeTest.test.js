@@ -39,7 +39,6 @@ beforeAll(async () => {
   reqBody1 = requestBodies.reqBody1;
   reqBody2 = requestBodies.reqBody2;
   reqBody3 = requestBodies.reqBody3;
-  //console.log(reqBody3, 'LLLLLLLLLLLLLLOLLLLLLLLLLLLLLL');
 });
 beforeEach(() => {});
 

@@ -177,8 +177,11 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
   if (event.creatorID.toString() !== req.user._id.toString())
     return next(new AppError('You are not the creator of this event', 403));
   //check if event is published
-  if (event.draft)
+  if (event.draft === true || event.draft === '1') {
+    console.log('lol bgf');
+    console.log(event);
     return next(new AppError('You can not add attendee to draft event', 403));
+  }
 
   const attendee = new Booking(req.body); // Create a new attendee object
   attendee.userID = req.user._id; // Add creatorID

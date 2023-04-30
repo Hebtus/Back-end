@@ -84,7 +84,7 @@ exports.requestBody2 = async (creatorID) => {
   let ticket2ID;
 
   const event1 = await Event.create({
-    name: 'My Event',
+    name: 'My Eventus',
     startDate: '2023-05-01T00:00:00.000Z',
     endDate: '2023-05-03T00:00:00.000Z',
     locationName: 'My Event Location',
@@ -93,6 +93,7 @@ exports.requestBody2 = async (creatorID) => {
       type: 'Point',
       coordinates: [-73.935242, 40.73061],
     },
+    draft: 0,
     creatorID: creatorID,
   }).then((doc) => {
     eventID = doc.id;

@@ -27,6 +27,8 @@ beforeAll(async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+  await mongoose.connection.db.dropDatabase();
+
   testUser = await createConfirmedUser.createTestUser();
   jwtToken = await loginConfirmedUser.loginUser();
   // Create a test event and save to the database

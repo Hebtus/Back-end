@@ -26,7 +26,7 @@ beforeAll(async () => {
 test('Check correct returned not', async () => {
   const testUser = await createConfirmedUser.createTestUser();
   const jwtToken = await loginConfirmedUser.loginUser();
-  
+
   const newNotification = await Notification.create({
     attendeeID: testUser._id,
     attendeeName: { firstName: 'Yasmin', lastName: 'Hashem' },
@@ -46,5 +46,6 @@ afterAll(async () => {
   await Event.deleteMany();
   await Ticket.deleteMany();
   await Booking.deleteMany();
+  await Notification.deleteMany();
   await mongoose.connection.close();
 });

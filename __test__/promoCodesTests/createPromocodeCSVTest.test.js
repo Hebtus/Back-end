@@ -9,6 +9,7 @@ const Booking = require('../../models/bookingModel');
 const loginConfirmedUser = require('../testutils/loginConfirmedUser');
 const createConfirmedUser = require('../testutils/createConfirmedUser');
 const PromoCode = require('../../models/promoCodeModel');
+const { string } = require('yargs');
 dotenv.config({ path: './config.env' });
 
 const DBstring = process.env.TEST_DATABASE;
@@ -18,6 +19,8 @@ let testEvent;
 var testUser;
 var jwtToken;
 var testEventID;
+var filePath;
+var promocodes;
 beforeAll(async () => {
   // Connect to the test database
   await mongoose.connect(DBstring, {
@@ -39,46 +42,30 @@ beforeAll(async () => {
   await testEvent.save();
   testEventID = testEvent._id;
 });
-test('check discount promocode created successfully', async () => {
+test('check invalid csv file sent', async () => {
+  filePath = `${__dirname}/testFiles/invalidTest.csv`;
+  console.log(testEventID.toString());
   const res = await request(app)
-    .post('/api/v1/promocodes')
+    .post('/api/v1/promocodes/csv')
+    .attach('csvFile', filePath)
     .set('authorization', `Bearer ${jwtToken}`)
-    .send({
-      eventID: testEventID,
-      codeName: 'testcode',
-      discount: 10,
-      limits: 10,
-      discountOrPercentage: 1,
-    })
-    .expect(200);
-});
-
-test('check percentage promocode with same code', async () => {
-  const res = await request(app)
-    .post('/api/v1/promocodes')
-    .set('authorization', `Bearer ${jwtToken}`)
-    .send({
-      eventID: testEventID,
-      codeName: 'testcode',
-      percentage: 10,
-      limits: 10,
-      discountOrPercentage: 0,
-    })
+    .field('eventID', testEventID.toString())
     .expect(500);
+  promocodes = await PromoCode.find();
+  expect(promocodes.length).toBe(0);
 });
 
-test('check percentage promocode with another code', async () => {
+test('check valid file ', async () => {
+  const filePath = `${__dirname}/testFiles/valid.csv`;
+
   const res = await request(app)
-    .post('/api/v1/promocodes')
+    .post('/api/v1/promocodes/csv')
+    .attach('csvFile', filePath)
+    .field('eventID', testEventID.toString())
     .set('authorization', `Bearer ${jwtToken}`)
-    .send({
-      eventID: testEventID,
-      codeName: 'anothercode',
-      percentage: 10,
-      limits: 10,
-      discountOrPercentage: 0,
-    })
     .expect(200);
+  const promocodes = await PromoCode.find();
+  expect(promocodes.length).toEqual(3);
 });
 
 afterAll(async () => {

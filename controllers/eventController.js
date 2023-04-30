@@ -139,47 +139,67 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   }
 
   if (req.query.free && goQuery) {
-    //find events which have free tickets
-    eventsData = await Event.find({
-      privacy: false,
-      draft: false,
-      location: {
-        $near: {
-          $geometry: { type: 'Point', coordinates: [longitude, latitude] },
-          $maxDistance: 50 * 1000, //assume 50 km radius
+    eventsData = await Event.aggregate([
+      //////pipeline stages//////
+      //geoNear must be the first stage
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [longitude, latitude] },
+          includeLocs: 'location',
+          maxDistance: 50 * 1000, //assume 50 km radius
+          distanceField: 'distance',
+          spherical: true,
+          // geometry: { type: 'Point', coordinates: [longitude, latitude] },
         },
       },
-    })
-      .select(Filter)
+      //match event by rest of conditions
+      {
+        $match: {
+          privacy: false,
+          draft: false,
+        },
+      },
+      //find tickets according to its condition on price and time period and add it to the event object
+      {
+        $lookup: {
+          from: 'tickets',
+          localField: '_id', //of the event
+          foreignField: 'eventID', //of the ticket
+          as: 'tickets',
+          pipeline: [
+            {
+              $match: {
+                price: 0,
+                sellingStartTime: { $lte: new Date(Date.now()) }, //had to convert it to ISO form
+                sellingEndTime: { $gte: new Date(Date.now()) }, //had to also convert it to ISO form
+                $expr: {
+                  $lt: ['$currentReservations', '$capacity'],
+                },
+              },
+            },
+          ],
+        },
+      },
+      //match events that have tickets satisfying the above conditions
+      {
+        $match: {
+          tickets: { $ne: [] },
+        },
+      },
+      //project the fields we want
+      {
+        $project: {
+          creatorID: 0,
+          ticketsSold: 0,
+          password: 0,
+          draft: 0,
+          goPublicDate: 0,
+          tickets: 0,
+        },
+      },
+    ])
       .skip(skip)
-      .limit(limit)
-      .sort({ endDate: -1 });
-
-    const eventIDs = eventsData.map((event) => event._id);
-
-    //We first Make sure that these tickets are available to the user
-    // ie. not sold out
-    // and their selling time has not passed or is not yet to come etc etc
-    let freeEventIDs = await Ticket.find({
-      eventID: { $in: eventIDs },
-      price: 0,
-      sellingStartTime: { $lte: Date.now() },
-      sellingEndTime: { $gte: Date.now() },
-      $expr: { $lt: ['$currentReservations', '$capacity'] },
-    }).select(['eventID', '-_id']);
-    //take only the eventID's
-    freeEventIDs = freeEventIDs.map((event) => event.eventID);
-
-    eventsData = eventsData.filter((event) => {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const freeEventID of freeEventIDs) {
-        if (event._id.equals(freeEventID)) {
-          // console.log('matched thingy ');
-          return true;
-        }
-      }
-      return false;
-    });
+      .limit(limit);
 
     goQuery = false;
   }

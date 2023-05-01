@@ -14,7 +14,6 @@ const notificationRouter = require('./routes/notificationRoute');
 const ticketRouter = require('./routes/ticketRoute');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
-// const test = require('./__test__/testutils/createConfirmedUser');
 
 const cookieParser = require('cookie-parser');
 

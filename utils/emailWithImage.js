@@ -2,7 +2,7 @@
 /**
  * @function SendEmail
  * @requires nodemailer
- * @description Sends email and acts as an API with mail service.
+ * @description Sends email with image and acts as an API with mail service.
  * @param {object} options  -The Email opions like mail, subject and message.
  */
 const nodemailer = require('nodemailer');

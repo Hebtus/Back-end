@@ -12,6 +12,12 @@ const { constants } = require('crypto');
  * @module Controllers/creatorController
  */
 
+/**
+ * @function
+ * @description - Attaches if the event is sold or not and the total price of the event to the event object
+ * @param {Arr} eventsData  -Events array
+ * @returns {Arr} -Returns the modified events array
+ */
 const getSoldandAvailable = async (eventsdData) => {
   const newEventData = [];
   for (const event of eventsdData) {

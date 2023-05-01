@@ -74,12 +74,20 @@ describe('resetPassword', () => {
   ///////////////////////////////////////////////////
   test('Check  reset password and confirm password are the same', async () => {
     const newPassword = 'newpassword123';
-    passwordResetDoc.passwordResetToken = crypto
-      .createHash('sha256')
-      .update(resetToken2)
-      .digest('hex');
-    passwordResetDoc.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
-    await passwordResetDoc.save();
+    // passwordResetDoc.passwordResetToken = crypto
+    //   .createHash('sha256')
+    //   .update(resetToken2)
+    //   .digest('hex');
+    // passwordResetDoc.passwordResetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    // await passwordResetDoc.save();
+    await PasswordReset.create({
+      userID: user._id,
+      passwordResetToken: crypto
+        .createHash('sha256')
+        .update(resetToken2)
+        .digest('hex'),
+      passwordResetTokenExpiry: Date.now() + 10 * 60 * 1000, // 10 minutes
+    });
     await request(app)
       .patch(`/api/v1/resetpassword/`)
       .send({
@@ -89,6 +97,7 @@ describe('resetPassword', () => {
       })
       .expect(400);
   });
+
   test('Check that token is invalid', async () => {
     // send a PATCH request to reset the password using an invalid password reset token
     await request(app)

@@ -12,10 +12,6 @@ const app = require('./app');
 //Load config
 dotenv.config({ path: '.config.env' });
 const Seeder = require('./seeds/seeder');
-const User = require('./models/userModel');
-const Event = require('./models/eventModel');
-const Tickets = require('./models/ticketModel');
-const Booking = require('./models/bookingModel');
 
 //Database connection
 

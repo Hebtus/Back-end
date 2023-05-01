@@ -2,12 +2,7 @@
  * @module Routers/authenticationRouter
  * @requires express
  */
-// const dotenv = require('dotenv');
 const express = require('express');
-// const passport = require('passport');
-
-// const userController = require('../controllers/userController');
-// dotenv.config({ path: './config.env' });
 const authController = require('../controllers/authenticationController');
 
 /**
@@ -49,7 +44,25 @@ router.get('/signup-confirm/:confirmationToken', authController.confirmEmail);
  * @param {callback} middleware - Express middleware.
  */
 router.post('/login', authController.login);
+/**
+ * Route serving forgot Password form.
+ * @name post/forgotpassword
+ * @function
+ * @memberof module:Routers/authenticationRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post('/forgotpassword', authController.forgotPassword);
+/**
+ * Route serving reset Password form.
+ * @name patch/resetpassword
+ * @function
+ * @memberof module:Routers/authenticationRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.patch('/resetpassword/', authController.resetPassword);
 //from here down add requests that are available after you are logged in only
 //remeber to add the berarer token to the authorization in postman
@@ -59,6 +72,15 @@ router.use(authController.protect);
 
 router.get('/logout', authController.logout);
 
+/**
+ * Route serving update Password form.
+ * @name patch/updatepassword
+ * @function
+ * @memberof module:Routers/authenticationRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.patch('/updatepassword', authController.updatePassword);
 //from here down add whatever requests that are avialble to creators only
 

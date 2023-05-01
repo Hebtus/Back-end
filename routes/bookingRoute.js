@@ -21,6 +21,24 @@ const router = express.Router();
 
 // //add attendee
 router.use(authController.protect);
+/**
+ * Route serving add-attendee form.
+ * @name post/add-attendee
+ * @function
+ * @memberof module:Routers/bookingRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post('/add-attendee/', bookingController.addAttendee);
+/**
+ * Route serving create Bookings form.
+ * @name post/
+ * @function
+ * @memberof module:Routers/bookingRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post('/', bookingController.createBookings);
 module.exports = router;

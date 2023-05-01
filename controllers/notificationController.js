@@ -8,7 +8,7 @@ const catchAsync = require('../utils/catchAsync');
 
 /** 
 @function
-@description the function gets notifications of a the logged user display them for him then delete them
+@description Gets a notification of a logged in user then deletes it to be able to find the next notification in the next polling request
 @async
 @name getNotification
 @param {object} req - Express request object.

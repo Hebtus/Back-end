@@ -15,7 +15,7 @@ const filterObj = (obj, ...allowedFields) => {
 };
 /**
  * @function
- * @description -called to create a new ticket object for a specific event given that event id through parameteres and ticket info through the body
+ * @description -Called to create a new ticket object for a specific event given that event id through parameteres and ticket info through the body
  * @param {object} req  -The request object
  * @param {object} res  -The response object
  * @param {object} next -The next object for express middleware
@@ -50,7 +50,7 @@ exports.createTicket = catchAsync(async (req, res, next) => {
 });
 /**
  * @function
- * @description -called to get the event tickets given the event id in the parameters and make sure the ticket is available and on display through the date
+ * @description -Called to get the event tickets given the event id in the parameters and make sure the ticket is available and on display through the date
  * @param {object} req  -The request object
  * @param {object} res  -The response object
  * @returns {object} - Returns the response object
@@ -89,7 +89,6 @@ exports.getEventTickets = async (req, res) => {
 @function
 @description Edit the ticket information of a specefic event.
 @async
-@name forgotPassword
 @param {object} req - Express request object.
 @param {object} res - Express response object.
 @param {function} next - Express next middleware function.

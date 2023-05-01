@@ -29,18 +29,19 @@ facebookPassportAuth.facebookAuth(passport);
  */
 const router = express.Router();
 
-// router.use(
-//   session({
-//     secret: 'keyboard cat',
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
-
 //Passport middleware
 router.use(passport.initialize());
 // app.use(passport.session());router.get('/login/facebook', passport.authenticate('facebook'));
 
+/**
+ * Route serving Front End facebook authentication.
+ * @name get/login/facebook
+ * @function
+ * @memberof module:Routers/passportRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.get(
   '/login/facebook',
   passport.authenticate('facebook', { session: false })
@@ -66,6 +67,15 @@ router.get(
   })
 );
 
+/**
+ * Route serving Front End google authentication.
+ * @name get/login/google
+ * @function
+ * @memberof module:Routers/passportRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.get(
   '/login/google',
   passport.authenticate('google', {
@@ -91,6 +101,14 @@ router.get(
 );
 
 //for cross
+/**
+ * @function
+ * @description - Called by Cross Platform to authenticate google sign in and sign up
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 const AuthenticateGoogle = catchAsync(async (req, res, next) => {
   console.log('accessed google auth post route');
   if (!req.body.tokenId) {
@@ -120,8 +138,26 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
   authenticationController.createSendToken(user, 201, res);
 });
 
+/**
+ * Route serving Cross Platform google authentication.
+ * @name post/login/google
+ * @function
+ * @memberof module:Routers/passportRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post('/login/google', AuthenticateGoogle);
 
+/**
+ * Route serving Cross Platform facebook authentication.
+ * @name post/login/facebook
+ * @function
+ * @memberof module:Routers/passportRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post(
   '/login/facebook',
   catchAsync(async (req, res, next) => {
@@ -189,6 +225,15 @@ const decodeJWT = async (req, res, next) => {
   return currentUser;
 };
 
+/**
+ * Route serving Front End's Redirect Page.
+ * @name post/login/googlefacebookverify/:token
+ * @function
+ * @memberof module:Routers/passportRouter
+ * @inner
+ * @param {string} path - Express path
+ * @param {callback} middleware - Express middleware.
+ */
 router.post(
   '/login/googlefacebookverify/:token',
   catchAsync(async (req, res, next) => {

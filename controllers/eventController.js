@@ -15,7 +15,10 @@ const cloudinary = require('../utils/cloudinary');
  * @module Controllers/eventController
  */
 
-// takes any
+/**
+ * @function
+ * @description - Makes all private events public if the goPublicDate is passed
+ */
 const makeprivateEventsPublic = async () => {
   const privateEvents = await Event.updateMany(
     { privacy: true, goPublicDate: { $lte: Date.now() } },

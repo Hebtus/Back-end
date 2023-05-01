@@ -327,14 +327,27 @@ exports.getEventBookings = catchAsync(async (req, res, next) => {
   const limit = req.query.limit * 1 || 20;
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
+  const event = await Event.findOne({ _id: eventId });
+  if (!event) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'No event found with this id ',
+    });
+  } else if (!event.creatorID.equals(req.user._id)) {
+    res.status(401).json({
+      status: 'fail',
+      message: 'You cannot access events that are not yours ',
+    });
+  }
 
   const bookings = await Booking.find({ eventID: eventId })
     .skip(skip)
     .limit(limit);
   if (!bookings) {
-    return res.status(404).json({ status: 'fail', message: 'invalid eventID' });
+    return res
+      .status(404)
+      .json({ status: 'fail', message: 'no bookings for this event' });
   }
-
   res.status(200).json({
     status: 'success',
     data: {

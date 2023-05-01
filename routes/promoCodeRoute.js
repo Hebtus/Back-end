@@ -11,10 +11,7 @@ const router = express.Router();
 
 //Restrict to creators
 router.use(authController.protect);
-router
-  .route('/')
-  .get(promoCodeController.getAllPromoCodes)
-  .post(promoCodeController.createPromoCode);
+router.route('/').post(promoCodeController.createPromoCode);
 
 router.post(
   '/csv',

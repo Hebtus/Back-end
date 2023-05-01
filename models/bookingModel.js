@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+4; /* eslint-disable no-unused-vars */
 const mongoose = require('mongoose');
 const validator = require('validator');
 const nameSchema = require('./shared/nameModel');

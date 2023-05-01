@@ -26,9 +26,9 @@ const DBstring =
 
 const DBcheck =
   process.env.NODE_ENV === 'development' ? 'LOCAL DB' : 'DEPLOYED DB';
+console.log('connecting to ', DBcheck);
 // Seeder(DBstring);
 
-console.log('connecting to ', DBcheck);
 mongoose
   .connect(DBstring, {
     useNewUrlParser: true,
@@ -36,157 +36,7 @@ mongoose
   })
   .then(async () => {
     console.log('DB is connected successfuly!');
-
-    // await Event.create({
-    //   name: 'test event',
-    //   privacy: 'false',
-    //   password: null,
-    //   category: 'Music',
-    //   creatorID: '642fda162c9619b9850f70f1',
-    //   img_url: null || '',
-    //   startDate: new Date(Date.now()),
-    //   endDate: new Date(Date.now() + 100000000),
-    //   locationName: 'Faculty of Engineering, Cairo University',
-    //   tags: null,
-    //   location: {
-    //     coordinates: [
-    //       faker.address.latitude(31.214039, 31.203095),
-    //       faker.address.longitude(30.118752, 29.97293), //max min
-    //     ],
-    //   },
-    // });
-
-    //region Tester
-    ////event testing/////
-    // const name = 'test event';
-    // const privacy = 'false';
-    // const password = null;
-    // const category = 'Music';
-    // const startDate = new Date(Date.now());
-    // const endDate = new Date(Date.now() + 100000000);
-    // const locationName = 'Faculty of Engineering, Cairo University';
-    // const locationcoordinates = [30.0444, 31.2357];
-    // const tags = null;
-
-    // await Event.create({
-    //   name,
-    //   privacy,
-    //   password,
-    //   category,
-    //   creatorID: '642fda162c9619b9850f70f1',
-    //   img_url: null || '',
-    //   startDate,
-    //   endDate,
-    //   locationName,
-    //   tags,
-    //   location: { coordinates: locationcoordinates },
-    // });
-    // await Event.deleteMany({ name: 'test event' });
-    //for testing and saving email creditsssssss
-    //if no user create confirmed user
-    // await User.deleteMany();
-    // const anyuser = await User.find();
-    // console.log(anyuser);
-    // let user1;
-    // let user2;
-    // if (anyuser.length === 0) {
-    //user1 = await test.createTestUser();
-    //user2 = await test.createTestUser2();
-    // }
-    // const allbookings = await Booking.find();
-    // console.log('allbookings is ', allbookings);
-
-    // const myBooking = await Booking.find({ purchasedOn: { $lt: Date.now() } });
-    // console.log('the booking I want  is ', myBooking);
-    // console.log('the booking I want  is ', myBooking[0].purchasedOn);
-    // console.log(myBooking[0].purchasedOn > Date.now());
-    // if (anyuser.length === 0) {
-    //   Seeder.Seed();
-    // }
-    // await mongoose.connection.db.dropDatabase();
-    // test.createTestUser();
-    // console.log('DB is removed successfuly!');
-    // // // Schema Testing
-
-    // const testEvent2 = new Event({
-    //   name: 'lolerseventus',
-    //   startDate: Date.now() + 1000 * 60 * 60 * 24 * 20,
-    //   endDate: Date.now() + 1000 * 60 * 60 * 24 * 25, //after 10 days
-    //   privacy: false,
-    //   draft: false,
-    //   category: 'Food & Drink',
-    //   creatorID: user1._id,
-    // });
-
-    // const testEvent = new Event({
-    //   name: 'loleventxd',
-    //   startDate: Date.now() - 1000 * 60 * 60 * 24 * 10,
-    //   endDate: Date.now() + 1000 * 60 * 60 * 24 * 10, //after 10 days
-    //   privacy: false,
-    //   draft: false,
-    //   category: 'Music',
-    //   creatorID: user1._id,
-    // });
-
-    // const testTickets = new Tickets({
-    //   name: '2a3det 4ayTicket',
-    //   type: 'Regular',
-    //   price: 100,
-    //   capacity: 10,
-    //   sellingStartTime: Date.now() + 1000 * 60 * 60 * 24 * 1,
-    //   sellingEndTime: Date.now() + 1000 * 60 * 60 * 24 * 2,
-    // });
-    /*
-    const testBooking = new Booking({
-      name: { firstName: 'lol', lastName: 'attendeelastname' },
-      gender: 'Male',
-      phoneNumber: 12345678910,
-      guestEmail: 'irushbullet@google.com',
-      userID:'642e4b8a1ba39c145cf15843',
-      ticketID: '64349f5f23a2b28029e0443b',
-      price: 100,
-      quantity: 2,
-      purchasedOn: Date.now(),
-    });
-    // await testEvent2.save();
-    // await testEvent.save().then(async () => {
-    //   testTickets.eventID = testEvent._id;
-    //   await testTickets.save().then(() => {
-    //     testBooking.ticketID = testTickets._id;
-    testBooking.save();*/
-    //   });
-    // });
-    //#endregion
   });
-
-// console.log(Date.now());
-
-// const testerfunc = async () => {
-//   const testUser = new User({
-//     name: {
-//       firstName: 'loler',
-//       lastName: 'Ameer',
-//     },
-//     email: 'lol@lol.com',
-//     location: { coordinates: [-91.32, 1.32] },
-//     password: '123456789',
-//     passwordChangedAt: '1987-09-28 20:01:07',
-//   });
-
-//   await User.collection.drop();
-
-//   await testUser
-//     .save()
-//     .then(() => {
-//       console.log('Saved Successfully!!!!!!!');
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-//   const testgetuser = await User.findOne();
-//   console.log(testgetuser);
-// };
-// testerfunc();
 
 //Hosting the server
 const server = app.listen(process.env.PORT, () => {

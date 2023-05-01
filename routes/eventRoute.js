@@ -19,6 +19,10 @@ const router = express.Router();
 // router.use('/:eventID/bookings', bookingRouter);
 
 router.route('/').get(eventController.getEvents);
+router
+  .route('/:id')
+  .get(eventController.getEvent)
+  .post(eventController.getEventwithPassword);
 
 //from here down are requests that are available after you are logged in only
 router.use(authController.protect);
@@ -32,14 +36,10 @@ router.get('/:id/bookings', bookingController.getEventBookings);
 router.get('/:id/tickets', tickController.getEventTickets);
 router.get('/:id/sales', eventController.getEventSales);
 router.get('/:id/promocodes', promocodesController.getEventPromocodes);
-router
-  .route('/:id')
-  .get(eventController.getEvent)
-  .post(eventController.getEventwithPassword)
-  .patch(
-    //restrict to creators
-    eventController.editEvent
-  );
+router.route('/:id').patch(
+  //restrict to creators
+  eventController.editEvent
+);
 
 router.route('/:id/sales').get(eventController.getEventSales);
 

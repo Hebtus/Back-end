@@ -315,7 +315,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       .then(() =>
         res.status(200).json({
           status: 'success',
-          message: 'Event created successfully',
+          message: 'event created successfully',
         })
       )
       //return

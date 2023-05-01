@@ -358,6 +358,14 @@ exports.getAllPromoCodes = catchAsync(async (req, res, next) =>
 
 // console.log('promoCodes is', promoCodes);
 
+/**
+ * @function
+ * @description - Called by creator to get a certain event's promocodes with pagination and limit
+ * @param {object} req  -The request object
+ * @param {object} res  -The response object
+ * @param {object} next -The next object for express middleware
+ * @returns {object} - Returns the response object
+ */
 exports.getEventPromocodes = catchAsync(async (req, res, next) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
@@ -379,11 +387,6 @@ exports.getEventPromocodes = catchAsync(async (req, res, next) => {
     .find({ eventID: eventId })
     .skip(skip)
     .limit(limit);
-  if (!promocodes) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'no promocodes for this event' });
-  }
 
   res.status(200).json({
     status: 'success',

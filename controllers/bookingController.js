@@ -343,11 +343,7 @@ exports.getEventBookings = catchAsync(async (req, res, next) => {
   const bookings = await Booking.find({ eventID: eventId })
     .skip(skip)
     .limit(limit);
-  if (!bookings) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'no bookings for this event' });
-  }
+
   res.status(200).json({
     status: 'success',
     data: {

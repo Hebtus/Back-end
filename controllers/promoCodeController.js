@@ -373,11 +373,6 @@ exports.getEventPromocodes = catchAsync(async (req, res, next) => {
     .find({ eventID: eventId })
     .skip(skip)
     .limit(limit);
-  if (!promocodes) {
-    return res
-      .status(404)
-      .json({ status: 'fail', message: 'no promocodes for this event' });
-  }
 
   res.status(200).json({
     status: 'success',

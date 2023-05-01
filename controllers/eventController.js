@@ -238,13 +238,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
   });
 });
 
-// exports.resetPassword = catchAsync(async (req, res, next) => {
-//   res.status('200').json({
-//     status: 'success',
-//     message: '3azama',
-//   });
-// });
-
 /**
  * @function
  * @description -The Creator calls this function to create a new event by writing the basic info of the event and use cloudinary to upload the image of the event(if available) on the cloud and save the url of the image and the rest of the data in the db

@@ -248,12 +248,6 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllPromoCodes = catchAsync(async (req, res, next) =>
-  res.status(200).json({
-    status: 'success',
-    message: 'PromoCode Delivered Successfully.',
-  })
-);
 //#region
 // await stream
 //   .pipe(parse({ headers: true }))

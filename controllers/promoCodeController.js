@@ -235,6 +235,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
           discountOrPercentage: true,
           eventID: req.body.eventID,
         });
+        console.log('lol');
         createdPromocodesIDs.push(createdPromocode._id);
       } else {
         const csvPercentage = data[2];

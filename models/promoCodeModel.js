@@ -1,9 +1,10 @@
+/* eslint-disable eqeqeq */
 const mongoose = require('mongoose');
 
 const promoCodeSchema = new mongoose.Schema({
   codeName: {
     type: String,
-    required: [true, 'Please provide a ticket name'],
+    required: [true, 'Please provide a code name'],
     minlength: [1, 'Event Name can not be less than 1 character.'],
     maxlength: [30, 'Event Name can not be more than 30 characters long.'],
     unique: true,
@@ -46,10 +47,25 @@ const promoCodeSchema = new mongoose.Schema({
 //pre(Save) runs before save and create
 //makes sure that either percentage or discount amount are given
 promoCodeSchema.pre('save', function (next) {
+  if (this.discountOrPercentage === null)
+    return next(
+      new Error('You must define is the promoCode discount or percentage')
+    );
   if (!this.percentage && !this.discountAmount)
     return next(
       new Error('At least one of percentage or discountAmount should be given')
     );
+  if (this.discountOrPercentage == 1 && !this.discountAmount)
+    return next(
+      new Error(
+        'Discount amount is required in case of discountOrPercentage =1 '
+      )
+    );
+  if (this.discountOrPercentage == 0 && !this.percentage)
+    return next(
+      new Error('Percentage is required in case of discountOrPercentage =0 ')
+    );
+
   //make sure that the number of uses never exceeds current capacity
   if (this.uses > this.limits)
     return next(new Error('Uses cannot be bigger than limit!'));

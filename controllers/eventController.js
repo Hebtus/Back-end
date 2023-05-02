@@ -294,7 +294,6 @@ exports.createEvent = catchAsync(async (req, res, next) => {
         });
         //if an error happned while uploading the image
         if (res.headersSent) return;
-        console.log('still trying to send');
         res.status(200).json({
           status: 'success',
           data: {
@@ -325,6 +324,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
+    //if an error happned while creating the event
     if (res.headersSent) return;
     return res.status(200).json({
       status: 'success',

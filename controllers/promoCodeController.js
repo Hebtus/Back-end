@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-continue */
 /* eslint-disable vars-on-top */
 /* eslint-disable node/no-unsupported-features/es-syntax */
@@ -6,7 +7,7 @@ const multer = require('multer');
 // const { parse } = require('fast-csv');
 const { Readable } = require('stream');
 const Event = require('../models/eventModel');
-const promoCode = require('../models/promoCodeModel');
+const PromoCode = require('../models/promoCodeModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -100,7 +101,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
     //     message: 'Discount cannot be greater than the ticket price ',
     //   });
     // }
-    await promoCode.create({
+    await PromoCode.create({
       codeName: req.body.codeName,
       limits: req.body.limits,
       discountAmount: req.body.discount,
@@ -118,7 +119,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
 
     console.log('perc is', req.body);
     // console.log('perc is', req.body.percentage);
-    await promoCode.create({
+    await PromoCode.create({
       codeName: req.body.codeName,
       limits: req.body.limits,
       percentage: req.body.percentage,
@@ -162,6 +163,19 @@ async function parseCSV(readable) {
   }
   return { csvData, csvHeaders };
 }
+
+const makePromoCodeObjects = async (csvData, csvHeaders, eventID) => {
+  const promoCodes = [];
+  for (const data of csvData) {
+    const promoCode = {};
+    for (let i = 0; i < data.length; i++) {
+      promoCode[csvHeaders[i]] = data[i];
+    }
+    promoCode.eventID = eventID;
+    promoCodes.push(promoCode);
+  }
+  return promoCodes;
+};
 
 /**
  * @function
@@ -208,51 +222,72 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   const parsed = await parseCSV(stream);
   const { csvHeaders, csvData } = parsed;
 
-  console.log('csvHeaders is', csvHeaders);
-  console.log('csvData is', csvData);
-
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  const createdPromocodesIDs = [];
-  try {
-    for await (const data of csvData) {
-      //assumed format
-      //codeName discountOrPercentage discount/percentage limits
-      let createdPromocode;
-      const csvCodeName = data[0];
-      const csvDiscountOrPercentage = data[1];
-      console.log(
-        'csvDiscountOrPercentage is',
-        csvDiscountOrPercentage,
-        typeof csvDiscountOrPercentage
-      );
-      const csvLimits = data[3];
-      if (csvDiscountOrPercentage === '1') {
-        const csvDiscount = data[2];
-        createdPromocode = await promoCode.create({
-          codeName: csvCodeName,
-          limits: csvLimits,
-          discountAmount: csvDiscount,
-          discountOrPercentage: true,
-          eventID: req.body.eventID,
-        });
-        console.log('lol');
-        createdPromocodesIDs.push(createdPromocode._id);
-      } else {
-        const csvPercentage = data[2];
-        createdPromocode = await promoCode.create({
-          codeName: csvCodeName,
-          limits: csvLimits,
-          percentage: csvPercentage,
-          discountOrPercentage: 0,
-          eventID: req.body.eventID,
-        });
-        createdPromocodesIDs.push(createdPromocode._id);
-      }
-    }
-  } catch (err) {
-    promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
-    return new AppError('Error in creating promocodes', 400);
+  // console.log('csvHeaders is', csvHeaders);
+  // console.log('csvData is', csvData);
+  if (csvData.length % csvData.length !== 0) {
+    return new AppError('CSV file is not formatted correctly', 400);
   }
+  const promocodeObjects = makePromoCodeObjects(
+    csvData,
+    csvHeaders,
+    req.body.eventID
+  );
+
+  console.log('promocodeObjects is', promocodeObjects);
+
+  const createdPromocodesIDs = [];
+  for (const promoCode of promocodeObjects) {
+    const createdPromocode = PromoCode.create(promoCode);
+  }
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax
+  // const createdPromocodesIDs = [];
+  // try {
+  //   for await (const data of csvData) {
+  //     //assumed format
+  //     //codeName discountOrPercentage discount/percentage limits
+  //     let createdPromocode;
+  //     const csvCodeName = data[0];
+  //     const csvDiscountOrPercentage = data[1];
+  //     console.log(
+  //       'csvDiscountOrPercentage is',
+  //       csvDiscountOrPercentage,
+  //       typeof csvDiscountOrPercentage
+  //     );
+  //     const csvLimits = data[3];
+  //     if (csvDiscountOrPercentage === '1') {
+  //       const csvDiscount = data[2];
+  //       createdPromocode = await promoCode
+  //         .create({
+  //           codeName: csvCodeName,
+  //           limits: csvLimits,
+  //           discountAmount: csvDiscount,
+  //           discountOrPercentage: true,
+  //           eventID: req.body.eventID,
+  //         })
+  //         .catch((err) => {
+  //           console.log('lolerrr');
+  //           promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
+  //           return new AppError('Error in creating promocodes', 400);
+  //         });
+
+  //       console.log('lol');
+  //       createdPromocodesIDs.push(createdPromocode._id);
+  //     } else {
+  //       const csvPercentage = data[2];
+  //       createdPromocode = await promoCode.create({
+  //         codeName: csvCodeName,
+  //         limits: csvLimits,
+  //         percentage: csvPercentage,
+  //         discountOrPercentage: 0,
+  //         eventID: req.body.eventID,
+  //       });
+  //       createdPromocodesIDs.push(createdPromocode._id);
+  //     }
+  //   }
+  // } catch (err) {
+  //   promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
+  //   return new AppError('Error in creating promocodes', 400);
+  // }
 
   res.status(200).json({
     status: 'success',
@@ -389,8 +424,7 @@ exports.getEventPromocodes = catchAsync(async (req, res, next) => {
       message: 'You cannot access events that are not yours ',
     });
   }
-  const promocodes = await promoCode
-    .find({ eventID: eventId })
+  const promocodes = await PromoCode.find({ eventID: eventId })
     .skip(skip)
     .limit(limit);
 

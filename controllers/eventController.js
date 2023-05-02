@@ -285,7 +285,16 @@ exports.createEvent = catchAsync(async (req, res, next) => {
           locationName,
           tags: tagsArr,
           location: { coordinates: locationCoordinates },
+        }).catch((err) => {
+          console.log('lolxd');
+          return res.status(400).json({
+            status: 'fail',
+            message: 'Could not Create Event',
+          });
         });
+        //if an error happned while uploading the image
+        if (res.headersSent) return;
+        console.log('still trying to send');
         res.status(200).json({
           status: 'success',
           message: 'event created successfully',

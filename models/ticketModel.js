@@ -99,35 +99,7 @@ const ticketSchema = new mongoose.Schema({
     required: [true, 'Ticket Type must belong to an event.'],
   },
 });
-//automatically adds 1 to ticketsSold in its respective Event
-//findOneAndUpdate is called by findbyIdandUpdate
-// ticketSchema.pre('findOneAndUpdate', async function (next) {
-//   const currentReservationsInc = this._update.$inc.currentReservations;
-//   // console.log(currentReservationsInc);
-//   const docToUpdate = await this.model.findById(this._conditions._id);
-//   // console.log(this.model);
-//   // console.log(docToUpdate);
 
-//   //check on capacity
-//   if (
-//     currentReservationsInc + docToUpdate.currentReservations >
-//     docToUpdate.capacity
-//   ) {
-//     //do nothing
-//     //or actually refuse update?
-//     //make error to stop update?
-//     next();
-//   }
-//   await Event.findByIdAndUpdate(docToUpdate.eventID, {
-//     $inc: { ticketsSold: currentReservationsInc },
-//   });
-// });
-// // ticketSchema.post('findByIdAndUpdate', async (doc) => {
-// //   console.log(doc);
-// //   await Event.findByIdAndUpdate(doc.eventID, {
-// //     $inc: { ticketsSold: 1 },
-// //   });
-// // });
 // //All find querries
 ticketSchema.pre(/^find/, function (next) {
   this.select({
@@ -135,48 +107,6 @@ ticketSchema.pre(/^find/, function (next) {
   });
   next();
 });
-// ticketSchema.pre('findOneAndUpdate', function (next) {
-//   // this.options.runValidators = true;
-//   const updateTicket = this.getUpdate();
-//   const Ticket = this.findOne(this.getQuery());
-//   if (updateTicket.sellingEndTime) {
-//     const date = new Date(new Date(updateTicket.sellingEndTime).toISOString());
-//     if (!validator.isDate(date)) {
-//       //console.log(date);
-//       next(new AppError('Date must ust be right date format.', 404));
-//     }
-//     if (date < new Date()) {
-//       next(new AppError('Date must be in the future', 404));
-//     }
-//     if (Ticket.sellingStartTime > updateTicket.sellingEndTime) {
-//       next(new AppError('End date must be after selling date', 404));
-//     }
-//   }
-//   if (updateTicket.sellingStartTime) {
-//     const date = new Date(new Date(updateTicket.sellingEndTime).toISOString());
-//     if (!validator.isDate(date)) {
-//       next(new AppError('Date must be right date format.', 404));
-//     }
-//     if (date < new Date()) {
-//       next(new AppError('Date must be in the future', 404));
-//     }
-//     if (updateTicket.sellingStartTime > Ticket.sellingEndTime) {
-//       next(new AppError('Start date must be before selling date', 404));
-//     }
-//   }
-//   if (updateTicket.capacity) {
-//     console.log(updateTicket.capacity, Ticket.currentReservations, 'lol');
-//     if (updateTicket.capacity < Ticket.currentReservations)
-//       next(new AppError('Capacity is below current reservations', 404));
-//   }
-//   if (updateTicket.currentReservations) {
-//     if (updateTicket.currentReservations > Ticket.capacity)
-//       next(
-//         new AppError('Current reservations exceeds the allowed capacity', 404)
-//       );
-//   }
-//   next();
-// });
 
 const Ticket = mongoose.model('Ticket', ticketSchema);
 

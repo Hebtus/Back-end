@@ -1,7 +1,4 @@
 const mongoose = require('mongoose');
-//const eventSchema = require('./eventModel');
-// const locationSchema = require('./shared/locationModel');
-// const nameSchema = require('./shared/nameModel');
 
 const promoCodeSchema = new mongoose.Schema({
   codeName: {

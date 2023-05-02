@@ -21,7 +21,7 @@ const cloudinary = require('../utils/cloudinary');
 
 /** 
 @function
-@description the function create notification after creator adding new attendee 
+@description Creates notification after a creator adds a new attendee 
 @async
 @returns none 
 @name createNotification
@@ -132,7 +132,7 @@ const applyPromocode = async (promocodeName, bookings) => {
     (sum, booking) => sum + booking.price * booking.quantity,
     0
   );
-  console.log(totalPrice);
+  // console.log(totalPrice);
   if (promocodeName) {
     const promoCode = await PromoCode.findOne({ codeName: promocodeName });
     // Search for the promocode by code name

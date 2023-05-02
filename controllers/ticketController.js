@@ -22,6 +22,14 @@ const filterObj = (obj, ...allowedFields) => {
  * @returns {object} - Returns the response object
  */
 exports.createTicket = catchAsync(async (req, res, next) => {
+  const event = await Event.findById(req.body.eventID);
+
+  if (!event.creatorID.equals(req.user._id))
+    return res.status(401).json({
+      status: 'fail',
+      message: 'You cannot access events that are not yours ',
+    });
+
   // I changed it to be suitable for error handling and to be more short -Hussein
   const newTicket = await Ticket.create({
     name: req.body.name,
@@ -61,6 +69,13 @@ exports.getEventTickets = async (req, res) => {
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
 
+  const event = await Event.findById(eventId);
+
+  if (!event.creatorID.equals(req.user._id))
+    return res.status(401).json({
+      status: 'fail',
+      message: 'You cannot access events that are not yours ',
+    });
   //check on 2 things for ticket availability: 1. time 2. capacity
   const ticket = await Ticket.find({
     eventID: eventId,
@@ -108,10 +123,19 @@ exports.editTicket = catchAsync(async (req, res, next) => {
   );
 
   const updatedTicket = await Ticket.findById(req.params.id);
+
   if (!updatedTicket) {
     return res.status(404).json({
       status: 'failed',
       message: "Couldn't find ticket with this id",
+    });
+  }
+  const event = await Event.findById(updatedTicket.eventID);
+
+  if (!event.creatorID.equals(req.user._id)) {
+    return res.status(401).json({
+      status: 'failed',
+      message: 'You are not authorized to edit this ticket',
     });
   }
   if (filteredBody.name) updatedTicket.name = filteredBody.name;

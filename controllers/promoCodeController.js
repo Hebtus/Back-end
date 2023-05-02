@@ -1,7 +1,11 @@
+/* eslint-disable no-continue */
+/* eslint-disable vars-on-top */
+/* eslint-disable node/no-unsupported-features/es-syntax */
 /* eslint-disable no-restricted-syntax */
 const multer = require('multer');
+// const { parse } = require('fast-csv');
+const { Readable } = require('stream');
 const Event = require('../models/eventModel');
-const Ticket = require('../models/ticketModel');
 const promoCode = require('../models/promoCodeModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -13,8 +17,6 @@ const AppError = require('../utils/appError');
 
 //for reading csv file
 // const csv = require('csv-parser');
-const { Readable } = require('stream');
-const { parse } = require('fast-csv');
 
 const multerTempStorage = multer.memoryStorage();
 //Limit the file size to 5MB
@@ -139,10 +141,12 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
  * @param {object} csvHeaders -The csv headers object
  * @returns {object} - Returns the csv data and headers
  */
-async function parseCSV(readable, csvData, csvHeaders) {
+async function parseCSV(readable) {
   let counter = 1;
+  let csvHeaders = [];
+  const csvData = [];
   for await (const chunk of readable) {
-    line = chunk.split('\n');
+    const line = chunk.split('\n');
 
     for await (const data of line) {
       if (counter === 1) {
@@ -196,52 +200,60 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //   console.log(row);
   // });
   //8aleban 4eel kol response w 7ot makano AppError
-  let promoCodes = [];
-  let errorflag = 0;
 
   stream.setEncoding('utf8');
   // stream.
-  let csvHeaders = [];
-  let csvData = [];
-  let parsed = await parseCSV(stream, csvHeaders, csvData);
-  csvHeaders = parsed.csvHeaders;
-  csvData = parsed.csvData;
+  // let csvHeaders = [];
+  // let csvData = [];
+  const parsed = await parseCSV(stream);
+  const { csvHeaders } = parsed.csvHeaders;
+  const { csvData } = parsed.csvData;
 
   console.log('csvHeaders is', csvHeaders);
   console.log('csvData is', csvData);
 
   // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  for await (const data of csvData) {
-    //assumed format
-    //codeName discountOrPercentage discount/percentage limits
-    const csvCodeName = data[0];
-    const csvDiscountOrPercentage = data[1];
-    console.log(
-      'csvDiscountOrPercentage is',
-      csvDiscountOrPercentage,
-      typeof csvDiscountOrPercentage
-    );
-    const csvLimits = data[3];
-    if (csvDiscountOrPercentage === '1') {
-      const csvDiscount = data[2];
-      await promoCode.create({
-        codeName: csvCodeName,
-        limits: csvLimits,
-        discountAmount: csvDiscount,
-        discountOrPercentage: true,
-        eventID: req.body.eventID,
-      });
-    } else {
-      const csvPercentage = data[2];
-      await promoCode.create({
-        codeName: csvCodeName,
-        limits: csvLimits,
-        percentage: csvPercentage,
-        discountOrPercentage: 0,
-        eventID: req.body.eventID,
-      });
+  const createdPromocodesIDs = [];
+  try {
+    for await (const data of csvData) {
+      //assumed format
+      //codeName discountOrPercentage discount/percentage limits
+      let createdPromocode;
+      const csvCodeName = data[0];
+      const csvDiscountOrPercentage = data[1];
+      console.log(
+        'csvDiscountOrPercentage is',
+        csvDiscountOrPercentage,
+        typeof csvDiscountOrPercentage
+      );
+      const csvLimits = data[3];
+      if (csvDiscountOrPercentage === '1') {
+        const csvDiscount = data[2];
+        createdPromocode = await promoCode.create({
+          codeName: csvCodeName,
+          limits: csvLimits,
+          discountAmount: csvDiscount,
+          discountOrPercentage: true,
+          eventID: req.body.eventID,
+        });
+        createdPromocodesIDs.push(createdPromocode._id);
+      } else {
+        const csvPercentage = data[2];
+        createdPromocode = await promoCode.create({
+          codeName: csvCodeName,
+          limits: csvLimits,
+          percentage: csvPercentage,
+          discountOrPercentage: 0,
+          eventID: req.body.eventID,
+        });
+        createdPromocodesIDs.push(createdPromocode._id);
+      }
     }
+  } catch (err) {
+    promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
+    return new AppError('Error in creating promocodes', 400);
   }
+
   res.status(200).json({
     status: 'success',
     message: 'PromoCodes created Successfully.',

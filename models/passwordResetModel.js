@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-// const validator = require('validator');
 
 const passwordResetSchema = new mongoose.Schema({
   userID: {

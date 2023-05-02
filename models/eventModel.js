@@ -2,7 +2,6 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const locationSchema = require('./shared/locationModel');
-// const bcrypt = require('bcryptjs');
 
 const eventSchema = new mongoose.Schema({
   ////////////////////////////****Basic info****/////////////////////
@@ -137,11 +136,6 @@ eventSchema.pre('save', function (next) {
     };
   }
 
-  // if (this.privacy) {
-  //   if (!this.password) { //No longer required as event may be privite just to be accessible with the link
-  //     return next(new Error('Password is required if event is private'));
-  //   }
-  // }
   return next();
 });
 
@@ -164,19 +158,6 @@ eventSchema.pre('save', async function (next) {
   }
   next();
 });
-
-// eventSchema.pre('findOne', function (next) {
-//   this.select({
-//     _id: 0,
-//     creatorID: 0,
-//     ticketsSold: 0,
-//     password: 0,
-//     draft: 0,
-//     goPublicDate: 0,
-//     privacy: 0,
-//   });
-//   next();
-// });
 
 const Event = mongoose.model('Event', eventSchema);
 

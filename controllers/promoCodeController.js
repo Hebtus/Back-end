@@ -179,9 +179,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   const parsed = await parseCSV(stream);
   const { csvHeaders, csvData } = parsed;
 
-  if (csvData.length % csvData.length !== 0) {
-    return new AppError('CSV file is not formatted correctly', 400);
-  }
+  //no need to check csv formatting, any ouster pieces of data will automatically cause a validation error
   const promocodeObjects = await makePromoCodeObjects(
     csvData,
     csvHeaders,

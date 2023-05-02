@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-continue */
 /* eslint-disable vars-on-top */
@@ -74,59 +75,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
     });
   }
 
-  if (
-    !req.body.codeName ||
-    req.body.discountOrPercentage == null || // can be 0
-    req.body.limits == null
-  ) {
-    return res.status(400).json({
-      status: 'fail',
-      message:
-        'Promocode codeName, discountOrPercentage and limits are required',
-    });
-  }
-
-  if (req.body.discountOrPercentage === 1) {
-    //discount
-    if (!req.body.discount) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Discount is required in case of discountorPercentage = 1',
-      });
-    }
-    // //check that the discount is not greater than the ticket price
-    // if (req.body.discount > ticket.price) {
-    //   return res.status(400).json({
-    //     status: 'fail',
-    //     message: 'Discount cannot be greater than the ticket price ',
-    //   });
-    // }
-    await PromoCode.create({
-      codeName: req.body.codeName,
-      limits: req.body.limits,
-      discountAmount: req.body.discount,
-      discountOrPercentage: 1,
-      eventID: req.body.eventID,
-    });
-  } else {
-    //percentage
-    if (!req.body.percentage) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Percentage is required in case of discountorPercentage = 0',
-      });
-    }
-
-    console.log('perc is', req.body);
-    // console.log('perc is', req.body.percentage);
-    await PromoCode.create({
-      codeName: req.body.codeName,
-      limits: req.body.limits,
-      percentage: req.body.percentage,
-      discountOrPercentage: 0,
-      eventID: req.body.eventID,
-    });
-  }
+  await PromoCode.create(req.body);
 
   res.status(200).json({
     status: 'success',
@@ -138,8 +87,6 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
  * @function
  * @description - Parses CSV file and returns the data and headers
  * @param {object} readable -The readable stream object
- * @param {object} csvData -The csv data object
- * @param {object} csvHeaders -The csv headers object
  * @returns {object} - Returns the csv data and headers
  */
 async function parseCSV(readable) {
@@ -152,17 +99,35 @@ async function parseCSV(readable) {
     for await (const data of line) {
       if (counter === 1) {
         csvHeaders = data.split(',');
+        //remove the carriage return from the last header
+        csvHeaders[csvHeaders.length - 1] = csvHeaders[
+          csvHeaders.length - 1
+        ].replace('\r', '');
       } else {
         if (data === '') {
           continue;
         }
         csvData.push(data.split(','));
+        //remove the carriage return from the last entry
+        csvData[csvData.length - 1][csvData[csvData.length - 1].length - 1] =
+          csvData[csvData.length - 1][
+            csvData[csvData.length - 1].length - 1
+          ].replace('\r', '');
       }
       counter += 1;
     }
   }
   return { csvData, csvHeaders };
 }
+
+/**
+ * @function
+ * @description - Takes the CSV data and headers and then returns an array of promoCode objects. It assumes that both are aligned well.
+ * @param {object} csvData -The csv data object
+ * @param {object} csvHeaders -The csv headers object
+ * @param {object} eventID -The ID of the event addressed
+ * @returns {object} - Returns the csv data and headers
+ */
 
 const makePromoCodeObjects = async (csvData, csvHeaders, eventID) => {
   const promoCodes = [];
@@ -210,194 +175,43 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   const csvfile = req.file;
   const stream = Readable.from(csvfile.buffer);
 
-  // stream.pipe(csv()).on('data', async (row) => {
-  //   console.log(row);
-  // });
-  //8aleban 4eel kol response w 7ot makano AppError
-
   stream.setEncoding('utf8');
-  // stream.
-  // let csvHeaders = [];
-  // let csvData = [];
   const parsed = await parseCSV(stream);
   const { csvHeaders, csvData } = parsed;
 
-  // console.log('csvHeaders is', csvHeaders);
-  // console.log('csvData is', csvData);
   if (csvData.length % csvData.length !== 0) {
     return new AppError('CSV file is not formatted correctly', 400);
   }
-  const promocodeObjects = makePromoCodeObjects(
+  const promocodeObjects = await makePromoCodeObjects(
     csvData,
     csvHeaders,
     req.body.eventID
   );
 
-  console.log('promocodeObjects is', promocodeObjects);
-
   const createdPromocodesIDs = [];
+  let createdPromocode;
   for (const promoCode of promocodeObjects) {
-    const createdPromocode = PromoCode.create(promoCode);
-  }
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  // const createdPromocodesIDs = [];
-  // try {
-  //   for await (const data of csvData) {
-  //     //assumed format
-  //     //codeName discountOrPercentage discount/percentage limits
-  //     let createdPromocode;
-  //     const csvCodeName = data[0];
-  //     const csvDiscountOrPercentage = data[1];
-  //     console.log(
-  //       'csvDiscountOrPercentage is',
-  //       csvDiscountOrPercentage,
-  //       typeof csvDiscountOrPercentage
-  //     );
-  //     const csvLimits = data[3];
-  //     if (csvDiscountOrPercentage === '1') {
-  //       const csvDiscount = data[2];
-  //       createdPromocode = await promoCode
-  //         .create({
-  //           codeName: csvCodeName,
-  //           limits: csvLimits,
-  //           discountAmount: csvDiscount,
-  //           discountOrPercentage: true,
-  //           eventID: req.body.eventID,
-  //         })
-  //         .catch((err) => {
-  //           console.log('lolerrr');
-  //           promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
-  //           return new AppError('Error in creating promocodes', 400);
-  //         });
+    try {
+      createdPromocode = await PromoCode.create(promoCode);
+    } catch (err) {
+      await PromoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
 
-  //       console.log('lol');
-  //       createdPromocodesIDs.push(createdPromocode._id);
-  //     } else {
-  //       const csvPercentage = data[2];
-  //       createdPromocode = await promoCode.create({
-  //         codeName: csvCodeName,
-  //         limits: csvLimits,
-  //         percentage: csvPercentage,
-  //         discountOrPercentage: 0,
-  //         eventID: req.body.eventID,
-  //       });
-  //       createdPromocodesIDs.push(createdPromocode._id);
-  //     }
-  //   }
-  // } catch (err) {
-  //   promoCode.deleteMany({ _id: { $in: createdPromocodesIDs } });
-  //   return new AppError('Error in creating promocodes', 400);
-  // }
+      console.log(err);
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Error creating promocodes',
+      });
+    }
+
+    createdPromocodesIDs.push(createdPromocode._id);
+    if (res.headersSent) return;
+  }
 
   res.status(200).json({
     status: 'success',
     message: 'PromoCodes created Successfully.',
   });
 });
-
-//#region
-// await stream
-//   .pipe(parse({ headers: true }))
-//   .on('data', async (promoCoderow) => {
-//     console.log('row is ', promoCoderow);
-//     promoCodes += promoCoderow;
-//start applying promoCode logic here including validation and etc
-// if (
-//   !promoCoderow.codeName ||
-//   !promoCoderow.discountOrPercentage ||
-//   !promoCoderow.limits
-// ) {
-//   console.log('bsra7a lol gedannn');
-//   // res.status(400).json({
-//   //   status: 'fail',
-//   //   message:
-//   //     'Promocode codeName, discountOrPercentage and limits are required',
-//   // });
-//   // stream.destroy(
-//   //   'Promocode codeName, discountOrPercentage and limits are required'
-//   // );
-//   // stream.destroy(
-//   //   new AppError(
-//   //     'Promocode codeName, discountOrPercentage and limits are required',
-//   //     400
-//   //   )
-//   // );
-//   // return new AppError(
-//   //   'Promocode codeName, discountOrPercentage and limits are required',
-//   //   400
-//   // );
-// }
-
-// if (promoCoderow.discountOrPercentage === 1) {
-//   //   //discount
-//   //   if (!req.body.discount) {
-//   //     return res.status(400).json({
-//   //       status: 'fail',
-//   //       message: 'Discount is required in case of discountorPercentage = 1',
-//   //     });
-//   //   }
-//   //   //check that the discount is not greater than the ticket price
-//   //   // if (promoCoderow.discount > ticket.price) {
-//   //   //   return res.status(400).json({
-//   //   //     status: 'fail',
-//   //   //     message: 'Discount cannot be greater than the ticket price ',
-//   //   //   });
-//   //   }
-//   await promoCode
-//     .create({
-//       codeName: promoCoderow.codeName,
-//       limits: promoCoderow.limits,
-//       discountAmount: promoCoderow.discount,
-//       discountOrPercentage: 1,
-//       ticketID: req.params.id,
-//     })
-//     .catch((err) => {
-//       return next(err);
-//     });
-// } else {
-//   //percentage
-//   // if (!promoCoderow.percentage) {
-//   //   return res.status(400).json({
-//   //     status: 'fail',
-//   //     message:
-//   //       'Percentage is required in case of discountorPercentage = 0',
-//   //   });
-//   console.log('perc is', req.body);
-//   // console.log('perc is', req.body.percentage);
-//   await promoCode
-//     .create({
-//       codeName: promoCoderow.codeName,
-//       limits: promoCoderow.limits,
-//       percentage: promoCoderow.percentage,
-//       discountOrPercentage: 0,
-//       ticketID: req.params.id,
-//     })
-//     .catch((err) => {
-//       return next(err);
-//     });
-// }
-//   })
-//   .on('error', (err) => {
-//     // return next(err);
-//     console.log('entered here bardo w bamassy');
-//     errorflag = 1;
-//   });
-// console.log('promoCodes is', promoCodes);
-// for (const pc of promoCodes) {
-//   console.log(pc);
-// }
-// promoCodes.for((pc) => {
-//   console.log(pc);
-// });
-
-// if (errorflag === 1) {
-//   console.log('Entered here w bamassy');
-//   return new AppError('Error in CSV file', 400);
-// }
-
-//endregion
-
-// console.log('promoCodes is', promoCodes);
 
 /**
  * @function

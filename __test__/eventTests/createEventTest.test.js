@@ -46,7 +46,7 @@ test('Check created successfully with image', async () => {
     .field('locationName', 'Cairo University')
     .field('location', '31.2107164, 30.0246686')
     .expect(200);
-  expect(res.body.message).toMatch('event created successfully');
+  expect(res.body.status).toMatch('success');
 });
 
 test('Check created successfully without image', async () => {
@@ -64,7 +64,7 @@ test('Check created successfully without image', async () => {
     .field('locationName', 'Cairo University')
     .field('location', '31.2107164, 30.0246686')
     .expect(200);
-  expect(res.body.message).toMatch('event created successfully');
+  expect(res.body.status).toMatch('success');
 });
 
 test('Check failure in creating event with a non supported category', async () => {

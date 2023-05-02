@@ -4,6 +4,7 @@ const { promisify } = require('util');
 // const crypto = require('crypto');
 // const Event = require('../models/eventModel');
 const streamifier = require('streamifier');
+const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const PromoCode = require('../models/promoCodeModel');
@@ -224,6 +225,11 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
 */
 
 exports.createBookings = catchAsync(async (req, res, next) => {
+  req.body.bookings.forEach(async (booking) => {
+    const ticket = await Ticket.findById(booking.ticketID);
+    if (!ticket)
+      return next(new AppError('This ticket type is not available', 404));
+  });
   const { totalPrice, bookings } = await applyPromocode(
     req.body.promoCode,
     req.body.bookings

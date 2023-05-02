@@ -75,59 +75,7 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
     });
   }
 
-  if (
-    !req.body.codeName ||
-    req.body.discountOrPercentage == null || // can be 0
-    req.body.limits == null
-  ) {
-    return res.status(400).json({
-      status: 'fail',
-      message:
-        'Promocode codeName, discountOrPercentage and limits are required',
-    });
-  }
-
-  if (req.body.discountOrPercentage === 1) {
-    //discount
-    if (!req.body.discount) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Discount is required in case of discountorPercentage = 1',
-      });
-    }
-    // //check that the discount is not greater than the ticket price
-    // if (req.body.discount > ticket.price) {
-    //   return res.status(400).json({
-    //     status: 'fail',
-    //     message: 'Discount cannot be greater than the ticket price ',
-    //   });
-    // }
-    await PromoCode.create({
-      codeName: req.body.codeName,
-      limits: req.body.limits,
-      discountAmount: req.body.discount,
-      discountOrPercentage: 1,
-      eventID: req.body.eventID,
-    });
-  } else {
-    //percentage
-    if (!req.body.percentage) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Percentage is required in case of discountorPercentage = 0',
-      });
-    }
-
-    console.log('perc is', req.body);
-    // console.log('perc is', req.body.percentage);
-    await PromoCode.create({
-      codeName: req.body.codeName,
-      limits: req.body.limits,
-      percentage: req.body.percentage,
-      discountOrPercentage: 0,
-      eventID: req.body.eventID,
-    });
-  }
+  await PromoCode.create(req.body);
 
   res.status(200).json({
     status: 'success',
@@ -139,8 +87,6 @@ exports.createPromoCode = catchAsync(async (req, res, next) => {
  * @function
  * @description - Parses CSV file and returns the data and headers
  * @param {object} readable -The readable stream object
- * @param {object} csvData -The csv data object
- * @param {object} csvHeaders -The csv headers object
  * @returns {object} - Returns the csv data and headers
  */
 async function parseCSV(readable) {
@@ -173,6 +119,15 @@ async function parseCSV(readable) {
   }
   return { csvData, csvHeaders };
 }
+
+/**
+ * @function
+ * @description - Takes the CSV data and headers and then returns an array of promoCode objects. It assumes that both are aligned well.
+ * @param {object} csvData -The csv data object
+ * @param {object} csvHeaders -The csv headers object
+ * @param {object} eventID -The ID of the event addressed
+ * @returns {object} - Returns the csv data and headers
+ */
 
 const makePromoCodeObjects = async (csvData, csvHeaders, eventID) => {
   const promoCodes = [];

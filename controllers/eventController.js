@@ -318,23 +318,20 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       locationName,
       tags: tagsArr,
       location: { coordinates: locationCoordinates },
-    })
-      .then(() =>
-        res.status(200).json({
-          status: 'success',
-          data: {
-            event: createdEvent,
-          },
-        })
-      )
-      //return
-      .catch((err) =>
-        //Send error response if any error is encountered
-        res.status(400).json({
-          status: 'failed',
-          message: err.message,
-        })
-      );
+    }).catch((err) =>
+      //Send error response if any error is encountered
+      res.status(400).json({
+        status: 'failed',
+        message: err.message,
+      })
+    );
+    if (res.headersSent) return;
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        event: createdEvent,
+      },
+    });
   }
 });
 

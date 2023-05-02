@@ -128,7 +128,11 @@ const sendEmailWithQRcode = catchAsync(async (req, eventID, guestEmail) => {
 */
 const applyPromocode = async (promocodeName, bookings) => {
   // Calculate  the total prices of bookings before applying promocode
-  let totalPrice = bookings.reduce((sum, booking) => sum + booking.price, 0);
+  let totalPrice = bookings.reduce(
+    (sum, booking) => sum + booking.price * booking.quantity,
+    0
+  );
+  console.log(totalPrice);
   if (promocodeName) {
     const promoCode = await PromoCode.findOne({ codeName: promocodeName });
     // Search for the promocode by code name
@@ -148,6 +152,7 @@ const applyPromocode = async (promocodeName, bookings) => {
       bookings.forEach((booking) => {
         // Update the prices for each booking price
         booking.price = (booking.price / totalPrice) * newPrice;
+        if (booking.price < 0) booking.price = 0;
       });
       totalPrice = newPrice;
     }

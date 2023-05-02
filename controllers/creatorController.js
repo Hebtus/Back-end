@@ -27,12 +27,13 @@ const getSoldandAvailable = async (eventsdData) => {
     // eslint-disable-next-line no-await-in-loop
     const ticket = await Ticket.find({
       eventID: event._id,
-      $and: [
-        {
-          sellingStartTime: { $lte: Date.now() },
-          sellingEndTime: { $gt: Date.now() },
-        },
-      ],
+      sellingEndTime: { $gt: Date.now() },
+      // $and: [
+      //   {
+      //     sellingStartTime: { $lte: Date.now() },
+      //     sellingEndTime: { $gt: Date.now() },
+      //   },
+      // ],
       $expr: { $lt: ['$currentReservations', '$capacity'] },
     });
     // reutrns [ { _id: null, totalprice: 200 } ]
@@ -116,7 +117,9 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       // console.log(ticketQuery[0].ticketsAvailable);
       // console.log(ticketQuery === []);
       const ticketsAvilableData =
-        ticketQuery.length === 0 ? '0' : ticketQuery[0].ticketsAvailable;
+        ticketQuery.length === 0
+          ? '0'
+          : ticketQuery[0].ticketsAvailable - event.ticketsSold;
 
       const newData = [
         event.name,

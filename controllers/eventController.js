@@ -412,14 +412,15 @@ const filterObj = (obj, ...allowedFields) => {
  * @param {object} next -The next object for express middleware
  * @returns {object} -returns the response object
  */
-exports.editEvent = async (req, res, next) => {
+exports.editEvent = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(
     req.body,
     'description',
     'tags',
     'privacy',
     'goPublicDate',
-    'draft'
+    'draft',
+    'password'
   );
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
@@ -456,12 +457,14 @@ exports.editEvent = async (req, res, next) => {
   await updatedEvent.save();
   //remove unnecessary fields
   updatedEvent._v = undefined;
-  updatedEvent._id = undefined;
+  updatedEvent.password = undefined;
+
+  // updatedEvent._id = undefined;
   return res.status(200).json({
     status: 'success',
     data: updatedEvent,
   });
-};
+});
 /**
  * @function
  * @description -called to get the event sales through the booked tickets for each event and calculating the sales given the event id in parameters check the event existence and user authroity to check then existence of booked tickets

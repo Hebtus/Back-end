@@ -273,7 +273,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
     const cloudUploadStream = cloudinary.uploader.upload_stream(
       { folder: 'events' },
       async (error, result) => {
-        await Event.create({
+        const createdEvent = await Event.create({
           name,
           privacy,
           password,
@@ -297,14 +297,16 @@ exports.createEvent = catchAsync(async (req, res, next) => {
         console.log('still trying to send');
         res.status(200).json({
           status: 'success',
-          message: 'event created successfully',
+          data: {
+            event: createdEvent,
+          },
         });
       }
     );
     streamifier.createReadStream(imageFile.buffer).pipe(cloudUploadStream);
   } else {
     console.log('shouldnt  upload image');
-    await Event.create({
+    const createdEvent = await Event.create({
       name,
       privacy,
       password,
@@ -320,7 +322,9 @@ exports.createEvent = catchAsync(async (req, res, next) => {
       .then(() =>
         res.status(200).json({
           status: 'success',
-          message: 'event created successfully',
+          data: {
+            event: createdEvent,
+          },
         })
       )
       //return

@@ -1,4 +1,4 @@
-name,discountOrpercentage,percentage,limit
-fiftyoff,1,1,50
-disc40,0,10,40
-12off,1,1,12
+codeName,discountOrPercentage,percentage,limit,discountAmount
+haha,0,1,50,50
+yes,0,10,40,50
+hehe,0,1,12,50

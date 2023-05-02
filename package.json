@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest --runInBand --detectOpenHandles",
-    "stest": "jest  ./__test__/authenticationTests/resetPasswordTest.test.js",
+    "stest": "jest  ./__test__/promoCodesTests/createPromocodeCSVTest.test.js",
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",

@@ -6,6 +6,7 @@ const catchAsync = require('../utils/catchAsync');
 const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
 const { constants } = require('crypto');
+const PromoCode = require('../models/promoCodeModel');
 
 /**
  * The Controller responsible for handling requests made by Creator to Manipulate Tickets and Events
@@ -249,6 +250,8 @@ exports.deleteEvent = catchAsync(async (req, res, next) => {
 
     // get Tickets and delete them
     await Ticket.deleteMany({ eventID: req.params.id });
+
+    await PromoCode.deleteMany({ eventID: req.params.id });
     //finally delete the event
     await Event.deleteOne({ _id: req.params.id });
 

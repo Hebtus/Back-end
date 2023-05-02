@@ -52,7 +52,7 @@ test('check invalid csv file sent', async () => {
     .attach('csvFile', filePath)
     .set('authorization', `Bearer ${jwtToken}`)
     .field('eventID', testEventID.toString())
-    .expect(500);
+    .expect(400);
   promocodes = await PromoCode.find();
   expect(promocodes.length).toBe(0);
 });

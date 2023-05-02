@@ -88,7 +88,7 @@ const ticketSchema = new mongoose.Schema({
     max: [10000000, 'Maximum Conceivable capacity reached'],
     validate: {
       validator: function (val) {
-        return val < this.capacity;
+        return val <= this.capacity;
       },
       message: 'Current reservations exceeds the allowed capacity',
     },

@@ -1,4 +1,5 @@
 const Ticket = require('../models/ticketModel');
+const Event = require('../models/eventModel');
 const catchAsync = require('../utils/catchAsync');
 
 /**
@@ -68,7 +69,6 @@ exports.getEventTickets = async (req, res) => {
   const limit = req.query.limit * 1 || 20;
   const skip = (page - 1) * limit;
   const eventId = req.params.id;
-
   const event = await Event.findById(eventId);
 
   if (!event.creatorID.equals(req.user._id))

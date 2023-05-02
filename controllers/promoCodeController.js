@@ -206,8 +206,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   // let csvHeaders = [];
   // let csvData = [];
   const parsed = await parseCSV(stream);
-  const { csvHeaders } = parsed.csvHeaders;
-  const { csvData } = parsed.csvData;
+  const { csvHeaders, csvData } = parsed;
 
   console.log('csvHeaders is', csvHeaders);
   console.log('csvData is', csvData);

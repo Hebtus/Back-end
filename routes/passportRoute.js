@@ -121,6 +121,7 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
     audience: process.env.GOOGEL_CLIENT_ID,
   });
   const { name, email } = ticket.getPayload();
+  console.log(ticket.getPayload());
   var user = await User.findOne({ email: email });
   if (!user) {
     user = new User({
@@ -129,7 +130,7 @@ const AuthenticateGoogle = catchAsync(async (req, res, next) => {
         lastName: name.split(' ')[1],
       },
       email: email,
-      GoogleID: tokenId,
+      GoogleID: token,
       password: Math.random().toString().substr(2, 10),
       accountConfirmation: 1,
     });

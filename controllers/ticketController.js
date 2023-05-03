@@ -71,11 +71,6 @@ exports.getEventTickets = async (req, res) => {
   const eventId = req.params.id;
   const event = await Event.findById(eventId);
 
-  if (!event.creatorID.equals(req.user._id))
-    return res.status(401).json({
-      status: 'fail',
-      message: 'You cannot access events that are not yours ',
-    });
   //check on 2 things for ticket availability: 1. time 2. capacity
   const ticket = await Ticket.find({
     eventID: eventId,

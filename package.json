@@ -10,7 +10,7 @@
     "test": "jest --runInBand --detectOpenHandles",
     "stest": "jest  ./__test__/promoCodesTests/createPromocodeCSVTest.test.js",
     "start": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js",
+    "deploy":"node server.js",
     "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",
     "debug": "ndb server.js"
   },

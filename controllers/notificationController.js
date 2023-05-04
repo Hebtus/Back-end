@@ -15,7 +15,7 @@ const catchAsync = require('../utils/catchAsync');
 @param {object} res - Express response object.
 @returns {object} - Returns the response object 
 */
-exports.getNotification = async (req, res) => {
+exports.getNotification = catchAsync(async (req, res, next) => {
   //check on 2 things for ticket availability: 1. time 2. capacity
   const notification = await Notification.findOne({ attendeeID: req.user._id });
   if (!notification) {
@@ -30,4 +30,4 @@ exports.getNotification = async (req, res) => {
     },
   });
   await Notification.deleteOne({ attendeeID: req.user._id });
-};
+});

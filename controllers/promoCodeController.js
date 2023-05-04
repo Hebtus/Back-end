@@ -28,7 +28,10 @@ const csvFilter = (_req, file, cb) => {
   // console.log('Reading file in middleware', file.originalname);
   if (file === undefined) {
     cb('Please upload a file first to proceed.', false);
-  } else if (file.mimetype.includes('csv')) {
+  } else if (
+    file.mimetype.includes('csv') ||
+    file.mimetype === 'application/octet-stream' //for cross platform compatibility
+  ) {
     cb(null, true);
   } else {
     cb('Please upload only CSV file type.', false);
@@ -152,6 +155,8 @@ const makePromoCodeObjects = async (csvData, csvHeaders, eventID) => {
  */
 exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   //first check that the user is the creator of the event that the ticket is associated with
+  console.log('Recieved Request on CreatePromocodeCSV');
+
   let event;
   try {
     event = await Event.findOne({ _id: req.body.eventID });
@@ -163,7 +168,7 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
   }
 
   if (!event.creatorID.equals(req.user._id)) {
-    return res.status(404).json({
+    return res.status(401).json({
       status: 'fail',
       message: 'You cannot access events that are not yours ',
     });
@@ -177,8 +182,11 @@ exports.createPromoCodeCSV = catchAsync(async (req, res, next) => {
 
   stream.setEncoding('utf8');
   const parsed = await parseCSV(stream);
+  console.log(parsed);
+
   const { csvHeaders, csvData } = parsed;
 
+  console.log(csvHeaders, csvData);
   //no need to check csv formatting, any ouster pieces of data will automatically cause a validation error
   const promocodeObjects = await makePromoCodeObjects(
     csvData,

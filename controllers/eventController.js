@@ -478,19 +478,20 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
-  if (req.query.netsales) {
-    const event = await Event.findOne({
-      _id: req.params.id,
-      creatorID: req.user._id,
+
+  const event = await Event.findOne({
+    _id: req.params.id,
+    creatorID: req.user._id,
+  });
+
+  if (!event) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid event or creator',
     });
+  }
 
-    if (!event) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Invalid event or creator',
-      });
-    }
-
+  if (req.query.netsales) {
     const tickets = await Ticket.find({ eventID: req.params.id });
 
     const tickets2 = await Ticket.find({ eventID: req.params.id })
@@ -541,17 +542,7 @@ exports.getEventSales = catchAsync(async (req, res, next) => {
     });
   }
 
-  const event = await Event.findOne({
-    _id: req.params.id,
-    creatorID: req.user._id,
-  });
-
-  if (!event) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid event or creator',
-    });
-  }
+  //logic without net sales
 
   const tickets2 = await Ticket.find({ eventID: req.params.id })
     .skip(skip)

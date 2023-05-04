@@ -64,7 +64,7 @@ exports.createTicket = catchAsync(async (req, res, next) => {
  * @param {object} res  -The response object
  * @returns {object} - Returns the response object
  */
-exports.getEventTickets = async (req, res) => {
+exports.getEventTickets = catchAsync(async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
   const skip = (page - 1) * limit;
@@ -94,7 +94,7 @@ exports.getEventTickets = async (req, res) => {
       tickets: ticket,
     },
   });
-};
+});
 /**
 @function
 @description Edit the ticket information of a specefic event.
@@ -125,6 +125,7 @@ exports.editTicket = catchAsync(async (req, res, next) => {
       message: "Couldn't find ticket with this id",
     });
   }
+
   const event = await Event.findById(updatedTicket.eventID);
 
   if (!event.creatorID.equals(req.user._id)) {
@@ -133,6 +134,7 @@ exports.editTicket = catchAsync(async (req, res, next) => {
       message: 'You are not authorized to edit this ticket',
     });
   }
+
   if (filteredBody.name) updatedTicket.name = filteredBody.name;
   if (filteredBody.currentReservations)
     updatedTicket.currentReservations = filteredBody.currentReservations;

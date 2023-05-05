@@ -27,22 +27,11 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-// app.use('/api/v1/lol', async (req, res, next) => {
-//   try {
-//     await test.createTestUser();
-//   } catch (err) {
-//     // res.status(500).json({
-//     //   status: 'error',
-//     //   message: err.message,
-//     // });
-//     console.log(err);
-//     next(err);
-//   }
-// });
 app.use('/api/v1', (req, res, next) => {
   console.log('hello from Major App Middleware');
   next();
 });
+
 app.use('/api/v1/events', eventRouter);
 app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/tickets', ticketRouter);

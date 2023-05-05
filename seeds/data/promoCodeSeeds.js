@@ -2,7 +2,6 @@ const { faker } = require('@faker-js/faker');
 
 module.exports.seedPromocodes = (event) => {
   const promoCodeObjects = [];
-
   for (let i = 0; i < 2; i += 1) {
     const promoCodeObject = {
       codeName: `${event.name} PromoCode${i}`,
@@ -10,7 +9,7 @@ module.exports.seedPromocodes = (event) => {
       percentage: faker.datatype.number(100),
       discountAmount: faker.datatype.number(100),
       discountorPercentage: [true, false][i % 2],
-      eventID: event.eventID,
+      eventID: event._id,
       fake: 1,
     };
     promoCodeObjects.push(promoCodeObject);

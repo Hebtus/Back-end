@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "jest --runInBand --detectOpenHandles",
-    "stest": "jest  ./__test__/promoCodesTests/createPromocodeCSVTest.test.js",
+    "stest": "jest  ./__test__/promoCodesTests/createPromocodeTest.test.js",
     "start": "nodemon server.js",
     "deploy":"node server.js",
     "generate-docs": "jsdoc ./ -r -c  jsdoc.json  --verbose",

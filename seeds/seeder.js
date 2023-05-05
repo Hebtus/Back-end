@@ -166,6 +166,8 @@ module.exports.deleteSeeds = async function (DbString) {
     });
 
   await User.deleteMany({ email: { $regex: 'fake' } });
+  await Booking.deleteMany({ email: { $regex: 'fake' } });
   await Event.deleteMany({ name: { $regex: 'RealEvent' } });
   await Ticket.deleteMany({ name: { $regex: 'RealEvent' } });
+  await PromoCode.deleteMany({ codeName: { $regex: 'RealEvent' } });
 };

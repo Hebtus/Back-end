@@ -48,14 +48,14 @@ test('check discount promocode created successfully', async () => {
     .send({
       eventID: testEventID,
       codeName: 'testcode',
-      discount: 10,
+      discountAmount: 10,
       limits: 10,
       discountOrPercentage: 1,
     })
     .expect(200);
 });
 
-test('check percentage promocode with same code', async () => {
+test('check percentage promocode with same code for same event', async () => {
   const res = await request(app)
     .post('/api/v1/promocodes')
     .set('authorization', `Bearer ${jwtToken}`)

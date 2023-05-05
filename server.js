@@ -23,7 +23,8 @@ const DBstring =
 const DBcheck =
   process.env.NODE_ENV === 'development' ? 'LOCAL DB' : 'DEPLOYED DB';
 console.log('connecting to ', DBcheck);
-// Seeder(DBstring);
+
+// Seeder.Seed(DBstring);
 
 mongoose
   .connect(DBstring, {

@@ -43,6 +43,13 @@ app.use('/api/v1', (req, res, next) => {
   console.log('hello from Major App Middleware');
   next();
 });
+
+app.use('/api/v1/error', (req, res, next) => {
+  new Promise(function (resolve, reject) {
+    reject();
+  }).then(() => {});
+});
+
 app.use('/api/v1/events', eventRouter);
 app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/tickets', ticketRouter);

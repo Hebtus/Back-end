@@ -19,7 +19,7 @@ const cloudinary = require('../utils/cloudinary');
  * @function
  * @description - Makes all private events public if the goPublicDate is passed
  */
-const makeprivateEventsPublic = async () => {
+exports.makeprivateEventsPublic = async () => {
   const privateEvents = await Event.updateMany(
     { privacy: true, goPublicDate: { $lte: Date.now() } },
     { privacy: false }
@@ -58,7 +58,7 @@ exports.uploadEventPhoto = upload.single('image');
  * @returns {object} - Returns the response object
  */
 exports.getEvents = catchAsync(async (req, res, next) => {
-  await makeprivateEventsPublic();
+  await exports.makeprivateEventsPublic();
   //check on mongoose behaviour with non existent parameters
   // if parameters don't exist mongoose returns nothing
   // ie. no need for checks
@@ -338,7 +338,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
 exports.getEvent = catchAsync(async (req, res, next) => {
   //if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
   // Yes, it's a valid ObjectId, proceed with `findById` call.
-  await makeprivateEventsPublic();
+  await exports.makeprivateEventsPublic();
 
   const event = await Event.findOne({ _id: req.params.id }).select({
     //Note : I did not put them in the pre find middleware because not all

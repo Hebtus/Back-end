@@ -7,7 +7,7 @@ const Ticket = require('../models/ticketModel');
 const Booking = require('../models/bookingModel');
 const { constants } = require('crypto');
 const PromoCode = require('../models/promoCodeModel');
-
+const eventController = require('./eventController');
 /**
  * The Controller responsible for handling requests made by Creator to Manipulate Tickets and Events
  * @module Controllers/creatorController
@@ -76,8 +76,7 @@ const getSoldandAvailable = async (eventsdData) => {
  * @returns {object} - Returns the response object
  */
 exports.getEvents = catchAsync(async (req, res, next) => {
-  // req.user._id = '642f3260de49962dcfb8179c';
-  // console.log(req.user._id);
+  eventController.makeprivateEventsPublic();
   //Pagination Setup
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 20;
@@ -113,10 +112,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
           },
         },
       ]);
-      // console.log(ticketQuery);
-      // console.log(ticketQuery[0]);
-      // console.log(ticketQuery[0].ticketsAvailable);
-      // console.log(ticketQuery === []);
       const ticketsAvilableData =
         ticketQuery.length === 0
           ? '0'
@@ -134,8 +129,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       csvData += '\n';
     }
 
-    // console.log(csvData);
-
     return res
       .set({
         'Content-Type': 'text/csv',
@@ -143,10 +136,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       })
       .status(200)
       .send(csvData);
-    // .json({
-    //   status: 'success',
-    //   message: 'CSV file sent',
-    // });
   }
   let eventsData;
   if (req.query.time === 'past') {
@@ -174,7 +163,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
       .limit(limit)
       .sort({ startDate: 1 });
   }
-  let newEventData = await getSoldandAvailable(eventsData);
+  const newEventData = await getSoldandAvailable(eventsData);
   return res.status(200).json({
     status: 'success',
     data: { events: newEventData },
@@ -189,6 +178,7 @@ exports.getEvents = catchAsync(async (req, res, next) => {
  * @returns {object} -returns the res object
  */
 exports.getEvent = catchAsync(async (req, res, next) => {
+  eventController.makeprivateEventsPublic();
   //console.log(req.user);
   const event = await Event.findOne({ _id: req.params.id });
   if (!event) {

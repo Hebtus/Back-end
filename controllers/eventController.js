@@ -423,6 +423,7 @@ exports.editEvent = catchAsync(async (req, res, next) => {
     'draft',
     'password'
   );
+  console.log('filtered body', filteredBody);
   const updatedEvent = await Event.findById(req.params.id);
   if (!updatedEvent) {
     return res.status(404).json({
@@ -448,14 +449,11 @@ exports.editEvent = catchAsync(async (req, res, next) => {
       });
     }
   }
+  //you can't set an event back to being unpublished
+  if (updatedEvent.draft === false) filteredBody.draft = false;
+  updatedEvent.set(filteredBody);
+  updatedEvent.save();
 
-  if (filteredBody.description)
-    updatedEvent.description = filteredBody.description;
-  if (filteredBody.tags) updatedEvent.tags = filteredBody.tags;
-  if (filteredBody.privacy) updatedEvent.privacy = filteredBody.privacy;
-  if (filteredBody.goPublicDate)
-    updatedEvent.goPublicDate = filteredBody.goPublicDate;
-  await updatedEvent.save();
   //remove unnecessary fields
   updatedEvent._v = undefined;
   updatedEvent.password = undefined;

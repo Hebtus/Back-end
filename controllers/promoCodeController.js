@@ -234,12 +234,12 @@ exports.getEventPromocodes = catchAsync(async (req, res, next) => {
   const eventId = req.params.id;
   const event = await Event.findOne({ _id: eventId });
   if (!event) {
-    res.status(404).json({
+    return res.status(404).json({
       status: 'fail',
       message: 'No event found with this id ',
     });
   } else if (!event.creatorID.equals(req.user._id)) {
-    res.status(401).json({
+    return res.status(401).json({
       status: 'fail',
       message: 'You cannot access events that are not yours ',
     });
@@ -248,7 +248,7 @@ exports.getEventPromocodes = catchAsync(async (req, res, next) => {
     .skip(skip)
     .limit(limit);
 
-  res.status(200).json({
+  return res.status(200).json({
     status: 'success',
     data: {
       promocodes,

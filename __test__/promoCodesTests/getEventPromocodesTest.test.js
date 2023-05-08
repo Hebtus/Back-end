@@ -7,6 +7,7 @@ const Event = require('../../models/eventModel');
 const Promocodes = require('../../models/promoCodeModel');
 const loginConfirmedUser = require('../testutils/loginConfirmedUser');
 const createConfirmedUser = require('../testutils/createConfirmedUser');
+const PromoCode = require('../../models/promoCodeModel');
 
 dotenv.config({ path: './config.env' });
 
@@ -85,5 +86,6 @@ afterAll(async () => {
   // Delete all test data and close the database connection
   await User.deleteMany();
   await Event.deleteMany();
+  await PromoCode.deleteMany();
   await mongoose.connection.close();
 });

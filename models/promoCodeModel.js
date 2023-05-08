@@ -7,7 +7,6 @@ const promoCodeSchema = new mongoose.Schema({
     required: [true, 'Please provide a code name'],
     minlength: [1, 'Event Name can not be less than 1 character.'],
     maxlength: [30, 'Event Name can not be more than 30 characters long.'],
-    unique: true,
   },
   limits: {
     //capacity of promoCode
@@ -88,6 +87,8 @@ promoCodeSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
+promoCodeSchema.index({ codeName: 1, eventID: 1 }, { unique: true });
 
 const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
 

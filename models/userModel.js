@@ -6,7 +6,6 @@ const validator = require('validator');
 const locationSchema = require('./shared/locationModel');
 const nameSchema = require('./shared/nameModel');
 // const EmailConfirm = require('./emailConfirmModel');
-//TODO: Encrypt Passwords!
 
 const userSchema = new mongoose.Schema({
   name: nameSchema,

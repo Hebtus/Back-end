@@ -85,8 +85,6 @@ exports.getEvents = catchAsync(async (req, res, next) => {
     longitude = 31.2107164;
     latitude = 30.0246686;
   }
-  //TODO: Implement Pagination and limits
-  //TODO: add the GeoJSON logic to all of the queries
   let goQuery = 1;
   let eventsData = [];
   if (req.query.category && goQuery) {

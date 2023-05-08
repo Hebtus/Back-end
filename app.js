@@ -36,7 +36,7 @@ app.use('/api/v1/events', eventRouter);
 app.use('/api/v1/oauth', passportRouter);
 app.use('/api/v1/tickets', ticketRouter);
 app.use('/api/v1/creators/events', creatorRouter);
-app.use('/api/v1/bookings', bookingRouter); //TODO: base route to be discussed later
+app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/promocodes', promoCodeRouter);
 app.use('/api/v1', authenticationRouter);
 app.use('/api/v1/notifications', notificationRouter);

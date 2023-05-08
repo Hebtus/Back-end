@@ -38,7 +38,7 @@ const createNotification = catchAsync(async ({ ...info }) => {
     console.log('no attendee with this email');
     return;
   }
-
+  console.log('Creating notification for attendee');
   await Notification.create({
     attendeeID: attendee._id,
     attendeeName: attendee.name,
@@ -177,6 +177,7 @@ exports.applyPromocode = applyPromocode;
 @throws {AppError} If any of the input body does mot meet the schema validations.
 */
 exports.addAttendee = catchAsync(async (req, res, next) => {
+  console.log('Add Attendee Route');
   const event = await Event.findById(req.body.eventID);
 
   if (!event) return next(new AppError('No event found with that ID', 404));
@@ -197,6 +198,7 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
       const { guestEmail } = req.body;
       const eventName = event.name;
       const creatorID = req.user._id;
+      console.log('guestEmail', guestEmail);
       createNotification({ eventName, creatorID, guestEmail });
       return res.status(200).json({
         // Send successful response
@@ -211,7 +213,6 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
-  //TODO: send email to the user with the booking details and QR code
 });
 /** 
 @function
@@ -225,6 +226,7 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
 */
 
 exports.createBookings = catchAsync(async (req, res, next) => {
+  console.log('Create Bookings Route');
   req.body.bookings.forEach(async (booking) => {
     const ticket = await Ticket.findById(booking.ticketID);
     if (!ticket)
@@ -268,7 +270,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
-  //TODO: send email to the user with the booking details and QR code
   if (res.statusCode === 200) {
     await sendEmailWithQRcode(req, req.body.eventID, req.body.guestEmail);
   }

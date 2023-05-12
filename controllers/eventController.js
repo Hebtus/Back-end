@@ -450,7 +450,7 @@ exports.editEvent = catchAsync(async (req, res, next) => {
   //you can't set an event back to being unpublished
   if (updatedEvent.draft === false) filteredBody.draft = false;
   updatedEvent.set(filteredBody);
-  updatedEvent.save();
+  await updatedEvent.save();
 
   //remove unnecessary fields
   updatedEvent._v = undefined;

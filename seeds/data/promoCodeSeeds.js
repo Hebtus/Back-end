@@ -8,12 +8,13 @@ module.exports.seedPromocodes = (event) => {
       limits: faker.datatype.number(100),
       percentage: faker.datatype.number(100),
       discountAmount: faker.datatype.number(100),
-      discountorPercentage: [true, false][i % 2],
+      discountOrPercentage: [true, false][i % 2],
       eventID: event._id,
       fake: 1,
     };
     promoCodeObjects.push(promoCodeObject);
   }
+  console.log(promoCodeObjects);
 
   return promoCodeObjects;
 };

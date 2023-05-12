@@ -25,6 +25,7 @@ const DBcheck =
 console.log('connecting to ', DBcheck);
 
 // Seeder.Seed(DBstring);
+// Seeder.deleteSeeds(DBstring);
 
 mongoose
   .connect(DBstring, {

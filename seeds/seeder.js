@@ -166,8 +166,18 @@ module.exports.deleteSeeds = async function (DbString) {
     });
 
   await User.deleteMany({ email: { $regex: 'fake' } });
-  await Booking.deleteMany({ email: { $regex: 'fake' } });
+  await Booking.deleteMany({ guestEmail: { $regex: 'fake' } });
   await Event.deleteMany({ name: { $regex: 'RealEvent' } });
   await Ticket.deleteMany({ name: { $regex: 'RealEvent' } });
+  ///delete past events
+  await Event.deleteMany({ name: { $regex: 'PastEvent' } });
+  await Ticket.deleteMany({ name: { $regex: 'PastEvent' } });
+  ///delete Future events
+  await Event.deleteMany({ name: { $regex: 'FutureEvent' } });
+  await Ticket.deleteMany({ name: { $regex: 'FutureEvent' } });
+  //away events
+  await Event.deleteMany({ name: { $regex: 'AwayEvent' } });
+  await Ticket.deleteMany({ name: { $regex: 'AwayEvent' } });
   await PromoCode.deleteMany({ codeName: { $regex: 'RealEvent' } });
+  console.log('Seeds deleted successfully');
 };

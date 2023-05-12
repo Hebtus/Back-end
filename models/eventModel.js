@@ -40,7 +40,6 @@ const eventSchema = new mongoose.Schema({
     type: locationSchema,
   },
   locationName: {
-    //TODO: add validators here
     type: String,
     required: true,
     maxlength: [100, 'A location name must have no more than 100 characters'],
@@ -68,7 +67,6 @@ const eventSchema = new mongoose.Schema({
       'An event description must must be at most 400 characters',
     ],
   },
-  // TODO: Add validators on tag length
   tags: {
     type: [String],
     default: [],
@@ -128,7 +126,6 @@ const eventSchema = new mongoose.Schema({
 });
 eventSchema.index({ location: '2dsphere' });
 
-//TODO: Check that isNew Works Correctly
 eventSchema.pre('save', function (next) {
   if (this.isNew && !this.location) {
     this.location = {

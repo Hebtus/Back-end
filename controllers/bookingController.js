@@ -213,7 +213,6 @@ exports.addAttendee = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
-  //TODO: send email to the user with the booking details and QR code
 });
 /** 
 @function
@@ -271,7 +270,6 @@ exports.createBookings = catchAsync(async (req, res, next) => {
         message: err.message,
       })
     );
-  //TODO: send email to the user with the booking details and QR code
   if (res.statusCode === 200) {
     await sendEmailWithQRcode(req, req.body.eventID, req.body.guestEmail);
   }
